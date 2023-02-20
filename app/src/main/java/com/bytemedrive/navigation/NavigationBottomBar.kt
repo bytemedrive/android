@@ -26,19 +26,11 @@ fun NavigationBottomBar(navController: NavHostController) {
 
     BottomNavigation(elevation = 10.dp, backgroundColor = MaterialTheme.colorScheme.primary) {
         navItems.forEach { item ->
-            BottomNavigationItem(icon = {
-                Icon(imageVector = item.icon, "")
-            },
-                label = {
-                    Text(
-                        text = item.title,
-                        color = MaterialTheme.colorScheme.inversePrimary
-                    )
-                },
+            BottomNavigationItem(icon = { Icon(imageVector = item.icon, "") },
+                label = { Text(text = item.title, color = MaterialTheme.colorScheme.inversePrimary) },
                 selected = (selectedIndex.value == item),
-                onClick = {
-                    selectedIndex.value = item
-                })
+                onClick = { selectedIndex.value = item }
+            )
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.bytemedrive.main
 
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -26,11 +25,7 @@ fun MainScreen(pickFileLauncher: ActivityResultLauncher<String>) {
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        "Home",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Text("Home", maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
             )
         },

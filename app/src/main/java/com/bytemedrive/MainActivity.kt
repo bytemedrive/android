@@ -51,9 +51,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ByteMeTheme {
-                MainScreen(
-                    pickFileLauncher
-                )
+                MainScreen(pickFileLauncher)
             }
         }
     }

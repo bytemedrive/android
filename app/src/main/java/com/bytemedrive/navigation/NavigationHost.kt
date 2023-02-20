@@ -27,9 +27,7 @@ fun NavigationHost(navController: NavHostController, innerPadding: PaddingValues
                     .fillMaxSize()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "Sign in screen")
-            }
+            ) { Text(text = "Sign in screen") }
         }
     }
 }
