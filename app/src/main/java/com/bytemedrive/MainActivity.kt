@@ -7,28 +7,13 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.bytemedrive.privacy.FileEncrypt
 import com.bytemedrive.koin.accountModule
 import com.bytemedrive.koin.networkModule
 import com.bytemedrive.koin.viewModelsModule
-import com.bytemedrive.network.Endpoint
-import com.bytemedrive.network.RestApiBuilder
+import com.bytemedrive.main.MainScreen
+import com.bytemedrive.privacy.FileEncrypt
 import com.bytemedrive.ui.theme.ByteMeTheme
 import io.earthbanc.mrv.config.ConfigProperty
-import io.ktor.client.request.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import java.io.IOException
@@ -45,7 +30,7 @@ class MainActivity : ComponentActivity() {
 
     private fun onFilePicked(uri: Uri?) {
         if (uri != null) {
-            contentResolver.openInputStream(uri) .use {
+            contentResolver.openInputStream(uri).use {
                 if (it != null) {
                     val encryptedFile = FileEncrypt.encrypt(it.readBytes(), password, salt)
                     // send file to BE
@@ -64,27 +49,9 @@ class MainActivity : ComponentActivity() {
 
         loadProperties(assets)
 
-        val restApiBuilder by inject<RestApiBuilder>()
-
         setContent {
             ByteMeTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Column() {
-                        Row {
-                            Button(onClick = { pickFileLauncher.launch("*/*") }) {
-                                Text(text = "Pick file")
-                            }
-                            Button(
-                                content = { Text(text = "Fooo") },
-                                onClick = { CoroutineScope(Dispatchers.Main).launch { restApiBuilder.client.get(Endpoint.GET.url) { } }
-                                })
-                        }
-                    }
-                }
+                MainScreen(pickFileLauncher)
             }
         }
     }
