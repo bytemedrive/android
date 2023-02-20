@@ -27,14 +27,12 @@ class MainActivity : ComponentActivity() {
 
     private fun onFilePicked(uri: Uri?) {
         if (uri != null) {
-            val inputStream = contentResolver.openInputStream(uri)
-
-            if (inputStream != null) {
-                val encryptedFile = FileEncrypt.encryptFile(inputStream.readBytes(), password, salt)
-                // send file to BE
+            contentResolver.openInputStream(uri) .use {
+                if (it != null) {
+                    val encryptedFile = FileEncrypt.encrypt(it.readBytes(), password, salt)
+                    // send file to BE
+                }
             }
-
-            inputStream?.close()
         }
     }
 

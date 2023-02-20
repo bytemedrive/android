@@ -10,10 +10,10 @@ import kotlin.streams.toList
 object FileEncrypt {
     private val secureRandom: SecureRandom = SecureRandom()
 
-    fun encryptFile(easDecrypted: ByteArray, password: String, salt: ByteArray): ByteArray =
+    fun encrypt(easDecrypted: ByteArray, password: String, salt: ByteArray): ByteArray =
         encryptWithCommonSalt(easDecrypted, password, salt)
 
-    fun encryptFiles(
+    fun encrypt(
         easDecrypted: List<ByteArray>,
         password: String,
         salt: ByteArray
@@ -27,7 +27,7 @@ object FileEncrypt {
     ): ByteArray =
         try {
             // get back the aes key from the same password and salt
-            val aesKeyFromPassword = EasKey.getAESKeyFromPassword(password, salt)
+            val aesKeyFromPassword = AesKey.getAESKeyFromPassword(password, salt)
 
             encryptWithKey(aesDecrypted, salt, aesKeyFromPassword)
         } catch (e: Exception) {
@@ -41,14 +41,14 @@ object FileEncrypt {
     ): ByteArray {
         return try {
             // GCM recommended 12 bytes iv?
-            val iv = getRandomNonce(EasKey.IV_LENGTH_BYTE)
-            val cipher = Cipher.getInstance(EasKey.ENCRYPT_ALGO)
+            val iv = getRandomNonce(AesKey.IV_LENGTH_BYTE)
+            val cipher = Cipher.getInstance(AesKey.ENCRYPT_ALGO)
 
             // ASE-GCM needs GCMParameterSpec
             cipher.init(
                 Cipher.ENCRYPT_MODE,
                 aesKeyFromPassword,
-                GCMParameterSpec(EasKey.TAG_LENGTH_BIT, iv)
+                GCMParameterSpec(AesKey.TAG_LENGTH_BIT, iv)
             )
             val cipherText = cipher.doFinal(input)
 

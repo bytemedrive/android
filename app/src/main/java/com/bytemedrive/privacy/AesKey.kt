@@ -6,7 +6,7 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
-object EasKey {
+object AesKey {
     const val ENCRYPT_ALGO = "AES/GCM/NoPadding"
     const val TAG_LENGTH_BIT = 128 // must be one of {128, 120, 112, 104, 96}
     const val IV_LENGTH_BYTE = 12
