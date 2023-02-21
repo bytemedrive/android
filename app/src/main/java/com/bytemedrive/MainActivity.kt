@@ -1,19 +1,16 @@
 package com.bytemedrive
 
 import android.content.res.AssetManager
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
+import com.bytemedrive.config.ConfigProperty
 import com.bytemedrive.koin.accountModule
 import com.bytemedrive.koin.networkModule
 import com.bytemedrive.koin.viewModelsModule
 import com.bytemedrive.main.MainScreen
-import com.bytemedrive.privacy.FileEncrypt
 import com.bytemedrive.ui.theme.ByteMeTheme
-import io.earthbanc.mrv.config.ConfigProperty
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import java.io.IOException
@@ -22,22 +19,6 @@ import java.util.*
 
 class MainActivity : ComponentActivity() {
     private val TAG = MainActivity::class.qualifiedName
-    private val salt = "dummmySaltToByte".toByteArray()
-    private val password: String = "dummyPassword"
-
-    private val pickFileLauncher =
-        registerForActivityResult(ActivityResultContracts.GetContent(), ::onFilePicked)
-
-    private fun onFilePicked(uri: Uri?) {
-        if (uri != null) {
-            contentResolver.openInputStream(uri).use {
-                if (it != null) {
-                    val encryptedFile = FileEncrypt.encrypt(it.readBytes(), password, salt)
-                    // send file to BE
-                }
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ByteMeTheme {
-                MainScreen(pickFileLauncher)
+                MainScreen()
             }
         }
     }

@@ -1,5 +1,8 @@
 package com.bytemedrive.network
 
-enum class Endpoint(val url: String) {
-    GET("get")
+sealed class Endpoint(val url: String) {
+    object EVENTS : Endpoint("customers/{idHashed}/events") {
+        fun buildUrl(idHashed: String): String = url.replace("{idHashed}", idHashed)
+    }
+
 }

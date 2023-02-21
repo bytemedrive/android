@@ -1,4 +1,4 @@
-package io.earthbanc.mrv.config
+package com.bytemedrive.config
 
 import java.util.Properties
 

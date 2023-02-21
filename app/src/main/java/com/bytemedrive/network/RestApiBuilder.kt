@@ -1,6 +1,6 @@
 package com.bytemedrive.network
 
-import io.earthbanc.mrv.config.ConfigProperty
+import com.bytemedrive.config.ConfigProperty
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpSend
