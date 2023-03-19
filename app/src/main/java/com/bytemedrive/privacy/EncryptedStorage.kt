@@ -29,7 +29,7 @@ object EncryptedStorage {
             putString(KEY_CUSTOMER_PASSWORD, password.toString()).apply() // TODO: How to store CharArray? Or how to store password that you cannot convert to String
         }
 
-        private const val FILE_NAME = "bytemedrive"
-        private const val KEY_CUSTOMER_EMAIL = "customer_email"
-        private const val KEY_CUSTOMER_PASSWORD = "customer_password"
+    private const val FILE_NAME = "bytemedrive"
+    private const val KEY_CUSTOMER_EMAIL = "customer_email"
+    private const val KEY_CUSTOMER_PASSWORD = "customer_password"
 }
