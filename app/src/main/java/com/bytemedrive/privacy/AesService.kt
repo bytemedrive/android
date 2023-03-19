@@ -91,7 +91,6 @@ object AesService {
     }
 
     fun getRandomCharArray(numChars: Int): CharArray {
-        val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
         val random = SecureRandom()
 
         return CharArray(numChars) {
@@ -106,8 +105,9 @@ object AesService {
         return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
     }
 
-        private const val ENCRYPT_ALGO = "AES/GCM/NoPadding"
-        private const val TAG_LENGTH_BIT = 128 // must be one of {128, 120, 112, 104, 96}
-        private const val IV_LENGTH_BYTE = 12
-        private const val SALT_LENGTH_BYTE = 16
+    private const val ENCRYPT_ALGO = "AES/GCM/NoPadding"
+    private const val TAG_LENGTH_BIT = 128 // must be one of {128, 120, 112, 104, 96}
+    private const val IV_LENGTH_BYTE = 12
+    private const val SALT_LENGTH_BYTE = 16
+    private val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 }

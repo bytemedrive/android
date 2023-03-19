@@ -1,6 +1,6 @@
 package com.bytemedrive.event
 
-enum class EventType {
+enum class EventType(name: String) {
 
-    FILE_UPLOADED
+    FILE_UPLOADED("file-uploaded")
 }

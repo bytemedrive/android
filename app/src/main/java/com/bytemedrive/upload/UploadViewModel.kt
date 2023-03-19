@@ -2,7 +2,6 @@ package com.bytemedrive.upload
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bytemedrive.event.EventFileUploaded
 import com.bytemedrive.event.EventRepository
 import com.bytemedrive.event.EventsRequest
 import com.bytemedrive.file.FileRepository
@@ -24,8 +23,9 @@ class UploadViewModel(private val eventRepository: EventRepository, private val 
         val fileEncrypted = AesService.encrypt(bytes, filePassword, fileSalt)
         val fileBase64 = Base64.getEncoder().encodeToString(fileEncrypted)
         val fileId = UUID.randomUUID().toString()
+        val chunkId = UUID.randomUUID().toString() // TODO: for now we have one chunk (split will be implemented later) 
 
-        val event = EventFileUploaded(listOf(fileId), fileName, bytes.size, ShaService.hashSha1(bytes), filePassword, contentType)
+        val event = EventFileUploaded(fileId, listOf(chunkId), fileName, bytes.size.toLong(), ShaService.hashSha1(bytes), filePassword, contentType)
         val eventSalt = ShaService.hashSha3(EncryptedStorage.getCustomerEmail()).toByteArray()
         val eventPassword = EncryptedStorage.getCustomerPassword()
         val eventBytes = Json.encodeToString(event).encodeToByteArray()
