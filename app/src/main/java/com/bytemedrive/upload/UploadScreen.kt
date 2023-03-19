@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toFile
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,7 +29,7 @@ fun UploadScreen(uploadViewModel: UploadViewModel = koinViewModel()) {
     val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             context.contentResolver.openInputStream(it).use {
-                it?.let { uploadViewModel.uploadFile(it.readBytes()) }
+                it?.let { uploadViewModel.uploadFile(it.readBytes(), uri.toFile().name, context.contentResolver.getType(uri)) }
             }
         }
     }

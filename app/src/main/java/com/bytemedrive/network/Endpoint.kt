@@ -5,4 +5,6 @@ sealed class Endpoint(val url: String) {
         fun buildUrl(idHashed: String): String = url.replace("{idHashed}", idHashed)
     }
 
+    object FILES : Endpoint("files")
+
 }

@@ -2,10 +2,8 @@ package com.bytemedrive.koin
 
 import com.bytemedrive.authentication.SignInViewModel
 import com.bytemedrive.event.EventRepository
-import com.bytemedrive.network.RestApiBuilder
-import com.bytemedrive.privacy.AesService
-import com.bytemedrive.privacy.EncryptedStorage
-import com.bytemedrive.privacy.ShaService
+import com.bytemedrive.file.FileRepository
+import com.bytemedrive.network.HttpClient
 import com.bytemedrive.upload.UploadViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -17,12 +15,10 @@ val viewModelsModule = module {
 }
 
 val networkModule = module {
-    single { RestApiBuilder() }
+    single { HttpClient() }
 }
 
 val accountModule = module {
-    single { AesService() }
-    single { ShaService() }
-    single { EncryptedStorage() }
     single { EventRepository(get()) }
+    single { FileRepository(get()) }
 }

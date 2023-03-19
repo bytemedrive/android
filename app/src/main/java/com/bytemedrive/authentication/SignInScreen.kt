@@ -64,7 +64,7 @@ fun SignInScreen(signInViewModel: SignInViewModel = koinViewModel()) {
             modifier = Modifier.fillMaxWidth(),
         )
         Button(
-            onClick = { signInViewModel.signIn(context, email, password) },
+            onClick = { signInViewModel.signIn(context, email, password.toCharArray()) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)
@@ -77,7 +77,7 @@ fun SignInScreen(signInViewModel: SignInViewModel = koinViewModel()) {
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-    ByteMeTheme() {
+    ByteMeTheme {
         SignInScreen()
     }
 }
