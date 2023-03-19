@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bytemedrive.authentication.SignInScreen
+import com.bytemedrive.file.FileScreen
 import com.bytemedrive.upload.UploadScreen
 
 @Composable
@@ -17,12 +18,15 @@ fun NavigationHost(navController: NavHostController, innerPadding: PaddingValues
         startDestination = Route.SIGN_IN,
         modifier = Modifier.padding(innerPadding)
     ) {
+        composable(route = Route.FILE) { FileScreen() }
         composable(route = Route.SIGN_IN) { SignInScreen() }
         composable(route = Route.UPLOAD) { UploadScreen() }
     }
 }
 
 class MainActions(navController: NavHostController) {
+
     val goToSignIn: () -> Unit = { navController.navigate(Route.SIGN_IN) }
+    val goToMyFiles: () -> Unit = { navController.navigate(Route.FILE) }
     val goToUpload: () -> Unit = { navController.navigate(Route.UPLOAD) }
 }
