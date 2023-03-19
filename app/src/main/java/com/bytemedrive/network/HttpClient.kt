@@ -39,16 +39,6 @@ class HttpClient() {
             }
         }
 
-        client.plugin(HttpSend).intercept { request ->
-            val originalCall = execute(request)
-
-            if (originalCall.response.status.value == 401) {
-                execute(request)
-            } else {
-                originalCall
-            }
-        }
-
         return client
     }
 }
