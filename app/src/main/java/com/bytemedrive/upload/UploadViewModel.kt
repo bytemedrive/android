@@ -4,24 +4,37 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.event.EventRepository
 import com.bytemedrive.event.EventsRequest
+import com.bytemedrive.file.FileRepository
+import com.bytemedrive.file.FileUpload
 import com.bytemedrive.privacy.AesService
+import com.bytemedrive.privacy.EncryptedStorage
+import com.bytemedrive.privacy.ShaService
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.util.Base64
+import java.util.UUID
 
-class UploadViewModel(private val eventRepository: EventRepository, private val aesService: AesService) : ViewModel() {
-    val salt = "dummmySaltToByte".toByteArray()
-    val password: String = "dummyPassword"
+class UploadViewModel(private val eventRepository: EventRepository, private val fileRepository: FileRepository) : ViewModel() {
 
-    fun uploadFile(bytes: ByteArray) {
-//        val encryptedFile = aesService.encrypt(bytes, password, salt)
+    fun uploadFile(bytes: ByteArray, fileName: String, contentType: String?) {
+        val fileSalt = AesService.getRandomBytes(16)
+        val filePassword = AesService.getRandomCharArray(32)
+        val fileEncrypted = AesService.encrypt(bytes, filePassword, fileSalt)
+        val fileBase64 = Base64.getEncoder().encodeToString(fileEncrypted)
+        val fileId = UUID.randomUUID().toString()
+        val chunkId = UUID.randomUUID().toString() // TODO: for now we have one chunk (split will be implemented later) 
 
-        // send file to BE
-        // TODO: encrypt with symmetric encryption and generated random password -> convert to base64 -> upload to BE
-        // TODO: Create event EventFileUploaded -> encrypt with symmetric encryption and user password (saved in storage since login - not ready) -> send to BE POST http://localhost:8080/api/customers/{customerIdHash}/events
+        val event = EventFileUploaded(fileId, listOf(chunkId), fileName, bytes.size.toLong(), ShaService.hashSha1(bytes), filePassword, contentType)
+        val eventSalt = ShaService.hashSha3(EncryptedStorage.getCustomerEmail()).toByteArray()
+        val eventPassword = EncryptedStorage.getCustomerPassword()
+        val eventBytes = Json.encodeToString(event).encodeToByteArray()
+        val eventEncrypted = AesService.encrypt(eventBytes, eventPassword, eventSalt)
+        val eventBase64 = Base64.getEncoder().encodeToString(eventEncrypted)
 
         viewModelScope.launch {
-            eventRepository.upload("hashed user's email", EventsRequest("fooo")) // todo sends encrypted event
-//            fileRepository.upload() todo sends encrypted file to BE  POST http://localhost:8080/api/files
-
+            fileRepository.upload(FileUpload(fileId, fileBase64))
+            eventRepository.upload(ShaService.hashSha3(EncryptedStorage.getCustomerEmail()), EventsRequest(eventBase64))
         }
     }
 }
