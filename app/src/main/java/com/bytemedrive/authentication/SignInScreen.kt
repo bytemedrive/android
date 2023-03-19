@@ -30,7 +30,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun SignInScreen(signInViewModel: SignInViewModel = koinViewModel()) {
     val context = LocalContext.current
-    var email by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     // TODO: fix double call of events endpoint, probably add some remember call to some injected service here on in view model?
@@ -48,9 +48,9 @@ fun SignInScreen(signInViewModel: SignInViewModel = koinViewModel()) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 imeAction = androidx.compose.ui.text.input.ImeAction.Next,
@@ -64,7 +64,7 @@ fun SignInScreen(signInViewModel: SignInViewModel = koinViewModel()) {
             modifier = Modifier.fillMaxWidth(),
         )
         Button(
-            onClick = { signInViewModel.signIn(context, email, password.toCharArray()) },
+            onClick = { signInViewModel.signIn(context, username, password.toCharArray()) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)
