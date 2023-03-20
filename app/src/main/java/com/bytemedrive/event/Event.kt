@@ -1,6 +1,6 @@
 package com.bytemedrive.event
 
-import kotlinx.serialization.Serializable
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 
-@Serializable
-open class Event(val eventType: EventType)
+@JsonDeserialize(using = EventSerializer::class)
+data class Event<T>(val eventType: EventType, val data: T)

@@ -24,6 +24,7 @@ object AesService {
 
         decryptWithKey(aesEncrypted, aesKeyFromPassword)
     } catch (e: Exception) {
+        e.printStackTrace()
         throw SecurityException("Cannot AES encrypt", e)
     }
 
@@ -100,7 +101,7 @@ object AesService {
 
     fun getAESKeyFromPassword(password: CharArray, salt: ByteArray): SecretKey {
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val spec: KeySpec = PBEKeySpec(password, salt, 65536, 256)
+        val spec: KeySpec = PBEKeySpec(password, salt.copyOfRange(0, SALT_LENGTH_BYTE), 65536, 256)
 
         return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
     }

@@ -8,7 +8,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 
 class EventRepository(private val httpClient: HttpClient) {
-    suspend fun fetch(idHashed: String): List<EventsResponse> =
+    suspend fun fetch(idHashed: String): List<String> =
         httpClient.client.get(Endpoint.EVENTS.buildUrl(idHashed)).body()
 
     suspend fun upload(idHashed: String, body: EventsRequest) {

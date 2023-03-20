@@ -15,9 +15,10 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import java.io.IOException
 import java.io.InputStream
-import java.util.*
+import java.util.Properties
 
 class MainActivity : ComponentActivity() {
+
     private val TAG = MainActivity::class.qualifiedName
 
     override fun onCreate(savedInstanceState: Bundle?) {

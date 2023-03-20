@@ -20,7 +20,7 @@ object EncryptedStorage {
 
     fun getCustomerPassword() = sharedPreferences.getString(KEY_CUSTOMER_PASSWORD, null)!!.toCharArray()
 
-    fun saveCustomerPassword(password: CharArray) = sharedPreferences.edit().putString(KEY_CUSTOMER_PASSWORD, password.toString()).apply()
+    fun saveCustomerPassword(password: CharArray) = sharedPreferences.edit().putString(KEY_CUSTOMER_PASSWORD, password.concatToString()).apply()
 
     private const val FILE_NAME = "bytemedrive"
     private const val KEY_CUSTOMER_PASSWORD = "customer_password"
