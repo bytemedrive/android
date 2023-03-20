@@ -14,14 +14,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
-fun getMenuItems(actions: MainActions): List<AppBottomMenuItem> =
+fun getMenuItems(actions: AppActions): List<AppBottomMenuItem> =
     listOf(
         AppBottomMenuItem(Route.FILE, "My Files", Route.FILE, Icons.Filled.Folder, actions.goToMyFiles),
     )
 
 @Composable
-fun AppBottomMenu(navController: NavHostController) {
-    val actions = remember(navController) { MainActions(navController) }
+fun AppBottomMenu(navHostController: NavHostController) {
+    val actions = remember(navHostController) { AppActions(navHostController) }
     val navItems = getMenuItems(actions)
     val selectedItem = remember { mutableStateOf(Route.SIGN_IN) }
 

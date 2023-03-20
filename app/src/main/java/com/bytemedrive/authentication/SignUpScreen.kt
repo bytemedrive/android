@@ -1,5 +1,3 @@
-package com.bytemedrive.authentication
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,40 +24,45 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.bytemedrive.R
+import com.bytemedrive.authentication.SignUpViewModel
 import com.bytemedrive.navigation.LoginActions
 import com.bytemedrive.navigation.SnackbarVisualsWithError
+import com.bytemedrive.ui.component.FieldCheckbox
 import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignInScreen(
+fun SignUpScreen(
     navHostController: NavHostController,
     snackbarHostState: SnackbarHostState,
-    signInViewModel: SignInViewModel = koinViewModel()
+    signUpViewModel: SignUpViewModel = koinViewModel(),
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val actions = LoginActions(navHostController)
-    val username by signInViewModel.username.collectAsState()
-    val password by signInViewModel.password.collectAsState()
+    val username by signUpViewModel.username.collectAsState()
+    val password by signUpViewModel.password.collectAsState()
+    val passwordConfirm by signUpViewModel.passwordConfirm.collectAsState()
+    val termsAndConditions by signUpViewModel.termsAndConditions.collectAsState()
 
-    val signInHandler = {
-        val validation = signInViewModel.validateForm()
+    val signUpHandler = {
+        val validation = signUpViewModel.validateForm()
 
         if (validation?.isNotEmpty() == true) {
             // TODO: Use another way to show errors -> directly at the fields
             scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError(validation, true)) }
         } else {
-            val onFailure = { scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError("Invalid credentials")) } }
+            val onFailure = { scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError("Username is already being used")) } }
 
-            signInViewModel.signIn(context, onFailure)
+            signUpViewModel.signUp(context, onFailure)
         }
     }
 
@@ -79,7 +82,7 @@ fun SignInScreen(
             fontWeight = FontWeight(500)
         )
         Text(
-            text = "Sign in",
+            text = "Sign up",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp),
             fontSize = 22.sp,
@@ -87,33 +90,50 @@ fun SignInScreen(
         )
         OutlinedTextField(
             value = username,
-            onValueChange = { signInViewModel.setUsername(it) },
+            onValueChange = { signUpViewModel.setUsername(it) },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
-                imeAction = androidx.compose.ui.text.input.ImeAction.Next,
+                imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.Email
             ),
         )
         FieldPassword(
             value = password,
-            onValueChange = { signInViewModel.setPassword(it) },
+            onValueChange = { signUpViewModel.setPassword(it) },
             label = "Password",
             modifier = Modifier.fillMaxWidth(),
         )
+        FieldPassword(
+            value = passwordConfirm,
+            onValueChange = { signUpViewModel.setPasswordConfirm(it) },
+            label = "Password confirm",
+            modifier = Modifier.fillMaxWidth(),
+            showEye = false
+        )
+        FieldCheckbox(
+            modifier = Modifier.padding(vertical = 12.dp),
+            key = "termsAndConditions",
+            checked = termsAndConditions,
+            onChangeValue = { _, checked -> signUpViewModel.setTermsAndConditions(checked) }
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Agree to our")
+                TextButton(onClick = { actions.goToTermsAndConditions() }) {
+                    Text(text = "Term & Conditions")
+                }
+            }
+        }
         Button(
-            onClick = { signInHandler() },
+            onClick = { signUpHandler() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)
         ) {
-            Text(text = "Sign in")
+            Text(text = "Sign up")
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Don't have an account?", fontSize = 16.sp)
-            TextButton(onClick = { actions.goToSignUp() }) {
-                Text(text = "Sign up now", fontSize = 16.sp)
-            }
+        TextButton(onClick = { actions.goToSignIn() }) {
+            Text(text = "Sign in")
         }
     }
 }

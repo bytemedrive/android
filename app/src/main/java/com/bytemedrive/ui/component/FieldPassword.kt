@@ -19,13 +19,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FieldPassword(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showEye: Boolean? = true
 ) {
     var passwordVisibility by remember { mutableStateOf(false) }
 
@@ -37,10 +37,12 @@ fun FieldPassword(
         trailingIcon = {
             val visibilityIcon = if (passwordVisibility) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
 
-            IconButton(
-                onClick = { passwordVisibility = !passwordVisibility },
-                content = { Icon(visibilityIcon, contentDescription = if (passwordVisibility) "Hide password" else "Show password") }
-            )
+            if (showEye == true) {
+                IconButton(
+                    onClick = { passwordVisibility = !passwordVisibility },
+                    content = { Icon(visibilityIcon, contentDescription = if (passwordVisibility) "Hide password" else "Show password") }
+                )
+            }
         },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         modifier = modifier,

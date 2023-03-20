@@ -11,9 +11,8 @@ class EventSerializer : StdDeserializer<Event<*>>(Event::class.java) {
         val node: JsonNode? = p?.getCodec()?.readTree(p)
 
         val eventType = EventType.of(node?.get("eventType")?.asText()!!)
-        val data = when (eventType) {
-            EventType.FILE_UPLOADED -> ctxt?.readTreeAsValue(node.get("data"), eventType.clazz)
-        }
+
+        val data = ctxt?.readTreeAsValue(node.get("data"), eventType.clazz)
 
         return Event(eventType, data)
     }
