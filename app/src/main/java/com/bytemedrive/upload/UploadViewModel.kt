@@ -19,7 +19,7 @@ import java.util.UUID
 class UploadViewModel(private val eventRepository: EventRepository, private val fileRepository: FileRepository) : ViewModel() {
 
     fun uploadFile(bytes: ByteArray, fileName: String, contentType: String?) {
-        val username = Customer.username!!
+        val username = Customer.username.value!!
         val fileSalt = AesService.getRandomBytes(16)
         val filePassword = AesService.getRandomCharArray(32)
         val fileEncrypted = AesService.encrypt(bytes, filePassword, fileSalt)

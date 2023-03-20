@@ -1,6 +1,9 @@
 package com.bytemedrive.customer
 
 import com.bytemedrive.file.File
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import java.lang.Thread.State
 
 fun getRandomString(length: Int): String {
     val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
@@ -20,8 +23,16 @@ fun dummyFiles(): MutableList<File> {
 
 object Customer {
 
-    var username: String? = null
+    private var _username: MutableStateFlow<String?> = MutableStateFlow(null)
+    val username: StateFlow<String?> = _username
+
+    val authorized = MutableStateFlow(false)
 
     var files: MutableList<File> = dummyFiles()
+
+    fun setUsername(username: String?) {
+        _username.value = username
+        authorized.value = username != null
+    }
 }
 
