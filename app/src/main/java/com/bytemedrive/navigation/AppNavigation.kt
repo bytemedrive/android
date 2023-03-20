@@ -11,18 +11,18 @@ import com.bytemedrive.file.FileScreen
 import com.bytemedrive.upload.UploadScreen
 
 @Composable
-fun NavigationHost(navController: NavHostController, innerPadding: PaddingValues) {
+fun AppNavigation(navHostController: NavHostController, innerPadding: PaddingValues) {
     NavHost(
-        navController = navController,
+        navController = navHostController,
         startDestination = Route.FILE,
         modifier = Modifier.padding(innerPadding)
     ) {
-        composable(route = Route.FILE) { FileScreen(navController) }
+        composable(route = Route.FILE) { FileScreen(navHostController) }
         composable(route = Route.UPLOAD) { UploadScreen() }
     }
 }
 
-class MainActions(navController: NavHostController) {
+class AppActions(navHostController: NavHostController) {
 
-    val goToMyFiles: () -> Unit = { navController.navigate(Route.FILE) }
+    val goToMyFiles: () -> Unit = { navHostController.navigate(Route.FILE) }
 }

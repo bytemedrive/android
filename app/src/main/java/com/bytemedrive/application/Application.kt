@@ -6,14 +6,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.bytemedrive.navigation.AppBottomMenu
-import com.bytemedrive.navigation.NavigationHost
+import com.bytemedrive.navigation.AppNavigation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Application(navController: NavHostController) {
+fun Application(navHostController: NavHostController) {
     Scaffold(
         topBar = { AppTopBar() },
-        content = { NavigationHost(navController = navController, innerPadding = it) },
-        bottomBar = { AppBottomMenu(navController) },
+        content = { AppNavigation(navHostController = navHostController, innerPadding = it) },
+        bottomBar = { AppBottomMenu(navHostController) },
     )
 }
