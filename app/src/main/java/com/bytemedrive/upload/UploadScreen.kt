@@ -30,7 +30,7 @@ fun UploadScreen(uploadViewModel: UploadViewModel = koinViewModel()) {
             context.contentResolver.openInputStream(it).use {
                 val file = DocumentFile.fromSingleUri(context, uri)
 
-                it?.let { uploadViewModel.uploadFile(it.readBytes(), file?.name!!, context.contentResolver.getType(uri)) }
+                it?.let { uploadViewModel.uploadFile(it.readBytes(), file?.name!!, context.contentResolver.getType(uri)!!) }
             }
         }
     }

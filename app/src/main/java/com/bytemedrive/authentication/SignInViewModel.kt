@@ -8,11 +8,10 @@ import com.bytemedrive.customer.Customer
 import com.bytemedrive.customer.CustomerConverter
 import com.bytemedrive.event.Event
 import com.bytemedrive.event.EventRepository
-import com.bytemedrive.event.EventSerializer
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.EncryptedStorage
 import com.bytemedrive.privacy.ShaService
-import com.google.gson.GsonBuilder
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.coroutines.launch
 import java.util.Base64
 
@@ -31,11 +30,9 @@ class SignInViewModel(private val eventRepository: EventRepository) : ViewModel(
             val data = eventRepository.fetch(ShaService.hashSha3(username))
 
             data.forEach {
-                val gson = GsonBuilder().registerTypeAdapter(Event::class.java, EventSerializer()).create()
-
                 val eventEncrypted = Base64.getDecoder().decode(it)
-                val eventBytes = AesService.decrypt(eventEncrypted, password, ShaService.hashSha3(email).encodeToByteArray())
-                val event = gson.fromJson(String(eventBytes), Event::class.java)
+                val eventBytes = AesService.decrypt(eventEncrypted, password, ShaService.hashSha3(username).encodeToByteArray())
+                val event = jacksonObjectMapper().readValue(String(eventBytes), Event::class.java)
 
                 CustomerConverter.convert(event)
             }

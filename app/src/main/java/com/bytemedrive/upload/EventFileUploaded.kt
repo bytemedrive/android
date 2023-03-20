@@ -8,5 +8,5 @@ data class EventFileUploaded(
     val fileSizeBytes: Long,
     val checksum: String,
     val password: CharArray,
-    val contentType: String?,
+    val contentType: String,
 )
