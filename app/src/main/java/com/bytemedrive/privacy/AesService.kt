@@ -21,7 +21,6 @@ object AesService {
     private fun decryptWithCommonSalt(aesEncrypted: ByteArray, password: CharArray, salt: ByteArray): ByteArray = try {
         // get back the aes key from the same password and salt
         val aesKeyFromPassword = getAESKeyFromPassword(password, salt)
-        println(aesKeyFromPassword.encoded.asList().toString())
 
         decryptWithKey(aesEncrypted, aesKeyFromPassword)
     } catch (e: Exception) {
@@ -56,8 +55,6 @@ object AesService {
     private fun encryptWithCommonSalt(aesDecrypted: ByteArray, password: CharArray, salt: ByteArray): ByteArray = try {
         // get back the aes key from the same password and salt
         val aesKeyFromPassword = getAESKeyFromPassword(password, salt)
-
-        println(aesKeyFromPassword.encoded.asList().toString())
 
         encryptWithKey(aesDecrypted, salt, aesKeyFromPassword)
     } catch (e: Exception) {
@@ -104,7 +101,7 @@ object AesService {
 
     fun getAESKeyFromPassword(password: CharArray, salt: ByteArray): SecretKey {
         val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val spec: KeySpec = PBEKeySpec("x".toCharArray(), salt, 65536, 256)
+        val spec: KeySpec = PBEKeySpec(password, salt.copyOfRange(0, SALT_LENGTH_BYTE), 65536, 256)
 
         return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
     }

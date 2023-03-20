@@ -1,10 +1,8 @@
 package com.bytemedrive.upload
 
-import com.bytemedrive.event.Event
-import com.bytemedrive.event.EventType
-import kotlinx.serialization.Serializable
+import com.bytemedrive.event.StoreEvent
 
-@Serializable
+@StoreEvent(name = "file-uploaded")
 data class EventFileUploaded(
     val id: String,
     val chunkIds: List<String>,
@@ -13,4 +11,4 @@ data class EventFileUploaded(
     val checksum: String,
     val password: CharArray,
     val contentType: String?,
-) : Event(EventType.FILE_UPLOADED)
+)
