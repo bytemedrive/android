@@ -1,9 +1,19 @@
 package com.bytemedrive.event
 
 import com.bytemedrive.upload.EventFileUploaded
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
-enum class EventType(name: String) {
-    FILE_UPLOADED("file-uploaded")
+enum class EventType(val code: String, val clazz: Class<*>) {
+    FILE_UPLOADED("file-uploaded", EventFileUploaded::class.java);
+
+    companion object {
+        fun of(code: String): EventType {
+            for (value in EventType.values()) {
+                if (value.code == code) {
+                    return value
+                }
+            }
+
+            throw IllegalArgumentException("There is no EventType with name: $code")
+        }
+    }
 }

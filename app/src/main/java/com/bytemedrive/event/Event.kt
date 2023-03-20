@@ -8,19 +8,14 @@ import java.lang.reflect.Type
 
 data class Event<T>(val eventType: EventType, val data: T)
 
-
-
-
-
-
-
-class MyClassDeserializer : JsonDeserializer<Event<*>> {
+// TODO: We were not able to get working StoreEvent annotation and get all classes by annotation via Reflection API. Get annotated class map was empty.
+class EventSerializer : JsonDeserializer<Event<*>> {
     override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Event<*> {
         val jsonObject = json?.asJsonObject
 
-        val eventType = EventType.valueOf(jsonObject?.get("eventType")?.asString!!)
+        val eventType = EventType.of(jsonObject?.get("eventType")?.asString!!)
         val data = when (eventType) {
-            EventType.FILE_UPLOADED -> context?.deserialize<EventFileUploaded>(jsonObject.get("data"), EventFileUploaded::class.java)
+            EventType.FILE_UPLOADED -> context?.deserialize<EventFileUploaded>(jsonObject.get("data"), eventType.clazz)
         }
 
         return Event(eventType, data)
