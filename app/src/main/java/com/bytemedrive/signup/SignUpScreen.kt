@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.bytemedrive.R
-import com.bytemedrive.authentication.SignUpViewModel
+import com.bytemedrive.signup.SignUpViewModel
 import com.bytemedrive.navigation.LoginActions
 import com.bytemedrive.navigation.SnackbarVisualsWithError
 import com.bytemedrive.ui.component.FieldCheckbox

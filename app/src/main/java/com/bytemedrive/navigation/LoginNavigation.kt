@@ -10,7 +10,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bytemedrive.authentication.SignInScreen
-import com.bytemedrive.authentication.TermsAndConditionsScreen
+import com.bytemedrive.signup.TermsAndConditionsScreen
 
 @Composable
 fun LoginNavigation(

@@ -12,33 +12,27 @@ import com.bytemedrive.file.FileUpload
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.EncryptedStorage
 import com.bytemedrive.privacy.ShaService
+import com.bytemedrive.store.EventPublisher
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.coroutines.launch
 import java.util.Base64
 import java.util.UUID
 
-class UploadViewModel(private val eventRepository: EventRepository, private val fileRepository: FileRepository) : ViewModel() {
+class UploadViewModel(private val eventRepository: EventRepository, private val fileRepository: FileRepository, private val eventPublisher: EventPublisher) : ViewModel() {
 
     fun uploadFile(bytes: ByteArray, fileName: String, contentType: String) {
-        val username = Customer.username.value!!
+/*
         val fileSalt = AesService.getRandomBytes(16)
         val filePassword = AesService.getRandomCharArray(32)
         val fileEncrypted = AesService.encrypt(bytes, filePassword, fileSalt)
         val fileBase64 = Base64.getEncoder().encodeToString(fileEncrypted)
-        val fileId = UUID.randomUUID().toString()
-        val chunkId = UUID.randomUUID().toString() // TODO: for now we have one chunk (split will be implemented later) 
-
-        val event = Event(EventType.FILE_UPLOADED, EventFileUploaded(fileId, listOf(chunkId), fileName, bytes.size.toLong(), ShaService.hashSha1(bytes), filePassword, contentType))
-        val eventSalt = ShaService.hashSha3(username).toByteArray().copyOfRange(0, 16)
-        val eventPassword = EncryptedStorage.getCustomerPassword()
-
-        val eventBytes = jacksonObjectMapper().writeValueAsBytes(event)
-        val eventEncrypted = AesService.encrypt(eventBytes, eventPassword, eventSalt)
-        val eventBase64 = Base64.getEncoder().encodeToString(eventEncrypted)
+        val fileId = UUID.randomUUID()
+        val chunkId = UUID.randomUUID() // TODO: for now we have one chunk (split will be implemented later)
 
         viewModelScope.launch {
-            fileRepository.upload(FileUpload(fileId, fileBase64))
+            eventPublisher.publishEvent(EventFileUploaded(fileId, listOf(chunkId), fileName, bytes.size.toLong(), ShaService.hashSha1(bytes), filePassword, contentType))
+            fileRepository.upload(FileUpload(fileId.toString(), fileBase64))
             eventRepository.upload(ShaService.hashSha3(username), EventsRequest(eventBase64))
-        }
+        }*/
     }
 }

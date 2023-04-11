@@ -1,6 +1,6 @@
 package com.bytemedrive.event
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import java.time.ZonedDateTime
+import java.util.UUID
 
-@JsonDeserialize(using = EventSerializer::class)
-data class Event<T>(val eventType: EventType, val data: T)
+data class Event<T>(val id: UUID, val eventType: EventType, val publishedAt: ZonedDateTime, val data: T)

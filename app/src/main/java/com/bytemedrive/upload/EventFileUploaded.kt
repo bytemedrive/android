@@ -1,11 +1,13 @@
 package com.bytemedrive.upload
 
+import java.util.UUID
+
 
 data class EventFileUploaded(
-    val id: String,
-    val chunkIds: List<String>,
-    val fileName: String,
-    val fileSizeBytes: Long,
+    val id: UUID,
+    val chunksIds: List<UUID>,
+    val name: String,
+    val sizeBytes: Long,
     val checksum: String,
     val password: CharArray,
     val contentType: String,

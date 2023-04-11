@@ -13,6 +13,6 @@ object CustomerConverter {
     }
 
     private fun applyEvent(data: EventFileUploaded) {
-        Customer.files.add(File(data.id, data.fileName, data.fileSizeBytes, data.contentType))
+        Customer.files.add(File(data.id, data.name, data.sizeBytes, data.contentType))
     }
 }

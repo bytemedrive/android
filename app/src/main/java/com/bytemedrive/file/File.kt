@@ -1,6 +1,8 @@
 package com.bytemedrive.file
 
-class File(val id: String, val name: String, val sizeBytes: Long, val contentType: String) {
+import java.util.UUID
+
+class File(val id: UUID, val name: String, val sizeBytes: Long, val contentType: String) {
 
 }
 
