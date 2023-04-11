@@ -1,6 +1,5 @@
 package com.bytemedrive.file
 
-import kotlinx.serialization.Serializable
+import java.util.UUID
 
-@Serializable
-data class FileUpload(val id: String, val dataBase64: String)
+data class FileUpload(val id: UUID, val dataBase64: String, val wallet: UUID)

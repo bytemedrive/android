@@ -1,7 +1,7 @@
-package com.bytemedrive.event
+package com.bytemedrive.store
 
-import com.bytemedrive.customer.EventCustomerSignedUp
-import com.bytemedrive.upload.EventFileUploaded
+import com.bytemedrive.signup.EventCustomerSignedUp
+import com.bytemedrive.file.EventFileUploaded
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {
@@ -19,5 +19,17 @@ enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {
 
             throw IllegalArgumentException("There is no EventType with name: $code")
         }
+
+        fun of(clazz: Class<*>): EventType {
+            for (value in EventType.values()) {
+                if (value.clazz.isAssignableFrom(clazz)) {
+                    return value
+                }
+            }
+
+            throw IllegalArgumentException("There is no EventType with class: $clazz")
+        }
+
+
     }
 }

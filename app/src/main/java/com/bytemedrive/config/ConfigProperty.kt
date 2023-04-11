@@ -7,6 +7,10 @@ object ConfigProperty {
     var backendUrl: String = ""
 
     fun setProperties(properties: Properties) {
-        backendUrl = properties.getProperty("backend.url")
+        var propertiesUrl = properties.getProperty("backend.url")
+        if (propertiesUrl.endsWith("/")) {
+            propertiesUrl = propertiesUrl.substring(0, propertiesUrl.length - 1)
+        }
+        backendUrl = "${propertiesUrl}/api/"
     }
 }

@@ -21,7 +21,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -30,9 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.bytemedrive.R
-import com.bytemedrive.authentication.SignUpViewModel
 import com.bytemedrive.navigation.LoginActions
 import com.bytemedrive.navigation.SnackbarVisualsWithError
+import com.bytemedrive.signup.SignUpViewModel
 import com.bytemedrive.ui.component.FieldCheckbox
 import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.launch
@@ -46,7 +45,6 @@ fun SignUpScreen(
     signUpViewModel: SignUpViewModel = koinViewModel(),
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val actions = LoginActions(navHostController)
     val username by signUpViewModel.username.collectAsState()
     val password by signUpViewModel.password.collectAsState()
@@ -62,7 +60,7 @@ fun SignUpScreen(
         } else {
             val onFailure = { scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError("Username is already being used")) } }
 
-            signUpViewModel.signUp(context, onFailure)
+            signUpViewModel.signUp(onFailure)
         }
     }
 

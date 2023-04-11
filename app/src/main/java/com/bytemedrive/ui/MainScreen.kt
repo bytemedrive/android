@@ -6,11 +6,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.bytemedrive.application.Application
 import com.bytemedrive.authentication.Login
-import com.bytemedrive.customer.Customer
+import com.bytemedrive.store.AppState
 
 @Composable
 fun MainScreen(navHostController: NavHostController = rememberNavController()) {
-    val authorized = Customer.authorized.collectAsState()
+
+    val authorized = AppState.authorized.collectAsState()
 
     if (authorized.value) {
         Application(navHostController)

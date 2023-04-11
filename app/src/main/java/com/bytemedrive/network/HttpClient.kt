@@ -1,23 +1,24 @@
 package com.bytemedrive.network
 
 import com.bytemedrive.config.ConfigProperty
+import com.fasterxml.jackson.core.util.DefaultIndenter
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.plugin
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
+import io.ktor.serialization.jackson.jackson
 
-class HttpClient() {
-    val client = getHttpClient()
+class HttpClient {
 
-    private fun getHttpClient(): HttpClient {
+    fun create(): HttpClient {
         val client = HttpClient(OkHttp) {
             expectSuccess = true
 
@@ -26,11 +27,15 @@ class HttpClient() {
             }
 
             install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
+                jackson {
+                    registerModule(JavaTimeModule())
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    configure(SerializationFeature.INDENT_OUTPUT, true)
+                    setDefaultPrettyPrinter(DefaultPrettyPrinter().apply {
+                        indentArraysWith(DefaultPrettyPrinter.FixedSpaceIndenter.instance)
+                        indentObjectsWith(DefaultIndenter("  ", "\n"))
+                    })
+                }
             }
 
             defaultRequest {

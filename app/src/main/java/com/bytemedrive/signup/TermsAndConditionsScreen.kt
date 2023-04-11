@@ -1,4 +1,4 @@
-package com.bytemedrive.authentication
+package com.bytemedrive.signup
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
