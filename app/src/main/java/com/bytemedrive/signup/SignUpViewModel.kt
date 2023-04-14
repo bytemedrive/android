@@ -6,9 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
-import com.bytemedrive.store.AppState
-import com.bytemedrive.store.CustomerAggregate
-import com.bytemedrive.store.EncryptedPrefs
+import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.store.EncryptedSecretKey
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventPublisher
@@ -23,7 +21,7 @@ import java.time.ZonedDateTime
 import java.util.Base64
 import java.util.UUID
 
-class SignUpViewModel(private val signUpRepository: SignUpRepository, private val eventPublisher: EventPublisher) : ViewModel() {
+class SignUpViewModel(private val signUpRepository: SignUpRepository, private val eventPublisher: EventPublisher, private val signInManager: SignInManager) : ViewModel() {
 
     private val _username = MutableStateFlow("")
     val username: StateFlow<String> = _username
@@ -48,15 +46,9 @@ class SignUpViewModel(private val signUpRepository: SignUpRepository, private va
             val aesKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.AES256, Base64.getEncoder().encodeToString(encryptedEventsSecretKey))
             val customerSignUp = CustomerSignUp(credentialsSha3, aesKey)
             signUpRepository.signUp(usernameSha3, customerSignUp)
-
-            AppState.loginSuccess()
-            EncryptedPrefs.getInstance(context).storeUsername(username)
-            EncryptedPrefs.getInstance(context).storeCredentialsSha3(credentialsSha3)
-            EncryptedPrefs.getInstance(context).storeEventsSecretKey(EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey))
-
+            signInManager.signInSuccess(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey), context)
             val eventSignUp = EventCustomerSignedUp(username, UUID.randomUUID(), ZonedDateTime.now())
             eventPublisher.publishEvent(eventSignUp, context)
-
         } catch (exception: Exception) {
             onFailure()
             Log.e("com.bytemedrive.signup", "Signup failed for username: $username", exception)
