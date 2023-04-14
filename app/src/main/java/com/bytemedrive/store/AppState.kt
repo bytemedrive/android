@@ -9,7 +9,17 @@ object AppState {
 
     val customer = MutableStateFlow<CustomerAggregate?>(null)
 
-    private val _authorized = MutableStateFlow(false)
-    val authorized = _authorized.asStateFlow()
+    val authorized = MutableStateFlow(false)
 
+    fun loginSuccess(){
+        customer.value = CustomerAggregate()
+        authorized.value = true
+        events.clear()
+    }
+
+    fun logout(){
+        customer.value = null
+        authorized.value = false
+        events.clear()
+    }
 }

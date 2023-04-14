@@ -14,12 +14,11 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
 
 class HttpClient {
 
-    fun create(credentialsSha3: String? = null): HttpClient {
+    fun create(): HttpClient {
         val client = HttpClient(OkHttp) {
             expectSuccess = true
 
@@ -37,10 +36,6 @@ class HttpClient {
                         indentObjectsWith(DefaultIndenter("  ", "\n"))
                     })
                 }
-            }
-
-            credentialsSha3?.let {
-                headersOf("Authorization", "Hash $it")
             }
 
             defaultRequest {

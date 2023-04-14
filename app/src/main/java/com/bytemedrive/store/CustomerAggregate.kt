@@ -1,5 +1,6 @@
 package com.bytemedrive.store
 
+import com.bytemedrive.file.File
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,5 +14,7 @@ class CustomerAggregate {
     fun setUsername(username: String?) {
         _username.update { username }
     }
+
+    var files: MutableList<File> = mutableListOf()
 
 }

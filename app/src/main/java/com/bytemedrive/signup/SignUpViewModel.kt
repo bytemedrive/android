@@ -1,10 +1,13 @@
 package com.bytemedrive.signup
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
+import com.bytemedrive.store.AppState
+import com.bytemedrive.store.CustomerAggregate
 import com.bytemedrive.store.EncryptedPrefs
 import com.bytemedrive.store.EncryptedSecretKey
 import com.bytemedrive.store.EncryptionAlgorithm
@@ -37,26 +40,26 @@ class SignUpViewModel(private val signUpRepository: SignUpRepository, private va
     fun signUp(context: Context, onFailure: () -> Job) = effect {
         val username = _username.value.trim()
         val password = _password.value.toCharArray()
-        val publicKeys = signUpRepository.getPublicKeys(username)
-        if (publicKeys.isNotEmpty()) {
-            onFailure()
-        } else {
+        val usernameSha3 = ShaService.hashSha3(username)
+        try {
             val credentialsSha3 = ShaService.hashSha3("${username}:${password.concatToString()}")
             val eventsSecretKey = AesService.generateNewEventsSecretKey()
-            val encryptedEventsSecretKey = AesService.encryptWithPassword(eventsSecretKey.encoded, password, ShaService.hashSha3(username).toByteArray(StandardCharsets.UTF_8))
+            val encryptedEventsSecretKey = AesService.encryptWithPassword(eventsSecretKey.encoded, password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
             val aesKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.AES256, Base64.getEncoder().encodeToString(encryptedEventsSecretKey))
-            val rsaKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.RSA_PUBLIC, Base64.getEncoder().encodeToString("TODO".toByteArray(StandardCharsets.UTF_8)))
-            val ntruKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.NTRU_PUBLIC, Base64.getEncoder().encodeToString("TODO".toByteArray(StandardCharsets.UTF_8)))
-            val customerSignUp = CustomerSignUp(credentialsSha3, aesKey, rsaKey, ntruKey)
-            val responseSignUp = signUpRepository.signUp(username, customerSignUp)
+            val customerSignUp = CustomerSignUp(credentialsSha3, aesKey)
+            signUpRepository.signUp(usernameSha3, customerSignUp)
 
-            val eventSignUp = EventCustomerSignedUp(username, UUID.randomUUID(), ZonedDateTime.now())
-            eventPublisher.publishEvent(eventSignUp, context)
-
+            AppState.loginSuccess()
             EncryptedPrefs.getInstance(context).storeUsername(username)
             EncryptedPrefs.getInstance(context).storeCredentialsSha3(credentialsSha3)
             EncryptedPrefs.getInstance(context).storeEventsSecretKey(EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey))
 
+            val eventSignUp = EventCustomerSignedUp(username, UUID.randomUUID(), ZonedDateTime.now())
+            eventPublisher.publishEvent(eventSignUp, context)
+
+        } catch (exception: Exception) {
+            onFailure()
+            Log.e("com.bytemedrive.signup", "Signup failed for username: $username", exception)
         }
     }
 

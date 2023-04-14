@@ -1,20 +1,14 @@
 package com.bytemedrive.store
 
 import android.content.Context
-import com.bytemedrive.event.EventType
-import com.bytemedrive.network.Endpoint
-import com.bytemedrive.network.HttpClient
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import okhttp3.internal.immutableListOf
 import java.time.ZonedDateTime
 import java.util.Base64
 import java.util.UUID
 
-class EventPublisher(private val httpClient: HttpClient) {
+class EventPublisher(private val storeRepository: StoreRepository, private val eventSyncService: EventSyncService) {
 
     suspend fun publishEvent(event: Convertable, context: Context) {
         val usernameSha3 = EncryptedPrefs.getInstance(context).getUsername()?.let { ShaService.hashSha3(it) }
@@ -24,11 +18,12 @@ class EventPublisher(private val httpClient: HttpClient) {
         if (eventsSecretKey != null && eventsSecretKey != null && usernameSha3 != null && credentialsSha3 != null) {
             val eventType = EventType.of(event.javaClass)
             val eventWrapper = EventObjectWrapper(UUID.randomUUID(), eventType, ZonedDateTime.now(), event)
-            val jsonWrapperData = jacksonObjectMapper().writeValueAsBytes(eventWrapper)
+            val jsonWrapperData = StoreJsonConfig.mapper.writeValueAsBytes(eventWrapper)
             val jsonWrapperEncrypted = AesService.encryptWithKey(jsonWrapperData, eventsSecretKey.getSecretKey())
             val jsonWrapperEncryptedBase64 = Base64.getEncoder().encodeToString(jsonWrapperEncrypted)
             val encryptedEvent = EncryptedEvent(eventWrapper.id, immutableListOf(eventsSecretKey.id), jsonWrapperEncryptedBase64, ZonedDateTime.now())
-            httpClient.create(credentialsSha3).post(Endpoint.EVENTS.buildUrl(usernameSha3)) { setBody(encryptedEvent) }
+            storeRepository.storeEncryptedEvent(usernameSha3, credentialsSha3, encryptedEvent)
+            eventSyncService.addEvent(eventWrapper, context)
         }
     }
 }

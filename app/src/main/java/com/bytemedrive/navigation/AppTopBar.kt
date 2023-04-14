@@ -8,13 +8,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.bytemedrive.store.AppState
 
 @Composable
 fun AppTopBar() {
     TopAppBar(
         title = { Text(text = "Top App Bar", color = Color.White) },
         navigationIcon = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = {AppState.logout()}) {
                 Icon(Icons.Filled.ArrowBack, "backIcon", tint = Color.White)
             }
         },

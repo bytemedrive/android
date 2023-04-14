@@ -1,4 +1,4 @@
-package com.bytemedrive.event
+package com.bytemedrive.store
 
 import com.bytemedrive.signup.EventCustomerSignedUp
 import com.bytemedrive.upload.EventFileUploaded

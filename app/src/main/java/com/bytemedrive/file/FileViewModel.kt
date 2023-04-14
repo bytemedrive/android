@@ -7,6 +7,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.bytemedrive.customer.Customer
+import com.bytemedrive.store.AppState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,7 @@ import kotlin.math.min
 
 class FileViewModel() : ViewModel() {
 
-    private var _files = MutableStateFlow(Customer.files)
+    private var _files = MutableStateFlow(AppState.customer.value!!.files)
     val files: StateFlow<List<File>> = _files
 
     private fun takePartOfList(pageIndex: Int = 0, pageSize: Int = 20): List<File> {

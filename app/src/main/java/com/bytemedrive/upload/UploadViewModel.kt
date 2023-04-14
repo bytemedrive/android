@@ -1,24 +1,10 @@
 package com.bytemedrive.upload
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.bytemedrive.customer.Customer
-import com.bytemedrive.event.Event
-import com.bytemedrive.event.EventRepository
-import com.bytemedrive.event.EventType
-import com.bytemedrive.event.EventsRequest
 import com.bytemedrive.file.FileRepository
-import com.bytemedrive.file.FileUpload
-import com.bytemedrive.privacy.AesService
-import com.bytemedrive.privacy.EncryptedStorage
-import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.EventPublisher
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlinx.coroutines.launch
-import java.util.Base64
-import java.util.UUID
 
-class UploadViewModel(private val eventRepository: EventRepository, private val fileRepository: FileRepository, private val eventPublisher: EventPublisher) : ViewModel() {
+class UploadViewModel(private val fileRepository: FileRepository, private val eventPublisher: EventPublisher) : ViewModel() {
 
     fun uploadFile(bytes: ByteArray, fileName: String, contentType: String) {
 /*

@@ -1,4 +1,4 @@
-package com.bytemedrive.authentication
+package com.bytemedrive.signin
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

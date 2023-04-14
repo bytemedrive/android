@@ -7,6 +7,6 @@ import java.util.UUID
 
 data class EventCustomerSignedUp(val username: String, val wallet: UUID, val signedUpAt: ZonedDateTime) : Convertable {
     override fun convert(aggregate: CustomerAggregate) {
-
+        aggregate.setUsername(username)
     }
 }

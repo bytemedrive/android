@@ -1,6 +1,5 @@
 package com.bytemedrive.store
 
-import com.bytemedrive.event.EventType
 import java.time.ZonedDateTime
 import java.util.UUID
 
