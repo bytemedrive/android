@@ -35,7 +35,7 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
             signInSuccess(username, credentialsSha3, eventsSecretKey, context)
         } else {
             Log.i(TAG, "Autologin not possible")
-            logout()
+            logout(context)
         }
     }
 
@@ -45,7 +45,7 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
             val credentialsSha3 = ShaService.hashSha3("${username}:${password.concatToString()}")
             val privateKeys = signInRepository.getPrivateKeys(usernameSha3, credentialsSha3)
             if (privateKeys.isEmpty()) {
-                logout()
+                logout(context)
                 return false
             } else {
                 // TODO expecting one key but in future there might be more keys
@@ -62,7 +62,7 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
             }
         } catch (exception: Exception) {
             Log.e(TAG, "Sign in failed for username: $username", exception)
-            logout()
+            logout(context)
             return false
         }
     }
@@ -72,17 +72,19 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
         EncryptedPrefs.getInstance(context).storeUsername(username)
         EncryptedPrefs.getInstance(context).storeCredentialsSha3(credentialsSha3)
         EncryptedPrefs.getInstance(context).storeEventsSecretKey(eventsSecretKey)
-        AppState.customer.value = CustomerAggregate()
+        val events = EncryptedPrefs.getInstance(context).getEvents()
+        val customer = CustomerAggregate()
+        events.stream().map { it.data.convert(customer) }
+        AppState.customer.value = customer
         AppState.authorized.value = true
-        AppState.events.clear()
         startEventAutoSync(context)
     }
 
-    fun logout() {
+    fun logout(context: Context) {
         jobSync?.cancel()
         AppState.customer.value = null
         AppState.authorized.value = false
-        AppState.events.clear()
+        EncryptedPrefs.getInstance(context).clean()
     }
 
     private fun startEventAutoSync(context: Context) {

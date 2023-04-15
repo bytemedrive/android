@@ -12,8 +12,10 @@ import com.bytemedrive.koin.storeModule
 import com.bytemedrive.koin.viewModelsModule
 import com.bytemedrive.main.MainScreen
 import com.bytemedrive.signin.SignInManager
-import com.bytemedrive.store.EncryptedPrefs
 import com.bytemedrive.ui.theme.ByteMeTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -28,9 +30,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // init encrypted prefs
-        EncryptedPrefs.getInstance(this)
-
         startKoin {
             androidContext(this@MainActivity)
             modules(accountModule, viewModelsModule, networkModule, storeModule)
@@ -43,7 +42,9 @@ class MainActivity : ComponentActivity() {
                 MainScreen()
             }
         }
-        get<SignInManager>().autoSignIn(this)
+        CoroutineScope(Dispatchers.Default).launch {
+            get<SignInManager>().autoSignIn(this@MainActivity)
+        }
     }
 
     private fun loadProperties(assets: AssetManager) {
