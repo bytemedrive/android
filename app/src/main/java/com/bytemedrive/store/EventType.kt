@@ -1,7 +1,7 @@
 package com.bytemedrive.store
 
 import com.bytemedrive.signup.EventCustomerSignedUp
-import com.bytemedrive.upload.EventFileUploaded
+import com.bytemedrive.file.EventFileUploaded
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {

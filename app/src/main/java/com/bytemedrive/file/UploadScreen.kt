@@ -1,4 +1,4 @@
-package com.bytemedrive.upload
+package com.bytemedrive.file
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
 import org.koin.androidx.compose.koinViewModel
 

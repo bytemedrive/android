@@ -26,7 +26,6 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
     private var jobSync: Job? = null
 
     fun autoSignIn() {
-        logout()
         try {
             val username = encryptedSharedPreferences?.getUsername()
             val credentialsSha3 = encryptedSharedPreferences?.getCredentialsSha3()
@@ -57,7 +56,7 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
                 val secretKeyAsBytes =
                     AesService.decryptWithPassword(Base64.getDecoder().decode(eventsSecretKey.keyBase64), password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
                 signInSuccess(
-                    usernameSha3,
+                    username,
                     credentialsSha3,
                     EventsSecretKey(eventsSecretKey.id, eventsSecretKey.algorithm, Base64.getEncoder().encodeToString(secretKeyAsBytes))
                 )
@@ -81,8 +80,8 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
             events.stream().map { it.data.convert(customer) }
             AppState.customer.value = customer
             AppState.authorized.value = true
-            startEventAutoSync()
         }
+        startEventAutoSync()
     }
 
     fun logout() {

@@ -11,7 +11,7 @@ import com.bytemedrive.signup.SignUpViewModel
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.StoreRepository
-import com.bytemedrive.upload.UploadViewModel
+import com.bytemedrive.file.UploadViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 

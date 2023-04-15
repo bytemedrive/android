@@ -8,7 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bytemedrive.file.FileScreen
-import com.bytemedrive.upload.UploadScreen
+import com.bytemedrive.file.UploadScreen
 
 @Composable
 fun AppNavigation(navHostController: NavHostController, innerPadding: PaddingValues) {

@@ -2,6 +2,6 @@ package com.bytemedrive.store
 
 interface Convertable {
 
-    fun convert(aggregate: CustomerAggregate)
+    fun convert(customer: CustomerAggregate)
 
 }

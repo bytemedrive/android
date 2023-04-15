@@ -24,6 +24,12 @@ object AesService {
         return keyGenerator.generateKey()
     }
 
+    fun generateNewFileSecretKey(): SecretKey {
+        val keyGenerator = KeyGenerator.getInstance("AES")
+        keyGenerator.init(256, secureRandom)
+        return keyGenerator.generateKey()
+    }
+
     fun encryptWithPassword(bytes: ByteArray, password: CharArray, salt: ByteArray): ByteArray {
         return encryptWithKey(bytes, getAESKeyFromPassword(password, salt))
     }

@@ -91,7 +91,10 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
             ?.filter { algorithm == it.algorithm }
             ?.findAny()
 
-        return eventsSecretKey?.get()
+        if (eventsSecretKey != null && eventsSecretKey.isPresent) {
+            return eventsSecretKey.get()
+        }
+        return null
     }
 
     fun clean() {
