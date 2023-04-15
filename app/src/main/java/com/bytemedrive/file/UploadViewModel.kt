@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
+import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.launch
 import java.util.Base64
@@ -20,18 +21,20 @@ class UploadViewModel(private val fileRepository: FileRepository, private val ev
         val chunkId = UUID.randomUUID() // TODO: for now we have one chunk (split will be implemented later)
 
         viewModelScope.launch {
-            fileRepository.upload(FileUpload(chunkId.toString(), fileBase64))
-            eventPublisher.publishEvent(
-                EventFileUploaded(
-                    fileId,
-                    listOf(chunkId),
-                    fileName,
-                    bytes.size.toLong(),
-                    ShaService.hashSha1(bytes),
-                    contentType,
-                    Base64.getEncoder().encodeToString(secretKey.encoded)
+            AppState.customer.value?.wallet?.let {
+                eventPublisher.publishEvent(
+                    EventFileUploaded(
+                        fileId,
+                        listOf(chunkId),
+                        fileName,
+                        bytes.size.toLong(),
+                        ShaService.hashSha1(bytes),
+                        contentType,
+                        Base64.getEncoder().encodeToString(secretKey.encoded)
+                    )
                 )
-            )
+                fileRepository.upload(FileUpload(chunkId, fileBase64, it))
+            }
         }
     }
 }

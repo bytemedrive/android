@@ -39,7 +39,7 @@ class EventSyncService(private val storeRepository: StoreRepository) {
         var allEvents = encryptedSharedPreferences?.storeEvent(*events)
         if (!allEvents.isNullOrEmpty()) {
             val customer = CustomerAggregate()
-            allEvents.stream().map { it.data.convert(customer) }
+            allEvents.stream().forEach { it.data.convert(customer) }
             Log.i("com.bytemedrive.store", "Customer refreshed.")
             AppState.customer.value = customer
             AppState.authorized.value = true

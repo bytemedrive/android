@@ -77,7 +77,7 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
         val events = encryptedSharedPreferences?.getEvents()
         if (!events.isNullOrEmpty()) {
             val customer = CustomerAggregate()
-            events.stream().map { it.data.convert(customer) }
+            events.stream().forEach { it.data.convert(customer) }
             AppState.customer.value = customer
             AppState.authorized.value = true
         }

@@ -1,3 +1,5 @@
 package com.bytemedrive.file
 
-data class FileUpload(val id: String, val dataBase64: String)
+import java.util.UUID
+
+data class FileUpload(val id: UUID, val dataBase64: String, val wallet: UUID)
