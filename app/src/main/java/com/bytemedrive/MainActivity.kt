@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.security.crypto.MasterKeys
 import com.bytemedrive.config.ConfigProperty
 import com.bytemedrive.koin.accountModule
 import com.bytemedrive.koin.networkModule
@@ -12,10 +13,8 @@ import com.bytemedrive.koin.storeModule
 import com.bytemedrive.koin.viewModelsModule
 import com.bytemedrive.main.MainScreen
 import com.bytemedrive.signin.SignInManager
+import com.bytemedrive.store.EncryptedPrefs
 import com.bytemedrive.ui.theme.ByteMeTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -27,8 +26,13 @@ class MainActivity : ComponentActivity() {
 
     private val TAG = MainActivity::class.qualifiedName
 
+    companion object {
+        var encryptedSharedPreferences: EncryptedPrefs? = null
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        encryptedSharedPreferences = EncryptedPrefs(applicationContext, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC))
 
         startKoin {
             androidContext(this@MainActivity)
@@ -42,9 +46,7 @@ class MainActivity : ComponentActivity() {
                 MainScreen()
             }
         }
-        CoroutineScope(Dispatchers.Default).launch {
-            get<SignInManager>().autoSignIn(this@MainActivity)
-        }
+        get<SignInManager>().autoSignIn()
     }
 
     private fun loadProperties(assets: AssetManager) {

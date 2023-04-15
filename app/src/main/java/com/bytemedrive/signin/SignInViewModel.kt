@@ -17,11 +17,11 @@ class SignInViewModel(private val signInManager: SignInManager) : ViewModel() {
     private var _password = MutableStateFlow("")
     val password: StateFlow<String> = _password
 
-    fun signIn(context: Context, onFailure: () -> Job) = effect {
+    fun signIn(onFailure: () -> Job) = effect {
         val username = _username.value.trim()
         val password = _password.value.toCharArray()
 
-        val successfulSignIn = signInManager.signIn(username, password, context)
+        val successfulSignIn = signInManager.signIn(username, password)
         if (!successfulSignIn) {
             onFailure()
         }

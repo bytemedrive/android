@@ -1,6 +1,5 @@
 package com.bytemedrive.signup
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,7 +34,7 @@ class SignUpViewModel(private val signUpRepository: SignUpRepository, private va
     private val _termsAndConditions = MutableStateFlow(false)
     val termsAndConditions: StateFlow<Boolean> = _termsAndConditions
 
-    fun signUp(context: Context, onFailure: () -> Job) = effect {
+    fun signUp(onFailure: () -> Job) = effect {
         val username = _username.value.trim()
         val password = _password.value.toCharArray()
         val usernameSha3 = ShaService.hashSha3(username)
@@ -43,12 +42,12 @@ class SignUpViewModel(private val signUpRepository: SignUpRepository, private va
             val credentialsSha3 = ShaService.hashSha3("${username}:${password.concatToString()}")
             val eventsSecretKey = AesService.generateNewEventsSecretKey()
             val encryptedEventsSecretKey = AesService.encryptWithPassword(eventsSecretKey.encoded, password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
-            val aesKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.AES256, Base64.getEncoder().encodeToString(encryptedEventsSecretKey))
+            val aesKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.AES256, String(Base64.getEncoder().encode(encryptedEventsSecretKey), StandardCharsets.UTF_8))
             val customerSignUp = CustomerSignUp(credentialsSha3, aesKey)
             signUpRepository.signUp(usernameSha3, customerSignUp)
-            signInManager.signInSuccess(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey), context)
+            signInManager.signInSuccess(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey))
             val eventSignUp = EventCustomerSignedUp(username, UUID.randomUUID(), ZonedDateTime.now())
-            eventPublisher.publishEvent(eventSignUp, context)
+            eventPublisher.publishEvent(eventSignUp)
         } catch (exception: Exception) {
             onFailure()
             Log.e("com.bytemedrive.signup", "Signup failed for username: $username", exception)

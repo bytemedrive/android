@@ -1,12 +1,11 @@
 package com.bytemedrive.signin
 
-import android.content.Context
 import android.util.Log
+import com.bytemedrive.MainActivity.Companion.encryptedSharedPreferences
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.CustomerAggregate
-import com.bytemedrive.store.EncryptedPrefs
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.EventsSecretKey
@@ -26,26 +25,31 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
 
     private var jobSync: Job? = null
 
-    fun autoSignIn(context: Context) {
-        val username = EncryptedPrefs.getInstance(context).getUsername()
-        val credentialsSha3 = EncryptedPrefs.getInstance(context).getCredentialsSha3()
-        val eventsSecretKey = EncryptedPrefs.getInstance(context).getEventsSecretKey(EncryptionAlgorithm.AES256)
-        if (username != null && credentialsSha3 != null && eventsSecretKey != null) {
-            Log.i(TAG, "Try autologin for username: $username")
-            signInSuccess(username, credentialsSha3, eventsSecretKey, context)
-        } else {
-            Log.i(TAG, "Autologin not possible")
-            logout(context)
+    fun autoSignIn() {
+        logout()
+        try {
+            val username = encryptedSharedPreferences?.getUsername()
+            val credentialsSha3 = encryptedSharedPreferences?.getCredentialsSha3()
+            val eventsSecretKey = encryptedSharedPreferences?.getEventsSecretKey(EncryptionAlgorithm.AES256)
+            if (username != null && credentialsSha3 != null && eventsSecretKey != null) {
+                Log.i(TAG, "Try autologin for username: $username")
+                signInSuccess(username, credentialsSha3, eventsSecretKey)
+            } else {
+                Log.i(TAG, "Autologin not possible")
+                logout()
+            }
+        } catch (exception: Exception) {
+            Log.e(TAG, "Autologin failed", exception)
         }
     }
 
-    suspend fun signIn(username: String, password: CharArray, context: Context): Boolean {
+    suspend fun signIn(username: String, password: CharArray): Boolean {
         try {
             val usernameSha3 = ShaService.hashSha3(username)
             val credentialsSha3 = ShaService.hashSha3("${username}:${password.concatToString()}")
             val privateKeys = signInRepository.getPrivateKeys(usernameSha3, credentialsSha3)
             if (privateKeys.isEmpty()) {
-                logout(context)
+                logout()
                 return false
             } else {
                 // TODO expecting one key but in future there might be more keys
@@ -55,42 +59,43 @@ class SignInManager(private val signInRepository: SignInRepository, private val 
                 signInSuccess(
                     usernameSha3,
                     credentialsSha3,
-                    EventsSecretKey(eventsSecretKey.id, eventsSecretKey.algorithm, Base64.getEncoder().encodeToString(secretKeyAsBytes)),
-                    context
+                    EventsSecretKey(eventsSecretKey.id, eventsSecretKey.algorithm, Base64.getEncoder().encodeToString(secretKeyAsBytes))
                 )
                 return true
             }
         } catch (exception: Exception) {
             Log.e(TAG, "Sign in failed for username: $username", exception)
-            logout(context)
+            logout()
             return false
         }
     }
 
 
-    fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey, context: Context) {
-        EncryptedPrefs.getInstance(context).storeUsername(username)
-        EncryptedPrefs.getInstance(context).storeCredentialsSha3(credentialsSha3)
-        EncryptedPrefs.getInstance(context).storeEventsSecretKey(eventsSecretKey)
-        val events = EncryptedPrefs.getInstance(context).getEvents()
-        val customer = CustomerAggregate()
-        events.stream().map { it.data.convert(customer) }
-        AppState.customer.value = customer
-        AppState.authorized.value = true
-        startEventAutoSync(context)
+    fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey) {
+        encryptedSharedPreferences?.storeUsername(username)
+        encryptedSharedPreferences?.storeCredentialsSha3(credentialsSha3)
+        encryptedSharedPreferences?.storeEventsSecretKey(eventsSecretKey)
+        val events = encryptedSharedPreferences?.getEvents()
+        if (!events.isNullOrEmpty()) {
+            val customer = CustomerAggregate()
+            events.stream().map { it.data.convert(customer) }
+            AppState.customer.value = customer
+            AppState.authorized.value = true
+            startEventAutoSync()
+        }
     }
 
-    fun logout(context: Context) {
+    fun logout() {
         jobSync?.cancel()
         AppState.customer.value = null
         AppState.authorized.value = false
-        EncryptedPrefs.getInstance(context).clean()
+        encryptedSharedPreferences?.clean()
     }
 
-    private fun startEventAutoSync(context: Context) {
+    private fun startEventAutoSync() {
         jobSync = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
-                eventSyncService.syncEvents(context)
+                eventSyncService.syncEvents()
                 delay(32.seconds)
             }
         }

@@ -4,14 +4,15 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.util.UUID
 import java.util.stream.Collectors
 import kotlin.streams.toList
 
 
-class EncryptedPrefs private constructor(private val encryptedSharedPreferences: SharedPreferences) {
+class EncryptedPrefs(context: Context, masterKeyAlias: String) {
+
+    private val encryptedSharedPreferences: SharedPreferences
 
     fun getUsername(): String? = encryptedSharedPreferences.getString(KEY_USERNAME, null)
 
@@ -40,7 +41,7 @@ class EncryptedPrefs private constructor(private val encryptedSharedPreferences:
         if (eventsToStore.isNotEmpty()) {
             eventsObjectWrapper.addAll(eventsToStore)
             encryptedSharedPreferences.edit().putString(KEY_EVENTS, StoreJsonConfig.mapper.writeValueAsString(eventsObjectWrapper)).apply()
-            encryptedSharedPreferences.edit().putLong(KEY_EVENTS_COUNT, eventsObjectWrapper.size as Long).apply()
+            encryptedSharedPreferences.edit().putLong(KEY_EVENTS_COUNT, eventsObjectWrapper.size.toLong()).apply()
         }
         return eventsObjectWrapper
     }
@@ -108,22 +109,15 @@ class EncryptedPrefs private constructor(private val encryptedSharedPreferences:
         private const val KEY_SECRET_KEYS = "secret-keys"
         private const val KEY_EVENTS = "events"
         private const val KEY_EVENTS_COUNT = "events-count"
+    }
 
-        private var instance: EncryptedPrefs? = null
-
-        fun getInstance(context: Context): EncryptedPrefs {
-            if (instance == null) {
-                val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-                val preferences = EncryptedSharedPreferences.create(
-                    FILE_NAME,
-                    masterKeyAlias,
-                    context,
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                )
-                instance = EncryptedPrefs(preferences)
-            }
-            return instance!!
-        }
+    init {
+        this.encryptedSharedPreferences = EncryptedSharedPreferences.create(
+            FILE_NAME,
+            masterKeyAlias,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
     }
 }

@@ -23,7 +23,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,7 +44,6 @@ fun SignInScreen(
     signInViewModel: SignInViewModel = koinViewModel()
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     val actions = LoginActions(navHostController)
     val username by signInViewModel.username.collectAsState()
     val password by signInViewModel.password.collectAsState()
@@ -59,7 +57,7 @@ fun SignInScreen(
         } else {
             val onFailure = { scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError("Invalid credentials")) } }
 
-            signInViewModel.signIn(context, onFailure)
+            signInViewModel.signIn(onFailure)
         }
     }
 
