@@ -12,7 +12,8 @@ data class EventFileUploaded(
     val sizeBytes: Long,
     val checksum: String,
     val contentType: String,
-    val secretKeyBase64: String
+    val secretKeyBase64: String,
+    val folderId: UUID? = null,
 ) : Convertable {
 
     override fun convert(customer: CustomerAggregate) {
@@ -20,6 +21,6 @@ data class EventFileUploaded(
         val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
 
         // TODO: Temporary, fix when we work with chunks
-        customer.files.add(File(id, chunksIds[0], name, sizeBytes, contentType, secretKey))
+        customer.files.add(File(id, chunksIds[0], name, sizeBytes, contentType, secretKey, folderId))
     }
 }

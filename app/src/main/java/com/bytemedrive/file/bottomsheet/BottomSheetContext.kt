@@ -1,4 +1,4 @@
-package com.bytemedrive.file
+package com.bytemedrive.file.bottomsheet
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,12 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.bytemedrive.file.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun FileBottomSheet(
+fun BottomSheetContext(
     id: String,
     fileViewModel: FileViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()

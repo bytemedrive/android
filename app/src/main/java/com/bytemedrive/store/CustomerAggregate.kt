@@ -1,6 +1,7 @@
 package com.bytemedrive.store
 
 import com.bytemedrive.file.File
+import com.bytemedrive.folder.Folder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +19,8 @@ class CustomerAggregate {
     }
 
     var files: MutableList<File> = mutableListOf()
+
+    var folders: MutableList<Folder> = mutableListOf()
 
     var wallet: UUID? = null
 

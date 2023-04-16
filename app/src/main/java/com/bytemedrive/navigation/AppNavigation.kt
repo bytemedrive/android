@@ -8,9 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.bytemedrive.file.FileBottomSheet
+import com.bytemedrive.file.bottomsheet.BottomSheetContext
+import com.bytemedrive.file.bottomsheet.BottomSheetCreate
 import com.bytemedrive.file.FileScreen
-import com.bytemedrive.file.UploadScreen
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.bottomSheet
 import kotlinx.coroutines.flow.launchIn
@@ -36,11 +36,12 @@ fun AppNavigation(
         modifier = Modifier.padding(innerPadding)
     ) {
         composable(route = AppNavigator.NavTarget.FILE.label) { FileScreen() }
-        composable(route = AppNavigator.NavTarget.UPLOAD.label) { UploadScreen() }
 
-        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET.label) { backstackEntry ->
-            FileBottomSheet(backstackEntry.arguments?.getString("id")!!)
+        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT.label) { backstackEntry ->
+            BottomSheetContext(backstackEntry.arguments?.getString("id")!!)
         }
+
+        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE.label) { BottomSheetCreate() }
     }
 }
 
