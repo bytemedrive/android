@@ -1,12 +1,11 @@
 package com.bytemedrive.signup
 
-import com.bytemedrive.network.HttpClient
+import com.bytemedrive.httpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 
-class SignUpRepository(private val httpClient: HttpClient) {
+class SignUpRepository {
 
-    suspend fun signUp(usernameSha3: String, customerSignUp: CustomerSignUp) =
-        httpClient.create().post("customers/${usernameSha3}") { setBody(customerSignUp) }
+    suspend fun signUp(usernameSha3: String, customerSignUp: CustomerSignUp) = httpClient.post("customers/${usernameSha3}") { setBody(customerSignUp) }
 
 }

@@ -27,11 +27,11 @@ val networkModule = module {
 }
 
 val accountModule = module {
-    single { SignUpRepository(get()) }
+    single { SignUpRepository() }
     single { SignInManager(get(), get()) }
-    single { SignInRepository(get()) }
-    single { FileRepository(get()) }
-    single { StoreRepository(get()) }
+    single { SignInRepository() }
+    single { FileRepository() }
+    single { StoreRepository() }
 }
 
 val storeModule = module {

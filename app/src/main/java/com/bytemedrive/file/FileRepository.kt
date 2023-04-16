@@ -1,10 +1,10 @@
 package com.bytemedrive.file
 
-import com.bytemedrive.network.HttpClient
+import com.bytemedrive.httpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 
-class FileRepository(private val httpClient: HttpClient) {
+class FileRepository {
 
-    suspend fun upload(body: FileUpload) = httpClient.create().post("files") { setBody(body) }
+    suspend fun upload(body: FileUpload) = httpClient.post("files") { setBody(body) }
 }
