@@ -5,7 +5,6 @@ import com.bytemedrive.store.CustomerAggregate
 import java.util.Base64
 import java.util.UUID
 import javax.crypto.spec.SecretKeySpec
-
 data class EventFileUploaded(
     val id: UUID,
     val chunksIds: List<UUID>,
@@ -23,5 +22,4 @@ data class EventFileUploaded(
         // TODO: Temporary, fix when we work with chunks
         customer.files.add(File(id, chunksIds[0], name, sizeBytes, contentType, secretKey))
     }
-
 }

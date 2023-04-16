@@ -12,23 +12,33 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
+import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.crypto.SecretKey
+import java.util.UUID
 import kotlin.math.min
 
-class FileViewModel(private val fileRepository: FileRepository) : ViewModel() {
+class FileViewModel(
+    private val fileRepository: FileRepository,
+    private val eventPublisher: EventPublisher
+) : ViewModel() {
 
-    private var _files = MutableStateFlow(AppState.customer.value!!.files)
-    val files: StateFlow<List<File>> = _files
+    var files = MutableStateFlow(AppState.customer.value!!.files)
+
+    fun singleFile(id: String) = files.value.find { it.id.toString() == id }
+
+    fun removeFile(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
+        eventPublisher.publishEvent(EventFileDeleted(id))
+        fileRepository.remove(id.toString())
+        onSuccess()
+    }
 
     private fun takePartOfList(pageIndex: Int = 0, pageSize: Int = 20): List<File> {
         val offset = pageIndex * pageSize
-        val lastItemIndex = min(_files.value.size - 1, offset + pageSize - 1)
+        val lastItemIndex = min(files.value.size - 1, offset + pageSize - 1)
 
-        return _files.value.slice(offset..lastItemIndex)
+        return files.value.slice(offset..lastItemIndex)
     }
 
     fun getFilesPages(): Flow<PagingData<File>> =

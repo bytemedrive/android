@@ -20,6 +20,8 @@ class AppNavigator {
 
         FILE("file"),
 
+        FILE_BOTTOM_SHEET("fileBottomSheet/{id}"),
+
         SIGN_IN("signIn"),
 
         SIGN_UP("signUp"),
