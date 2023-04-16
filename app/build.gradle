@@ -59,11 +59,15 @@ dependencies {
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
 
+    // Accompanist version must equal to version of material-ui, see https://google.github.io/accompanist/#compose-versions
+    implementation "com.google.accompanist:accompanist-navigation-material:0.28.0"
+
     implementation "androidx.compose.material:material:$compose_material_version"
     implementation "androidx.compose.material:material-icons-core:$compose_material_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_material_version"
 
     implementation 'androidx.compose.material3:material3:1.0.0-alpha11'
+
 
     implementation 'androidx.documentfile:documentfile:1.0.1'
 

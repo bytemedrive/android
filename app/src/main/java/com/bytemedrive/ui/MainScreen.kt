@@ -15,10 +15,16 @@ import com.bytemedrive.authentication.Login
 import com.bytemedrive.store.AppState
 import com.bytemedrive.network.NoInternetException
 import com.bytemedrive.network.RequestFailedException
+import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
+import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import java.net.UnknownHostException
 
+@OptIn(ExperimentalMaterialNavigationApi::class)
 @Composable
-fun MainScreen(navHostController: NavHostController = rememberNavController()) {
+fun MainScreen() {
+    val bottomSheetNavigator = rememberBottomSheetNavigator()
+    val navHostController: NavHostController = rememberNavController(bottomSheetNavigator)
+
     val authorized = AppState.authorized.collectAsState()
     val error by GlobalExceptionHandler.throwable.collectAsState()
 
@@ -34,7 +40,7 @@ fun MainScreen(navHostController: NavHostController = rememberNavController()) {
     }
 
     if (authorized.value) {
-        Application(navHostController)
+        Application(navHostController, bottomSheetNavigator)
     } else {
         Login(navHostController)
     }

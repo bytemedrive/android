@@ -1,10 +1,12 @@
 package com.bytemedrive.store
 
-import com.bytemedrive.signup.EventCustomerSignedUp
+import com.bytemedrive.file.EventFileDeleted
 import com.bytemedrive.file.EventFileUploaded
+import com.bytemedrive.signup.EventCustomerSignedUp
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {
+    FILE_DELETED("file-deleted", EventFileDeleted::class.java),
     FILE_UPLOADED("file-uploaded", EventFileUploaded::class.java),
     CUSTOMER_SIGNED_UP("customer-signed-up", EventCustomerSignedUp::class.java);
 
@@ -29,7 +31,5 @@ enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {
 
             throw IllegalArgumentException("There is no EventType with class: $clazz")
         }
-
-
     }
 }

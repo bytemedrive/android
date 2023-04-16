@@ -20,7 +20,7 @@ val viewModelsModule = module {
     viewModel { SignUpViewModel(get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(), get()) }
-    viewModel { FileViewModel(get()) }
+    viewModel { FileViewModel(get(), get()) }
 }
 
 val networkModule = module {
