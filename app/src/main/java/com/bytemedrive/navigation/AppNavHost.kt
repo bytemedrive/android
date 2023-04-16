@@ -8,9 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.bytemedrive.file.FileBottomSheet
 import com.bytemedrive.file.FileScreen
-import com.bytemedrive.file.UploadScreen
 import com.bytemedrive.file.bottomsheet.BottomSheetContext
 import com.bytemedrive.file.bottomsheet.BottomSheetCreate
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
