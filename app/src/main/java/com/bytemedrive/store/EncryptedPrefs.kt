@@ -9,57 +9,69 @@ import java.util.UUID
 import java.util.stream.Collectors
 import kotlin.streams.toList
 
-
 class EncryptedPrefs(context: Context, masterKeyAlias: String) {
-
+    private val TAG = EncryptedPrefs::class.qualifiedName
+    
     private val encryptedSharedPreferences: SharedPreferences
 
-    fun getUsername(): String? = encryptedSharedPreferences.getString(KEY_USERNAME, null)
+    var username: String?
+        get() = encryptedSharedPreferences.getString(KEY_USERNAME, null)
+        set(value) {
+            Log.i(TAG, "EncryptedPrefs storing username: $value")
+            encryptedSharedPreferences.edit().putString(KEY_USERNAME, value).apply()
+        }
 
-    fun storeUsername(username: String) {
-        Log.i("com.bytemedrive.store", "EncryptedPrefs storing username: ${username}")
-        encryptedSharedPreferences.edit().putString(KEY_USERNAME, username).apply()
-    }
+    var credentialsSha3: String?
+        get() = encryptedSharedPreferences.getString(KEY_CREDENTIALS_SHA3, null)
+        set(value) {
+            Log.i(TAG, "EncryptedPrefs storing credentialsSha3: $value.")
+            encryptedSharedPreferences.edit().putString(KEY_CREDENTIALS_SHA3, value).apply()
+        }
 
-    fun getCredentialsSha3(): String? = encryptedSharedPreferences.getString(KEY_CREDENTIALS_SHA3, null)
+    var events: String
+        get() = encryptedSharedPreferences.getString(KEY_EVENTS, "[]")!!
+        set(value) = encryptedSharedPreferences.edit().putString(KEY_EVENTS, value).apply()
 
-    fun storeCredentialsSha3(credentialsSha3: String) {
-        Log.i("com.bytemedrive.store", "EncryptedPrefs storing credentialsSha3: ${credentialsSha3}.")
-        encryptedSharedPreferences.edit().putString(KEY_CREDENTIALS_SHA3, credentialsSha3).apply()
-    }
+    var eventsCount: Long
+        get() = encryptedSharedPreferences.getLong(KEY_EVENTS_COUNT, 0)
+        set(value) = encryptedSharedPreferences.edit().putLong(KEY_EVENTS_COUNT, value).apply()
+
+    var secretKeys: MutableSet<String>?
+        get() = encryptedSharedPreferences.getStringSet(KEY_SECRET_KEYS, mutableSetOf())
+        set(value) = encryptedSharedPreferences.edit().putStringSet(KEY_SECRET_KEYS, value).apply()
 
     fun storeEvent(vararg events: EventObjectWrapper): List<EventObjectWrapper> {
-        Log.i("com.bytemedrive.store", "EncryptedPrefs storing ${events.size} events")
-        val storeEventsAsJson = encryptedSharedPreferences.getString(KEY_EVENTS, "[]")!!
-        val eventsMapWrapper: MutableList<EventMapWrapper> = StoreJsonConfig.mapper.readValue(storeEventsAsJson)
+        Log.i(TAG, "EncryptedPrefs storing ${events.size} events")
+
+        val eventsMapWrapper: MutableList<EventMapWrapper> = StoreJsonConfig.mapper.readValue(this.events)
         val eventsObjectWrapper = eventsMapWrapper.stream()
             .map { it.toEventObjectWrapper() }
             .toList()
             .toMutableList()
-
         val eventsToStore = events.filter { event -> eventsMapWrapper.find { storedEvent -> storedEvent.id == event.id } == null }.toList()
+
         if (eventsToStore.isNotEmpty()) {
             eventsObjectWrapper.addAll(eventsToStore)
-            encryptedSharedPreferences.edit().putString(KEY_EVENTS, StoreJsonConfig.mapper.writeValueAsString(eventsObjectWrapper)).apply()
-            encryptedSharedPreferences.edit().putLong(KEY_EVENTS_COUNT, eventsObjectWrapper.size.toLong()).apply()
+            this.events = StoreJsonConfig.mapper.writeValueAsString(eventsObjectWrapper)
+            eventsCount = eventsObjectWrapper.size.toLong()
         }
+
         return eventsObjectWrapper
     }
 
     fun getEvents(): List<EventObjectWrapper> {
-        Log.i("com.bytemedrive.store", "EncryptedPrefs getting events")
-        val storedEventsAsJson = encryptedSharedPreferences.getString(KEY_EVENTS, "[]")!!
-        return StoreJsonConfig.mapper.readValue<List<EventMapWrapper>>(storedEventsAsJson)
+        Log.i(TAG, "EncryptedPrefs getting events")
+
+        return StoreJsonConfig.mapper.readValue<List<EventMapWrapper>>(events)
             .stream()
             .map { it.toEventObjectWrapper() }
             .toList()
     }
 
-    fun getEventsCount(): Long = encryptedSharedPreferences.getLong(KEY_EVENTS_COUNT, 0)
-
     fun storeEventsSecretKey(secretKey: EventsSecretKey) {
-        Log.i("com.bytemedrive.store", "EncryptedPrefs storing secret key of ${secretKey.algorithm} algorithm with id: ${secretKey.id}")
-        val keys = encryptedSharedPreferences.getStringSet(KEY_SECRET_KEYS, mutableSetOf())
+        Log.i(TAG, "EncryptedPrefs storing secret key of ${secretKey.algorithm} algorithm with id: ${secretKey.id}")
+
+        val keys = secretKeys
             ?.stream()
             ?.map { StoreJsonConfig.mapper.readValue(it, EventsSecretKey::class.java) }
             ?.collect(Collectors.toMap({ it.id }, { it }))
@@ -71,11 +83,11 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
             .map { StoreJsonConfig.mapper.writeValueAsString(it) }
             .collect(Collectors.toSet())
 
-        encryptedSharedPreferences.edit().putStringSet(KEY_SECRET_KEYS, setOfJsons).apply()
+        secretKeys = setOfJsons
     }
 
     fun getEventsSecretKey(id: UUID): EventsSecretKey? {
-        val eventsSecretKey = encryptedSharedPreferences.getStringSet(KEY_SECRET_KEYS, mutableSetOf())
+        val eventsSecretKey = secretKeys
             ?.stream()
             ?.map { StoreJsonConfig.mapper.readValue(it, EventsSecretKey::class.java) }
             ?.filter { id == it.id }
@@ -85,7 +97,7 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
     }
 
     fun getEventsSecretKey(algorithm: EncryptionAlgorithm): EventsSecretKey? {
-        val eventsSecretKey = encryptedSharedPreferences.getStringSet(KEY_SECRET_KEYS, mutableSetOf())
+        val eventsSecretKey = secretKeys
             ?.stream()
             ?.map { StoreJsonConfig.mapper.readValue(it, EventsSecretKey::class.java) }
             ?.filter { algorithm == it.algorithm }
@@ -94,18 +106,20 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
         if (eventsSecretKey != null && eventsSecretKey.isPresent) {
             return eventsSecretKey.get()
         }
+
         return null
     }
 
     fun clean() {
-        encryptedSharedPreferences.edit().putString(KEY_USERNAME, null).apply()
-        encryptedSharedPreferences.edit().putString(KEY_CREDENTIALS_SHA3, null).apply()
-        encryptedSharedPreferences.edit().putString(KEY_EVENTS, null).apply()
-        encryptedSharedPreferences.edit().putLong(KEY_EVENTS_COUNT, 0).apply()
-        encryptedSharedPreferences.edit().putStringSet(KEY_SECRET_KEYS, null).apply()
+        username = null
+        credentialsSha3 = null
+        events = "[]"
+        eventsCount = 0
+        secretKeys = null
     }
 
     companion object {
+
         private const val FILE_NAME = "bytemedrive"
         private const val KEY_USERNAME = "username"
         private const val KEY_CREDENTIALS_SHA3 = "credentialsSha3"

@@ -29,8 +29,8 @@ class SignInManager(
     private var jobSync: Job? = null
 
     fun autoSignIn() {
-        val username = encryptedSharedPreferences.getUsername()
-        val credentialsSha3 = encryptedSharedPreferences.getCredentialsSha3()
+        val username = encryptedSharedPreferences.username
+        val credentialsSha3 = encryptedSharedPreferences.credentialsSha3
         val eventsSecretKey = encryptedSharedPreferences.getEventsSecretKey(EncryptionAlgorithm.AES256)
 
         if (username != null && credentialsSha3 != null && eventsSecretKey != null) {
@@ -74,8 +74,8 @@ class SignInManager(
     }
 
     fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey) {
-        encryptedSharedPreferences.storeUsername(username)
-        encryptedSharedPreferences.storeCredentialsSha3(credentialsSha3)
+        encryptedSharedPreferences.username = username
+        encryptedSharedPreferences.credentialsSha3 = credentialsSha3
         encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
 
         val events = encryptedSharedPreferences.getEvents()
