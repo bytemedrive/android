@@ -12,8 +12,8 @@ import java.util.UUID
 class EventPublisher(private val storeRepository: StoreRepository, private val eventSyncService: EventSyncService) {
 
     suspend fun publishEvent(event: Convertable) {
-        val usernameSha3 = encryptedSharedPreferences.getUsername()?.let { ShaService.hashSha3(it) }
-        val credentialsSha3 = encryptedSharedPreferences.getCredentialsSha3()
+        val usernameSha3 = encryptedSharedPreferences.username?.let { ShaService.hashSha3(it) }
+        val credentialsSha3 = encryptedSharedPreferences.credentialsSha3
         val eventsSecretKey = encryptedSharedPreferences.getEventsSecretKey(EncryptionAlgorithm.AES256)
 
         if (eventsSecretKey != null && usernameSha3 != null && credentialsSha3 != null) {
