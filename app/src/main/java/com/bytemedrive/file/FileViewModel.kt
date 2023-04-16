@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.min
 
-class FileViewModel() : ViewModel() {
+class FileViewModel : ViewModel() {
 
     private var _files = MutableStateFlow(AppState.customer.value!!.files)
     val files: StateFlow<List<File>> = _files

@@ -1,7 +1,7 @@
 package com.bytemedrive.store
 
 import android.util.Log
-import com.bytemedrive.MainActivity.Companion.encryptedSharedPreferences
+import com.bytemedrive.encryptedSharedPreferences
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import okhttp3.internal.immutableListOf
@@ -12,9 +12,9 @@ import java.util.UUID
 class EventPublisher(private val storeRepository: StoreRepository, private val eventSyncService: EventSyncService) {
 
     suspend fun publishEvent(event: Convertable) {
-        val usernameSha3 = encryptedSharedPreferences?.getUsername()?.let { ShaService.hashSha3(it) }
-        val credentialsSha3 = encryptedSharedPreferences?.getCredentialsSha3()
-        val eventsSecretKey = encryptedSharedPreferences?.getEventsSecretKey(EncryptionAlgorithm.AES256)
+        val usernameSha3 = encryptedSharedPreferences.getUsername()?.let { ShaService.hashSha3(it) }
+        val credentialsSha3 = encryptedSharedPreferences.getCredentialsSha3()
+        val eventsSecretKey = encryptedSharedPreferences.getEventsSecretKey(EncryptionAlgorithm.AES256)
 
         if (eventsSecretKey != null && usernameSha3 != null && credentialsSha3 != null) {
             val eventType = EventType.of(event.javaClass)

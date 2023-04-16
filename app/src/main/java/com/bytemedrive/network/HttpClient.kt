@@ -1,6 +1,7 @@
 package com.bytemedrive.network
 
 import com.bytemedrive.config.ConfigProperty
+import com.bytemedrive.network.JsonConfig.mapper
 import com.fasterxml.jackson.core.util.DefaultIndenter
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -14,11 +15,14 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.serialization.jackson.JacksonConverter
 import io.ktor.serialization.jackson.jackson
 
 class HttpClient {
 
-    fun create(): HttpClient {
+    val client = getHttpClient()
+
+    private fun getHttpClient(): HttpClient {
         val client = HttpClient(OkHttp) {
             expectSuccess = true
 
@@ -27,15 +31,7 @@ class HttpClient {
             }
 
             install(ContentNegotiation) {
-                jackson {
-                    registerModule(JavaTimeModule())
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    configure(SerializationFeature.INDENT_OUTPUT, true)
-                    setDefaultPrettyPrinter(DefaultPrettyPrinter().apply {
-                        indentArraysWith(DefaultPrettyPrinter.FixedSpaceIndenter.instance)
-                        indentObjectsWith(DefaultIndenter("  ", "\n"))
-                    })
-                }
+                register(ContentType.Application.Json, JacksonConverter(mapper))
             }
 
             defaultRequest {

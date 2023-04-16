@@ -1,7 +1,7 @@
 package com.bytemedrive.signin
 
 import android.util.Log
-import com.bytemedrive.MainActivity.Companion.encryptedSharedPreferences
+import com.bytemedrive.encryptedSharedPreferences
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.AppState
@@ -29,9 +29,9 @@ class SignInManager(
     private var jobSync: Job? = null
 
     fun autoSignIn() {
-        val username = encryptedSharedPreferences?.getUsername()
-        val credentialsSha3 = encryptedSharedPreferences?.getCredentialsSha3()
-        val eventsSecretKey = encryptedSharedPreferences?.getEventsSecretKey(EncryptionAlgorithm.AES256)
+        val username = encryptedSharedPreferences.getUsername()
+        val credentialsSha3 = encryptedSharedPreferences.getCredentialsSha3()
+        val eventsSecretKey = encryptedSharedPreferences.getEventsSecretKey(EncryptionAlgorithm.AES256)
 
         if (username != null && credentialsSha3 != null && eventsSecretKey != null) {
             Log.i(TAG, "Try autologin for username: $username")
@@ -74,20 +74,18 @@ class SignInManager(
     }
 
     fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey) {
-        encryptedSharedPreferences?.storeUsername(username)
-        encryptedSharedPreferences?.storeCredentialsSha3(credentialsSha3)
-        encryptedSharedPreferences?.storeEventsSecretKey(eventsSecretKey)
+        encryptedSharedPreferences.storeUsername(username)
+        encryptedSharedPreferences.storeCredentialsSha3(credentialsSha3)
+        encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
 
-        val events = encryptedSharedPreferences?.getEvents()
+        val events = encryptedSharedPreferences.getEvents()
 
-        if (!events.isNullOrEmpty()) {
+        if (events.isNotEmpty()) {
             val customer = CustomerAggregate()
-
             events.stream().forEach { it.data.convert(customer) }
             AppState.customer.value = customer
             AppState.authorized.value = true
         }
-
         startEventAutoSync()
     }
 
@@ -95,7 +93,7 @@ class SignInManager(
         jobSync?.cancel()
         AppState.customer.value = null
         AppState.authorized.value = false
-        encryptedSharedPreferences?.clean()
+        encryptedSharedPreferences.clean()
     }
 
     private fun startEventAutoSync() {
