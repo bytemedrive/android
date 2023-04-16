@@ -18,11 +18,15 @@ class AppNavigator {
 
     enum class NavTarget(val label: String) {
 
+        BIN("bin"),
+
         FILE("file"),
 
         FILE_BOTTOM_SHEET_CONTEXT("fileBottomSheetContext/{id}"),
 
         FILE_BOTTOM_SHEET_CREATE("fileBottomSheetCreate"),
+
+        SETTINGS("settings"),
 
         SIGN_IN("signIn"),
 

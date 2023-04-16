@@ -40,6 +40,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
@@ -56,6 +57,7 @@ fun FileScreen(
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
+        AppState.title.value = "My files"
     }
 
     Scaffold(
@@ -77,8 +79,7 @@ fun FileScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 4.dp, vertical = 12.dp)
-                                .clickable(onClick = { fileViewModel.downloadFile(file!!, context) }),
+                                .padding(horizontal = 4.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Image(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_interests_24), contentDescription = "Default image")

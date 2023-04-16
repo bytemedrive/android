@@ -12,11 +12,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.file.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
@@ -30,6 +32,7 @@ fun BottomSheetContext(
     appNavigator: AppNavigator = get()
 ) = fileViewModel.singleFile(id)?.let { file ->
 
+    val context = LocalContext.current
     val removeFile = { fileViewModel.removeFile(file.id) { appNavigator.navigateTo(AppNavigator.NavTarget.FILE) } }
 
     Column(
@@ -72,6 +75,21 @@ fun BottomSheetContext(
                 tint = Color.Black,
             )
             Text(text = "Remove", modifier = Modifier.padding(horizontal = 8.dp))
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clickable(onClick = { fileViewModel.downloadFile(file, context) }),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Download,
+                contentDescription = "Download",
+                tint = Color.Black,
+            )
+            Text(text = "Download", modifier = Modifier.padding(horizontal = 8.dp))
         }
     }
 }

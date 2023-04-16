@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,9 +18,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +52,7 @@ fun SignUpScreen(
     val password by signUpViewModel.password.collectAsState()
     val passwordConfirm by signUpViewModel.passwordConfirm.collectAsState()
     val termsAndConditions by signUpViewModel.termsAndConditions.collectAsState()
+    val focusRequester = remember { FocusRequester() }
 
     val signUpHandler = {
         val validation = signUpViewModel.validateForm()
@@ -101,6 +105,7 @@ fun SignUpScreen(
             label = "Password",
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusRequester.requestFocus() })
         )
         FieldPassword(
             value = passwordConfirm,
@@ -108,7 +113,9 @@ fun SignUpScreen(
             label = "Password confirm",
             modifier = Modifier.fillMaxWidth(),
             showEye = false,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { signUpHandler() }),
+            focusRequester = focusRequester
         )
         FieldCheckbox(
             modifier = Modifier.padding(vertical = 12.dp),

@@ -26,6 +26,9 @@ class CustomerAggregate {
 
     var signUpAt: ZonedDateTime? = null
 
+    var usedStorage: Double? = null
+    var creditAmount: Double? = null
+
     override fun toString(): String {
         return "CustomerAggregate(username=${_username.value}, files=$files, wallet=$wallet, signUpAt=$signUpAt)"
     }

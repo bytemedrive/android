@@ -1,47 +1,144 @@
 package com.bytemedrive.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
+import android.content.Context
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCard
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import com.bytemedrive.file.bottomsheet.BottomSheetContext
-import com.bytemedrive.file.bottomsheet.BottomSheetCreate
-import com.bytemedrive.file.FileScreen
+import com.bytemedrive.R
+import com.bytemedrive.signin.SignInManager
+import com.bytemedrive.store.AppState
+import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
-import com.google.accompanist.navigation.material.bottomSheet
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 
-@OptIn(ExperimentalMaterialNavigationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialNavigationApi::class)
 @Composable
 fun AppNavigation(
     navHostController: NavHostController,
-    innerPadding: PaddingValues,
-    appNavigator: AppNavigator = get()
+    bottomSheetNavigator: BottomSheetNavigator,
+    signInManager: SignInManager = get(),
 ) {
-    LaunchedEffect("navigation") {
-        appNavigator.sharedFlow.onEach {
-            navHostController.navigate(it)
-        }.launchIn(this)
-    }
+    val startDestination = AppNavigator.NavTarget.FILE
+    val context = LocalContext.current
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val navItems = getMenuItems(context, signInManager)
 
-    NavHost(
-        navController = navHostController,
-        startDestination = AppNavigator.NavTarget.FILE.label,
-        modifier = Modifier.padding(innerPadding)
-    ) {
-        composable(route = AppNavigator.NavTarget.FILE.label) { FileScreen() }
+    val selectedItemDefault = remember { navItems.find { it is MenuItem.Navigation && it.route == startDestination } as MenuItem.Navigation? }
+    val selectedItem = remember { mutableStateOf(selectedItemDefault)  }
 
-        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT.label) { backstackEntry ->
-            BottomSheetContext(backstackEntry.arguments?.getString("id")!!)
+    ModalNavigationDrawer(
+        gesturesEnabled = drawerState.isOpen,
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(top = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier.padding(bottom = 16.dp).align(Alignment.TopStart),
+                    ) {
+                        navItems.forEach {
+                            when (it) {
+                                is MenuItem.Navigation ->
+                                    NavigationDrawerItem(
+                                        icon = { Icon(it.icon, contentDescription = null) },
+                                        label = { Text(it.title) },
+                                        selected = it == selectedItem.value,
+                                        onClick = {
+                                            it.onPress()
+                                            scope.launch { drawerState.close() }
+                                            selectedItem.value = it
+                                        },
+                                        modifier = Modifier.padding(horizontal = 12.dp)
+                                    )
+                                is MenuItem.Divider -> Divider(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
+                                is MenuItem.Label -> Text(modifier = Modifier.padding(horizontal = 12.dp), text = it.title)
+                            }
+                        }
+                    }
+                }
+
+            }
+        },
+        content = {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AppLayout(navHostController, bottomSheetNavigator, startDestination) { drawerState.open() }
+            }
         }
-
-        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE.label) { BottomSheetCreate() }
-    }
+    )
 }
 
+private fun getMenuItems(context: Context, signInManager: SignInManager): List<MenuItem> = listOf(
+    MenuItem.Navigation(
+        AppState.customer.value?.username?.value.orEmpty(),
+        null,
+        Icons.Default.Person
+    ) { },
+    MenuItem.Divider,
+    MenuItem.Label(context.getString(R.string.menu_app_my_data)),
+    MenuItem.Navigation(
+        context.getString(R.string.menu_app_used_storage, AppState.customer.value?.usedStorage ?: 0),
+        null,
+        Icons.Default.Language
+    ) { },
+    MenuItem.Navigation(
+        context.getString(R.string.menu_app_credit_amount, AppState.customer.value?.creditAmount ?: 0),
+        null,
+        Icons.Default.WbSunny
+    ) { },
+    MenuItem.Navigation(
+        context.getString(R.string.menu_app_credit_add),
+        null,
+        Icons.Default.AddCard
+    ) { },
+    MenuItem.Divider,
+    MenuItem.Label(context.getString(R.string.menu_app_my_account)),
+    MenuItem.Navigation(
+        context.getString(R.string.menu_app_settings),
+        AppNavigator.NavTarget.SETTINGS,
+        Icons.Default.Settings
+    ) { },
+    MenuItem.Navigation(
+        context.getString(R.string.menu_app_bin),
+        AppNavigator.NavTarget.BIN,
+        Icons.Default.Delete
+    ) { },
+    MenuItem.Navigation(
+        context.getString(R.string.common_sign_out),
+        AppNavigator.NavTarget.SIGN_IN,
+        Icons.Default.Logout
+    ) { signInManager.signOut() },
+)
