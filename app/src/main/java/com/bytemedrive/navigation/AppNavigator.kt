@@ -20,14 +20,14 @@ class AppNavigator {
 
         FILE("file"),
 
-        FILE_BOTTOM_SHEET("fileBottomSheet/{id}"),
+        FILE_BOTTOM_SHEET_CONTEXT("fileBottomSheetContext/{id}"),
+
+        FILE_BOTTOM_SHEET_CREATE("fileBottomSheetCreate"),
 
         SIGN_IN("signIn"),
 
         SIGN_UP("signUp"),
 
         TERMS_AND_CONDITIONS("termsAndConditions"),
-
-        UPLOAD("upload"),
     }
 }

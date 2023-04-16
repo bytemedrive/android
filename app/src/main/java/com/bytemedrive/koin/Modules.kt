@@ -12,6 +12,7 @@ import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.StoreRepository
 import com.bytemedrive.file.UploadViewModel
+import com.bytemedrive.file.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -21,6 +22,7 @@ val viewModelsModule = module {
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(), get()) }
     viewModel { FileViewModel(get(), get()) }
+    viewModel { CreateFolderViewModel(get()) }
 }
 
 val networkModule = module {

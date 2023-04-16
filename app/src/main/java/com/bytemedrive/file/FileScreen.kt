@@ -90,7 +90,7 @@ fun FileScreen(
                                 Text(text = file.name, fontSize = 16.sp, fontWeight = FontWeight(500))
                                 Text(text = formatFileSize(file.sizeBytes))
                             }
-                            IconButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET, mapOf("id" to file.id.toString())) }) {
+                            IconButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT, mapOf("id" to file.id.toString())) }) {
                                 Icon(
                                     imageVector = Icons.Rounded.MoreVert,
                                     contentDescription = "Context menu",
@@ -108,13 +108,13 @@ fun FileScreen(
 @Composable
 fun FloatingActionButtonComponent(appNavigator: AppNavigator = get()) {
     FloatingActionButton(
-        onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.UPLOAD) },
+        onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE) },
         containerColor = MaterialTheme.colorScheme.primary,
         shape = RoundedCornerShape(16.dp),
     ) {
         Icon(
             imageVector = Icons.Rounded.Add,
-            contentDescription = "Upload file",
+            contentDescription = "Create",
             tint = Color.White,
         )
     }

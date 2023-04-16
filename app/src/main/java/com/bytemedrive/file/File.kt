@@ -3,7 +3,15 @@ package com.bytemedrive.file
 import java.util.UUID
 import javax.crypto.SecretKey
 
-class File(val id: UUID, val chunkId: UUID, val name: String, val sizeBytes: Long, val contentType: String, val secretKey: SecretKey)
+class File(
+    val id: UUID,
+    val chunkId: UUID,
+    val name: String,
+    val sizeBytes: Long,
+    val contentType: String,
+    val secretKey: SecretKey,
+    folderId: UUID?
+)
 
 fun formatFileSize(bytes: Long): String {
     val units = arrayOf("B", "KB", "MB", "GB", "TB")

@@ -12,7 +12,7 @@ import java.util.UUID
 
 class UploadViewModel(private val fileRepository: FileRepository, private val eventPublisher: EventPublisher) : ViewModel() {
 
-    fun uploadFile(bytes: ByteArray, fileName: String, contentType: String) {
+    fun uploadFile(bytes: ByteArray, fileName: String, contentType: String, onSuccess: () -> Unit) {
 
         val secretKey = AesService.generateNewFileSecretKey()
         val fileEncrypted = AesService.encryptWithKey(bytes, secretKey)
@@ -34,6 +34,7 @@ class UploadViewModel(private val fileRepository: FileRepository, private val ev
                     )
                 )
                 fileRepository.upload(FileUpload(chunkId, fileBase64, it))
+                onSuccess()
             }
         }
     }
