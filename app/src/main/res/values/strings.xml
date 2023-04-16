@@ -6,6 +6,8 @@
     <!--  Common  -->
     <string name="common_error">Error</string>
     <string name="common_ok">OK</string>
+    <string name="common_go_back">Go back</string>
+    <string name="common_sign_out">Sign out</string>
 
     <!--  Error alert  -->
     <string name="error_alert_general_error_text">Unknown error</string>
