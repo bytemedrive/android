@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,25 +27,24 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.bytemedrive.R
-import com.bytemedrive.navigation.LoginActions
+import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.SnackbarVisualsWithError
 import com.bytemedrive.signup.SignUpViewModel
 import com.bytemedrive.ui.component.FieldCheckbox
 import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
-    navHostController: NavHostController,
     snackbarHostState: SnackbarHostState,
     signUpViewModel: SignUpViewModel = koinViewModel(),
+    appNavigator: AppNavigator = get()
 ) {
     val scope = rememberCoroutineScope()
-    val actions = LoginActions(navHostController)
     val username by signUpViewModel.username.collectAsState()
     val password by signUpViewModel.password.collectAsState()
     val passwordConfirm by signUpViewModel.passwordConfirm.collectAsState()
@@ -120,7 +118,7 @@ fun SignUpScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Agree to our")
-                TextButton(onClick = { actions.goToTermsAndConditions() }) {
+                TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.TERMS_AND_CONDITIONS) }) {
                     Text(text = "Term & Conditions")
                 }
             }
@@ -133,7 +131,7 @@ fun SignUpScreen(
         ) {
             Text(text = "Sign up")
         }
-        TextButton(onClick = { actions.goToSignIn() }) {
+        TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.SIGN_IN) }) {
             Text(text = "Sign in")
         }
     }

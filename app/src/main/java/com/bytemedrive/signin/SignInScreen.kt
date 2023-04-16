@@ -30,23 +30,22 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.bytemedrive.R
-import com.bytemedrive.navigation.LoginActions
+import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.SnackbarVisualsWithError
 import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignInScreen(
-    navHostController: NavHostController,
     snackbarHostState: SnackbarHostState,
-    signInViewModel: SignInViewModel = koinViewModel()
+    signInViewModel: SignInViewModel = koinViewModel(),
+    appNavigator: AppNavigator = get()
 ) {
     val scope = rememberCoroutineScope()
-    val actions = LoginActions(navHostController)
     val username by signInViewModel.username.collectAsState()
     val password by signInViewModel.password.collectAsState()
 
@@ -113,7 +112,7 @@ fun SignInScreen(
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = "Don't have an account?", fontSize = 16.sp)
-            TextButton(onClick = { actions.goToSignUp() }) {
+            TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.SIGN_UP) }) {
                 Text(text = "Sign up now", fontSize = 16.sp)
             }
         }

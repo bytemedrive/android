@@ -14,6 +14,6 @@ fun Application(navHostController: NavHostController) {
     Scaffold(
         topBar = { AppTopBar() },
         content = { AppNavigation(navHostController = navHostController, innerPadding = it) },
-        bottomBar = { AppBottomMenu(navHostController) },
+        bottomBar = { AppBottomMenu() },
     )
 }

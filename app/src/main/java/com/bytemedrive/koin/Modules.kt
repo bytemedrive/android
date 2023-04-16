@@ -12,6 +12,7 @@ import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.StoreRepository
 import com.bytemedrive.file.UploadViewModel
+import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -27,6 +28,7 @@ val networkModule = module {
 }
 
 val accountModule = module {
+    single { AppNavigator() }
     single { SignUpRepository() }
     single { SignInManager(get(), get()) }
     single { SignInRepository() }
