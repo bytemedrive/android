@@ -13,40 +13,43 @@ import com.bytemedrive.store.EventsSecretKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.nio.charset.StandardCharsets
 import java.time.ZonedDateTime
 import java.util.Base64
 import java.util.UUID
 
-class SignUpViewModel(private val signUpRepository: SignUpRepository, private val eventPublisher: EventPublisher, private val signInManager: SignInManager) : ViewModel() {
+class SignUpViewModel(
+    private val signUpRepository: SignUpRepository,
+    private val eventPublisher: EventPublisher,
+    private val signInManager: SignInManager
+) : ViewModel() {
 
-    private val _username = MutableStateFlow("")
-    val username: StateFlow<String> = _username
+    val username = MutableStateFlow("")
 
-    private val _password = MutableStateFlow("")
-    val password: StateFlow<String> = _password
+    val password = MutableStateFlow(charArrayOf())
 
-    private val _passwordConfirm = MutableStateFlow("")
-    val passwordConfirm: StateFlow<String> = _passwordConfirm
+    val passwordConfirm = MutableStateFlow(charArrayOf())
 
-    private val _termsAndConditions = MutableStateFlow(false)
-    val termsAndConditions: StateFlow<Boolean> = _termsAndConditions
+    val termsAndConditions = MutableStateFlow(false)
 
     fun signUp(onFailure: () -> Job) = effect {
-        val username = _username.value.trim()
-        val password = _password.value.toCharArray()
+        val username = username.value.trim()
+        val password = password.value
         val usernameSha3 = ShaService.hashSha3(username)
+
         try {
             val credentialsSha3 = ShaService.hashSha3("${username}:${password.concatToString()}")
             val eventsSecretKey = AesService.generateNewEventsSecretKey()
             val encryptedEventsSecretKey = AesService.encryptWithPassword(eventsSecretKey.encoded, password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
             val aesKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.AES256, String(Base64.getEncoder().encode(encryptedEventsSecretKey), StandardCharsets.UTF_8))
             val customerSignUp = CustomerSignUp(credentialsSha3, aesKey)
+
             signUpRepository.signUp(usernameSha3, customerSignUp)
             signInManager.signInSuccess(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey))
+
             val eventSignUp = EventCustomerSignedUp(username, UUID.randomUUID(), ZonedDateTime.now())
+
             eventPublisher.publishEvent(eventSignUp)
         } catch (exception: Exception) {
             onFailure()
@@ -55,31 +58,12 @@ class SignUpViewModel(private val signUpRepository: SignUpRepository, private va
     }
 
     fun validateForm(): String? = when {
-        (_username.value.length !in USERNAME_MIN_LENGTH..USERNAME_MAX_LENGTH) -> "Username should be from 1 to 64 characters"
-        (_username.value.contains(" ")) -> "Username should be without spaces"
-        (_password.value.length < PASSWORD_MIN_LENGTH) -> "Password should have at least 8 characters"
-        (_password.value != _passwordConfirm.value) -> "Passwords do not match. Try again"
-        (!_termsAndConditions.value) -> "Terms and conditions are required"
-
-        else -> {
-            null
-        }
-    }
-
-    fun setUsername(value: String) {
-        _username.value = value
-    }
-
-    fun setPassword(value: String) {
-        _password.value = value
-    }
-
-    fun setPasswordConfirm(value: String) {
-        _passwordConfirm.value = value
-    }
-
-    fun setTermsAndConditions(value: Boolean) {
-        _termsAndConditions.value = value
+        (username.value.length !in USERNAME_MIN_LENGTH..USERNAME_MAX_LENGTH) -> "Username should be from 1 to 64 characters"
+        (username.value.contains(" ")) -> "Username should be without spaces"
+        (password.value.size < PASSWORD_MIN_LENGTH) -> "Password should have at least 8 characters"
+        (!password.value.contentEquals(passwordConfirm.value)) -> "Passwords do not match. Try again"
+        (!termsAndConditions.value) -> "Terms and conditions are required"
+        else -> null
     }
 
     private fun effect(block: suspend () -> Unit) = viewModelScope.launch(Dispatchers.IO) { block() }
