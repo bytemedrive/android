@@ -6,12 +6,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.bytemedrive.application.Application
 import com.bytemedrive.application.GeneralError
 import com.bytemedrive.application.GlobalExceptionHandler
 import com.bytemedrive.application.NoInternet
 import com.bytemedrive.application.RequestFailed
 import com.bytemedrive.authentication.Login
+import com.bytemedrive.navigation.AppNavigation
 import com.bytemedrive.store.AppState
 import com.bytemedrive.network.NoInternetException
 import com.bytemedrive.network.RequestFailedException
@@ -40,7 +40,7 @@ fun MainScreen() {
     }
 
     if (authorized.value) {
-        Application(navHostController, bottomSheetNavigator)
+        AppNavigation(navHostController, bottomSheetNavigator)
     } else {
         Login(navHostController)
     }

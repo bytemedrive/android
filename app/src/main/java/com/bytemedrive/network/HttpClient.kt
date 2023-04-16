@@ -9,12 +9,14 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
 import io.ktor.serialization.jackson.jackson
 
@@ -24,7 +26,6 @@ class HttpClient {
 
     private fun getHttpClient(): HttpClient {
         val client = HttpClient(OkHttp) {
-            expectSuccess = true
 
             install(Logging) {
                 level = LogLevel.ALL
@@ -32,6 +33,14 @@ class HttpClient {
 
             install(ContentNegotiation) {
                 register(ContentType.Application.Json, JacksonConverter(mapper))
+            }
+
+            HttpResponseValidator {
+                validateResponse { response ->
+                    if (!response.status.isSuccess()) {
+                        throw RequestFailedException(response)
+                    }
+                }
             }
 
             defaultRequest {

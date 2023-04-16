@@ -1,5 +1,6 @@
 package com.bytemedrive.navigation
 
+import android.content.Context
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
@@ -11,33 +12,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.bytemedrive.R
 import org.koin.androidx.compose.get
 
-fun getMenuItems(appNavigator: AppNavigator): List<AppBottomMenuItem> =
+fun getMenuItems(context: Context, appNavigator: AppNavigator): List<MenuItem.Navigation> =
     listOf(
-        AppBottomMenuItem(
-            AppNavigator.NavTarget.FILE.label,
-            "My Files",
-            AppNavigator.NavTarget.FILE.label,
+        MenuItem.Navigation(
+            context.getString(R.string.bottom_menu_my_files),
+            AppNavigator.NavTarget.FILE,
             Icons.Filled.Folder
         ) { appNavigator.navigateTo(AppNavigator.NavTarget.FILE) },
     )
 
 @Composable
-fun AppBottomMenu(appNavigator: AppNavigator = get()) {
-    val navItems = getMenuItems(appNavigator)
-    val selectedItem = remember { mutableStateOf(AppNavigator.NavTarget.SIGN_IN.label) }
+fun AppBottomMenu(navHostController: NavHostController, appNavigator: AppNavigator = get()) {
+    val context = LocalContext.current
+    val navItems = getMenuItems(context, appNavigator)
+    val selectedItemDefault = remember { navItems.find { it.route?.label == navHostController.currentDestination?.route } }
+    val selectedItem = remember { mutableStateOf(selectedItemDefault) }
 
     BottomNavigation(elevation = 10.dp, backgroundColor = MaterialTheme.colorScheme.primary) {
         navItems.forEach { item ->
             BottomNavigationItem(
                 icon = { Icon(imageVector = item.icon, item.title, tint = Color.White) },
                 label = { Text(text = item.title, color = MaterialTheme.colorScheme.inversePrimary) },
-                selected = selectedItem.value == item.key,
+                selected = selectedItem.value == item,
                 onClick = {
                     item.onPress()
-                    selectedItem.value = item.key
+                    selectedItem.value = item
                 },
             )
         }

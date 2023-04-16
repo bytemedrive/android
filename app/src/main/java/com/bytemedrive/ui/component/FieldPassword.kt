@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -17,11 +18,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.AutofillType
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FieldPassword(
     modifier: Modifier = Modifier,
@@ -30,7 +33,8 @@ fun FieldPassword(
     keyboardOptions: KeyboardOptions,
     onValueChange: (CharArray) -> Unit,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
-    showEye: Boolean? = true
+    showEye: Boolean? = true,
+    focusRequester: FocusRequester = FocusRequester(),
 ) {
     var passwordVisibility by remember { mutableStateOf(false) }
 
@@ -51,9 +55,10 @@ fun FieldPassword(
         },
         keyboardOptions = KeyboardOptions(keyboardOptions.capitalization, keyboardOptions.autoCorrect, KeyboardType.Password, keyboardOptions.imeAction),
         keyboardActions = keyboardActions,
-        modifier = modifier.autofill(
-            autofillTypes = listOf(AutofillType.Password),
-            onFill = { onValueChange(it.toCharArray()) },
-        ),
+        modifier = modifier
+            .autofill(
+                autofillTypes = listOf(AutofillType.Password),
+                onFill = { onValueChange(it.toCharArray()) },
+            ).focusRequester(focusRequester),
     )
 }
