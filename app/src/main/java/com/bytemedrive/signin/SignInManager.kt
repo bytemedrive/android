@@ -1,7 +1,7 @@
 package com.bytemedrive.signin
 
 import android.util.Log
-import com.bytemedrive.encryptedSharedPreferences
+import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.AppState

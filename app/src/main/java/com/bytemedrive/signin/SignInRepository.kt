@@ -1,6 +1,6 @@
 package com.bytemedrive.signin
 
-import com.bytemedrive.httpClient
+import com.bytemedrive.application.httpClient
 import com.bytemedrive.store.EncryptedSecretKey
 import io.ktor.client.call.body
 import io.ktor.client.request.get

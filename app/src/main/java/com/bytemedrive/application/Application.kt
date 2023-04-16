@@ -1,4 +1,4 @@
-package com.bytemedrive
+package com.bytemedrive.application
 
 import androidx.security.crypto.MasterKeys
 import com.bytemedrive.koin.accountModule

@@ -1,6 +1,6 @@
 package com.bytemedrive.signup
 
-import com.bytemedrive.httpClient
+import com.bytemedrive.application.httpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 
