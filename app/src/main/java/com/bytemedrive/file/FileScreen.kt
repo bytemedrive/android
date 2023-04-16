@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,16 +29,17 @@ import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
-import com.bytemedrive.navigation.Route
+import com.bytemedrive.navigation.AppNavigator
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FileScreen(navController: NavController, fileViewModel: FileViewModel = koinViewModel()) {
+fun FileScreen(fileViewModel: FileViewModel = koinViewModel()) {
     val files = fileViewModel.getFilesPages().collectAsLazyPagingItems()
 
     Scaffold(
-        floatingActionButton = { FloatingActionButtonComponent(navController) },
+        floatingActionButton = { FloatingActionButtonComponent() },
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(it)) {
 
@@ -63,9 +63,9 @@ fun FileScreen(navController: NavController, fileViewModel: FileViewModel = koin
 }
 
 @Composable
-fun FloatingActionButtonComponent(navController: NavController) {
+fun FloatingActionButtonComponent(appNavigator: AppNavigator = get()) {
     FloatingActionButton(
-        onClick = { navController.navigate(Route.UPLOAD) },
+        onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.UPLOAD) },
         containerColor = MaterialTheme.colorScheme.primary,
         shape = RoundedCornerShape(16.dp),
     ) {
