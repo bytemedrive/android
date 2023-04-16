@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +50,7 @@ fun SignInScreen(
     val username by signInViewModel.username.collectAsState()
     val password by signInViewModel.password.collectAsState()
 
-    val signInHandler = {
+    val signIn = {
         val validation = signInViewModel.validateForm()
 
         if (validation?.isNotEmpty() == true) {
@@ -85,22 +87,24 @@ fun SignInScreen(
         )
         OutlinedTextField(
             value = username,
-            onValueChange = { signInViewModel.setUsername(it) },
+            onValueChange = { signInViewModel.username.value = it },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
-                imeAction = androidx.compose.ui.text.input.ImeAction.Next,
+                imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.Email
             ),
         )
         FieldPassword(
             value = password,
-            onValueChange = { signInViewModel.setPassword(it) },
+            onValueChange = { signInViewModel.password.value = it },
             label = "Password",
             modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { signIn() })
         )
         Button(
-            onClick = { signInHandler() },
+            onClick = { signIn() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)

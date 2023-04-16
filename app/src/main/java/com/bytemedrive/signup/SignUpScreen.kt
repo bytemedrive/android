@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -88,7 +89,7 @@ fun SignUpScreen(
         )
         OutlinedTextField(
             value = username,
-            onValueChange = { signUpViewModel.setUsername(it) },
+            onValueChange = { signUpViewModel.username.value = it },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
@@ -98,22 +99,24 @@ fun SignUpScreen(
         )
         FieldPassword(
             value = password,
-            onValueChange = { signUpViewModel.setPassword(it) },
+            onValueChange = { signUpViewModel.password.value = it },
             label = "Password",
             modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
         FieldPassword(
             value = passwordConfirm,
-            onValueChange = { signUpViewModel.setPasswordConfirm(it) },
+            onValueChange = { signUpViewModel.passwordConfirm.value = it },
             label = "Password confirm",
             modifier = Modifier.fillMaxWidth(),
-            showEye = false
+            showEye = false,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
         FieldCheckbox(
             modifier = Modifier.padding(vertical = 12.dp),
             key = "termsAndConditions",
             checked = termsAndConditions,
-            onChangeValue = { _, checked -> signUpViewModel.setTermsAndConditions(checked) }
+            onChangeValue = { _, checked -> signUpViewModel.termsAndConditions.value = checked }
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Agree to our")
