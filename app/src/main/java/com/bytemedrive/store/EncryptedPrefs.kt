@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
+import com.bytemedrive.network.JsonConfig.mapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.util.UUID
 import java.util.stream.Collectors
@@ -43,7 +44,7 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
     fun storeEvent(vararg events: EventObjectWrapper): List<EventObjectWrapper> {
         Log.i(TAG, "EncryptedPrefs storing ${events.size} events")
 
-        val eventsMapWrapper: MutableList<EventMapWrapper> = StoreJsonConfig.mapper.readValue(this.events)
+        val eventsMapWrapper: MutableList<EventMapWrapper> = mapper.readValue(this.events)
         val eventsObjectWrapper = eventsMapWrapper.stream()
             .map { it.toEventObjectWrapper() }
             .toList()
@@ -52,7 +53,7 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
 
         if (eventsToStore.isNotEmpty()) {
             eventsObjectWrapper.addAll(eventsToStore)
-            this.events = StoreJsonConfig.mapper.writeValueAsString(eventsObjectWrapper)
+            this.events = mapper.writeValueAsString(eventsObjectWrapper)
             eventsCount = eventsObjectWrapper.size.toLong()
         }
 
@@ -62,7 +63,7 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
     fun getEvents(): List<EventObjectWrapper> {
         Log.i(TAG, "EncryptedPrefs getting events")
 
-        return StoreJsonConfig.mapper.readValue<List<EventMapWrapper>>(events)
+        return mapper.readValue<List<EventMapWrapper>>(events)
             .stream()
             .map { it.toEventObjectWrapper() }
             .toList()
@@ -73,14 +74,14 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
 
         val keys = secretKeys
             ?.stream()
-            ?.map { StoreJsonConfig.mapper.readValue(it, EventsSecretKey::class.java) }
+            ?.map { mapper.readValue(it, EventsSecretKey::class.java) }
             ?.collect(Collectors.toMap({ it.id }, { it }))
             ?: HashMap<UUID, EventsSecretKey>()
 
         keys[secretKey.id] = secretKey
 
         val setOfJsons = keys.values.stream()
-            .map { StoreJsonConfig.mapper.writeValueAsString(it) }
+            .map { mapper.writeValueAsString(it) }
             .collect(Collectors.toSet())
 
         secretKeys = setOfJsons
@@ -89,7 +90,7 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
     fun getEventsSecretKey(id: UUID): EventsSecretKey? {
         val eventsSecretKey = secretKeys
             ?.stream()
-            ?.map { StoreJsonConfig.mapper.readValue(it, EventsSecretKey::class.java) }
+            ?.map { mapper.readValue(it, EventsSecretKey::class.java) }
             ?.filter { id == it.id }
             ?.findAny()
 
@@ -99,7 +100,7 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
     fun getEventsSecretKey(algorithm: EncryptionAlgorithm): EventsSecretKey? {
         val eventsSecretKey = secretKeys
             ?.stream()
-            ?.map { StoreJsonConfig.mapper.readValue(it, EventsSecretKey::class.java) }
+            ?.map { mapper.readValue(it, EventsSecretKey::class.java) }
             ?.filter { algorithm == it.algorithm }
             ?.findAny()
 

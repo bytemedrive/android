@@ -25,6 +25,8 @@ class SignUpViewModel(
     private val signInManager: SignInManager
 ) : ViewModel() {
 
+    private val TAG = SignUpViewModel::class.qualifiedName
+
     val username = MutableStateFlow("")
 
     val password = MutableStateFlow(charArrayOf())
@@ -53,7 +55,7 @@ class SignUpViewModel(
             eventPublisher.publishEvent(eventSignUp)
         } catch (exception: Exception) {
             onFailure()
-            Log.e("com.bytemedrive.signup", "Signup failed for username: $username", exception)
+            Log.e(TAG, "Signup failed for username: $username", exception)
         }
     }
 
