@@ -1,6 +1,6 @@
 package com.bytemedrive.store
 
-import com.bytemedrive.httpClient
+import com.bytemedrive.application.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers

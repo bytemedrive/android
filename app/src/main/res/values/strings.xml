@@ -1,3 +1,17 @@
 <resources>
+
+    <!--  Main  -->
     <string name="app_name">ByteMe</string>
+
+    <!--  Common  -->
+    <string name="common_error">Error</string>
+    <string name="common_ok">OK</string>
+
+    <!--  Error alert  -->
+    <string name="error_alert_general_error_text">Unknown error</string>
+    <string name="error_alert_no_internet_title">No internet connection</string>
+    <string name="error_alert_no_internet_text">Unable to resolve server IP address. Check your internet connection.</string>
+    <string name="error_alert_request_failed_title">Request failed</string>
+    <string name="error_alert_request_failed_text">Try again and if persists please contact support.</string>
+
 </resources>

@@ -6,8 +6,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.bytemedrive.config.ConfigProperty
-import com.bytemedrive.main.MainScreen
 import com.bytemedrive.signin.SignInManager
+import com.bytemedrive.ui.MainScreen
 import com.bytemedrive.ui.theme.ByteMeTheme
 import org.koin.android.ext.android.get
 import java.io.IOException
