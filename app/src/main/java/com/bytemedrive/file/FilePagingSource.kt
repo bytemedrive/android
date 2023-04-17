@@ -3,16 +3,16 @@ package com.bytemedrive.file
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 
-class FilePagingSource(private val getData: (pageIndex: Int, pageSize: Int) -> List<File>) : PagingSource<Int, File>() {
+class FilePagingSource(private val getData: (pageIndex: Int, pageSize: Int) -> List<Item>) : PagingSource<Int, Item>() {
 
-    override fun getRefreshKey(state: PagingState<Int, File>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, Item>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
             state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
                 ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
         }
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, File> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Item> {
 
         val pageIndex = params.key ?: 0
         val data = getData(pageIndex, 20)

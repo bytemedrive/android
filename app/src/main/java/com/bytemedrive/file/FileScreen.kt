@@ -4,8 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Drafts
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,9 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,7 +37,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
-import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
@@ -53,7 +51,7 @@ fun FileScreen(
     appNavigator: AppNavigator = get()
 ) {
     val context = LocalContext.current
-    val files = fileViewModel.getFilesPages().collectAsLazyPagingItems()
+    val items = fileViewModel.getFilesPages().collectAsLazyPagingItems()
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
@@ -74,24 +72,32 @@ fun FileScreen(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 32.dp)
             ) {
-                items(items = files) {
-                    it?.let { file ->
+                items(items = items) {
+                    it?.let { item ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Image(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_interests_24), contentDescription = "Default image")
+                            Icon(
+                                imageVector = if (item.type == ItemType.File) Icons.Outlined.Description else Icons.Default.Folder,
+                                contentDescription = "Folder",
+                                tint = Color.Black,
+                            )
                             Column(
                                 modifier = Modifier
                                     .padding(start = 18.dp)
                                     .weight(1f)
                             ) {
-                                Text(text = file.name, fontSize = 16.sp, fontWeight = FontWeight(500))
-                                Text(text = formatFileSize(file.sizeBytes))
+                                Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight(500))
                             }
-                            IconButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT, mapOf("id" to file.id.toString())) }) {
+                            IconButton(onClick = {
+                                when (item.type) {
+                                    ItemType.File -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE, mapOf("id" to item.id.toString()))
+                                    ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FOLDER, mapOf("id" to item.id.toString()))
+                                }
+                            }) {
                                 Icon(
                                     imageVector = Icons.Rounded.MoreVert,
                                     contentDescription = "Context menu",

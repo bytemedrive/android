@@ -53,7 +53,7 @@ fun AppNavigation(
     val navItems = getMenuItems(context, signInManager)
 
     val selectedItemDefault = remember { navItems.find { it is MenuItem.Navigation && it.route == startDestination } as MenuItem.Navigation? }
-    val selectedItem = remember { mutableStateOf(selectedItemDefault)  }
+    val selectedItem = remember { mutableStateOf(selectedItemDefault) }
 
     ModalNavigationDrawer(
         gesturesEnabled = drawerState.isOpen,
@@ -61,11 +61,15 @@ fun AppNavigation(
         drawerContent = {
             ModalDrawerSheet {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(top = 12.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
-                        modifier = Modifier.padding(bottom = 16.dp).align(Alignment.TopStart),
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .align(Alignment.TopStart),
                     ) {
                         navItems.forEach {
                             when (it) {

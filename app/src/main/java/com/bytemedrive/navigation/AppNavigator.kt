@@ -22,7 +22,9 @@ class AppNavigator {
 
         FILE("file"),
 
-        FILE_BOTTOM_SHEET_CONTEXT("fileBottomSheetContext/{id}"),
+        FILE_BOTTOM_SHEET_CONTEXT_FILE("fileBottomSheetContextFile/{id}"),
+
+        FILE_BOTTOM_SHEET_CONTEXT_FOLDER("fileBottomSheetContextFolder/{id}"),
 
         FILE_BOTTOM_SHEET_CREATE("fileBottomSheetCreate"),
 

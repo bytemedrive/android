@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTopBar(toggleNav: suspend () -> Unit, navHostController: NavHostController) {
+fun AppTopBar(toggleNav: suspend () -> Unit) {
     val scope = rememberCoroutineScope()
     val title by AppState.title.collectAsState()
 
