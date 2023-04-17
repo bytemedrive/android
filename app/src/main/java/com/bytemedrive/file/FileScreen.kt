@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,7 +52,7 @@ fun FileScreen(
     appNavigator: AppNavigator = get()
 ) {
     val context = LocalContext.current
-    val files = fileViewModel.getFilesPages().collectAsLazyPagingItems()
+    val items = fileViewModel.getFilesPages().collectAsLazyPagingItems()
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
@@ -74,24 +73,30 @@ fun FileScreen(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 32.dp)
             ) {
-                items(items = files) {
-                    it?.let { file ->
+                items(items = items) {
+                    it?.let { item ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Image(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_interests_24), contentDescription = "Default image")
+                            val icon = if (item.type == ItemType.File) R.drawable.baseline_insert_drive_file_24 else R.drawable.baseline_folder_24
+
+                            Image(imageVector = ImageVector.vectorResource(id = icon), contentDescription = "Default image")
                             Column(
                                 modifier = Modifier
                                     .padding(start = 18.dp)
                                     .weight(1f)
                             ) {
-                                Text(text = file.name, fontSize = 16.sp, fontWeight = FontWeight(500))
-                                Text(text = formatFileSize(file.sizeBytes))
+                                Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight(500))
                             }
-                            IconButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT, mapOf("id" to file.id.toString())) }) {
+                            IconButton(onClick = {
+                                when (item.type) {
+                                    ItemType.File -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE, mapOf("id" to item.id.toString()))
+                                    ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FOLDER, mapOf("id" to item.id.toString()))
+                                }
+                            }) {
                                 Icon(
                                     imageVector = Icons.Rounded.MoreVert,
                                     contentDescription = "Context menu",

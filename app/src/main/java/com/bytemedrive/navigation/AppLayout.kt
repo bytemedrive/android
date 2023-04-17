@@ -23,7 +23,7 @@ fun AppLayout(
         sheetShape = RoundedCornerShape(64f, 64f, 0f, 0f)
     ) {
         Scaffold(
-            topBar = { AppTopBar(toggleNav, navHostController) },
+            topBar = { AppTopBar(toggleNav) },
             content = { paddingValues -> AppNavHost(navHostController, paddingValues, startDestination) },
             bottomBar = { AppBottomMenu(navHostController) },
         )

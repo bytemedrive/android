@@ -9,7 +9,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bytemedrive.file.FileScreen
-import com.bytemedrive.file.bottomsheet.BottomSheetContext
+import com.bytemedrive.file.bottomsheet.BottomSheetContextFile
+import com.bytemedrive.file.bottomsheet.BottomSheetContextFolder
 import com.bytemedrive.file.bottomsheet.BottomSheetCreate
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.bottomSheet
@@ -38,8 +39,12 @@ fun AppNavHost(
     ) {
         composable(route = AppNavigator.NavTarget.FILE.label) { FileScreen() }
 
-        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT.label) { backstackEntry ->
-            BottomSheetContext(backstackEntry.arguments?.getString("id")!!)
+        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE.label) { backstackEntry ->
+            BottomSheetContextFile(backstackEntry.arguments?.getString("id")!!)
+        }
+
+        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FOLDER.label) { backstackEntry ->
+            BottomSheetContextFolder(backstackEntry.arguments?.getString("id")!!)
         }
 
         bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE.label) { BottomSheetCreate() }
