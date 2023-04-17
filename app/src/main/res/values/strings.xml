@@ -8,6 +8,8 @@
     <string name="common_ok">OK</string>
     <string name="common_go_back">Go back</string>
     <string name="common_sign_out">Sign out</string>
+    <string name="common_next">Next</string>
+    <string name="common_back">Back</string>
 
     <!--  Error alert  -->
     <string name="error_alert_general_error_text">Unknown error</string>
@@ -17,7 +19,7 @@
     <string name="error_alert_request_failed_text">Try again and if persists please contact support.</string>
     <string name="menu_app_my_data">My Data</string>
     <string name="menu_app_used_storage">"My used storage %1$s GiB"</string>
-    <string name="menu_app_credit_amount">"My credit is %1$s GiB"</string>
+    <string name="menu_app_credit_amount">"My credit is %1$d GiB"</string>
     <string name="menu_app_credit_add">Add credit</string>
     <string name="menu_app_my_account">My Account</string>
     <string name="menu_app_settings">Settings</string>
