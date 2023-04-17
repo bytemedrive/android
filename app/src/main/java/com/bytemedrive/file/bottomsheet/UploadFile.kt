@@ -3,6 +3,7 @@ package com.bytemedrive.file.bottomsheet
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -46,7 +47,9 @@ fun UploadFile(
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier
+        .padding(16.dp)
+        .clickable { pickFileLauncher.launch("*/*") }, horizontalAlignment = Alignment.CenterHorizontally) {
         IconButton(onClick = { pickFileLauncher.launch("*/*") }) {
             Icon(
                 imageVector = Icons.Outlined.Upload,

@@ -1,10 +1,8 @@
 package com.bytemedrive.file.bottomsheet
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,7 +11,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +26,7 @@ import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetContextFile(
     id: String,
@@ -42,55 +44,48 @@ fun BottomSheetContextFile(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Description,
-                    contentDescription = "File",
-                    tint = Color.Black,
-                )
-                Text(file.name, modifier = Modifier.padding(horizontal = 8.dp))
-            }
+            ListItem(
+                modifier = Modifier.height(32.dp),
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Rounded.Description,
+                        contentDescription = "File",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(file.name) },
+            )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(Color.Gray)
-            ) {}
+            Divider()
 
-            Row(
+            ListItem(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .height(32.dp)
                     .clickable(onClick = { fileViewModel.downloadFile(file.id, context) }),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Download,
-                    contentDescription = "Download",
-                    tint = Color.Black,
-                )
-                Text(text = "Download", modifier = Modifier.padding(horizontal = 8.dp))
-            }
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Rounded.Download,
+                        contentDescription = "Download",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(text = "Download") },
+            )
 
-            Row(
+            ListItem(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .height(32.dp)
                     .clickable(onClick = { remove() }),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Delete,
-                    contentDescription = "Remove",
-                    tint = Color.Black,
-                )
-                Text(text = "Remove", modifier = Modifier.padding(horizontal = 8.dp))
-            }
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Rounded.Delete,
+                        contentDescription = "Remove",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(text = "Remove") },
+            )
+
         }
 
     }
