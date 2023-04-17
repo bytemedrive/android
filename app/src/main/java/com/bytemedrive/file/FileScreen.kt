@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Drafts
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.rounded.Add
@@ -26,6 +27,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,25 +44,49 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import java.util.UUID
 
 private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileScreen(
+    folderId: String?,
     fileViewModel: FileViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()
 ) {
     val context = LocalContext.current
     val items = fileViewModel.getFilesPages().collectAsLazyPagingItems()
+    val selectedFolderId by fileViewModel.selectedFolderId.collectAsState()
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
-        AppState.title.value = "My files"
+        fileViewModel.updateList(folderId)
+
+        if (folderId == null) {
+            AppState.title.value = "My files"
+            fileViewModel.selectedFolderId.value = null
+        } else {
+            fileViewModel.singleFolder(folderId)?.let { folder ->
+                AppState.title.value = folder.name
+                fileViewModel.selectedFolderId.value = folder.id
+            }
+        }
+    }
+
+    val clickOnItem: (item: Item) -> Unit = { item ->
+        when (item.type) {
+            ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
+            ItemType.File -> null // TODO: Add some action
+        }
+    }
+
+    BackHandler(true) {
+        appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
     Scaffold(
-        floatingActionButton = { FloatingActionButtonComponent() },
+        floatingActionButton = { FloatingActionButtonComponent(selectedFolderId) },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -77,7 +104,8 @@ fun FileScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 4.dp, vertical = 12.dp),
+                                .padding(horizontal = 4.dp, vertical = 12.dp)
+                                .clickable { clickOnItem(item) },
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
@@ -113,9 +141,16 @@ fun FileScreen(
 }
 
 @Composable
-fun FloatingActionButtonComponent(appNavigator: AppNavigator = get()) {
+fun FloatingActionButtonComponent(
+    selectedFolderId: UUID?,
+    appNavigator: AppNavigator = get()
+) {
     FloatingActionButton(
-        onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE) },
+        onClick = {
+            selectedFolderId?.let { folderId ->
+                appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE, mapOf("folderId" to folderId.toString()))
+            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE)
+        },
         containerColor = MaterialTheme.colorScheme.primary,
         shape = RoundedCornerShape(16.dp),
     ) {

@@ -3,6 +3,7 @@ package com.bytemedrive.file.bottomsheet
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.folder.EventFolderCreated
+import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -12,8 +13,10 @@ class CreateFolderViewModel(private val eventPublisher: EventPublisher) : ViewMo
 
     val name = MutableStateFlow("")
 
-    fun createFolder(onSuccess: () -> Unit) = viewModelScope.launch {
-        eventPublisher.publishEvent(EventFolderCreated(UUID.randomUUID(), name.value))
-        onSuccess()
+    fun createFolder(folderId: String?, onSuccess: () -> Unit) = viewModelScope.launch {
+        AppState.customer.value!!.folders.find { it.id.toString() == folderId }.let { folder ->
+            eventPublisher.publishEvent(EventFolderCreated(UUID.randomUUID(), name.value, folder?.id))
+            onSuccess()
+        }
     }
 }

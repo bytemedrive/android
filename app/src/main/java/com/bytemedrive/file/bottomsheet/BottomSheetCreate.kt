@@ -12,12 +12,13 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun BottomSheetCreate(
+    folderId: String?,
     uploadViewModel: UploadViewModel = koinViewModel(),
     createFolderViewModel: CreateFolderViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()
 ) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-        CreateFolder(createFolderViewModel, appNavigator)
-        UploadFile(uploadViewModel, appNavigator)
+        CreateFolder(folderId, createFolderViewModel, appNavigator)
+        UploadFile(folderId, uploadViewModel, appNavigator)
     }
 }

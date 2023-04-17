@@ -17,6 +17,7 @@ import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.min
@@ -26,15 +27,22 @@ class FileViewModel(
     private val eventPublisher: EventPublisher
 ) : ViewModel() {
 
+    var selectedFolderId = MutableStateFlow<UUID?>(null)
+
     var files = MutableStateFlow(AppState.customer.value!!.files)
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
 
     var list = MutableStateFlow(listOf<Item>())
 
-    init {
-        viewModelScope.launch {
+    fun updateList(folderId: String?) = viewModelScope.launch {
+        folders.value.find { it.id.toString() == folderId }.let { folder ->
             combine(files, folders) { files, folders ->
-                folders.map { Item(it.id, it.name, ItemType.Folder) } + files.map { Item(it.id, it.name, ItemType.File) }
+                folders
+                    .filter { it.parent == folder?.id }
+                    .map { Item(it.id, it.name, ItemType.Folder) } +
+                    files
+                        .filter { it.folderId == folder?.id }
+                        .map { Item(it.id, it.name, ItemType.File) }
             }.collect { value ->
                 list.value = value
             }

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.bytemedrive.file.FileScreen
 import com.bytemedrive.file.bottomsheet.BottomSheetContextFile
 import com.bytemedrive.file.bottomsheet.BottomSheetContextFolder
@@ -30,7 +31,10 @@ fun AppNavHost(
 ) {
     LaunchedEffect("navigation") {
         appNavigator.sharedFlow.onEach {
-            navHostController.navigate(it)
+            when (it) {
+                AppNavigator.NavTarget.BACK.label -> navHostController.popBackStack()
+                else -> navHostController.navigate(it)
+            }
         }.launchIn(this)
     }
 
@@ -39,7 +43,12 @@ fun AppNavHost(
         startDestination = startDestination.label,
         modifier = Modifier.padding(innerPadding)
     ) {
-        composable(route = AppNavigator.NavTarget.FILE.label) { FileScreen() }
+        composable(
+            route = AppNavigator.NavTarget.FILE.label,
+            arguments = listOf(navArgument("folderId") { nullable = true })
+        ) { backstackEntry ->
+            FileScreen(backstackEntry.arguments?.getString("folderId"))
+        }
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_METHOD.label) { AddCreditMethodScreen() }
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_CODE.label) { AddCreditCodeScreen() }
 
@@ -51,7 +60,12 @@ fun AppNavHost(
             BottomSheetContextFolder(backstackEntry.arguments?.getString("id")!!)
         }
 
-        bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE.label) { BottomSheetCreate() }
+        bottomSheet(
+            route = AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE.label,
+            arguments = listOf(navArgument("folderId") { nullable = true })
+        ) { backstackEntry ->
+            BottomSheetCreate(backstackEntry.arguments?.getString("folderId"))
+        }
     }
 }
 

@@ -26,6 +26,7 @@ import com.bytemedrive.navigation.AppNavigator
 
 @Composable
 fun CreateFolder(
+    folderId: String?,
     createFolderViewModel: CreateFolderViewModel,
     appNavigator: AppNavigator
 ) {
@@ -35,7 +36,11 @@ fun CreateFolder(
 
     val confirmName = {
         dialogNewFolderOpened = false
-        createFolderViewModel.createFolder { appNavigator.navigateTo(AppNavigator.NavTarget.FILE )}
+        createFolderViewModel.createFolder(folderId) {
+            folderId?.let {
+                appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
+            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
+        }
     }
 
     if (dialogNewFolderOpened) {
