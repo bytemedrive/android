@@ -5,10 +5,11 @@ import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.network.JsonConfig.mapper
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
+import com.bytemedrive.wallet.WalletRepository
 import java.util.Base64
 import kotlin.streams.toList
 
-class EventSyncService(private val storeRepository: StoreRepository) {
+class EventSyncService(private val storeRepository: StoreRepository, private val walletRepository: WalletRepository) {
 
     private val TAG = EventSyncService::class.qualifiedName
 
@@ -38,13 +39,15 @@ class EventSyncService(private val storeRepository: StoreRepository) {
         }
     }
 
-    fun addEvents(vararg events: EventObjectWrapper) {
+    suspend fun addEvents(vararg events: EventObjectWrapper) {
         val allEvents = encryptedSharedPreferences.storeEvent(*events)
 
         if (allEvents.isNotEmpty()) {
             val customer = CustomerAggregate()
 
             allEvents.stream().forEach { it.data.convert(customer) }
+            customer.creditAmount = walletRepository.getWallet(customer.wallet.toString()).credit
+
             Log.i(TAG, "Customer refreshed.")
             AppState.customer.value = customer
             AppState.authorized.value = true

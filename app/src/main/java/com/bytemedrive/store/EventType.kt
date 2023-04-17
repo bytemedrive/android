@@ -5,9 +5,11 @@ import com.bytemedrive.file.EventFileUploaded
 import com.bytemedrive.folder.EventFolderCreated
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.signup.EventCustomerSignedUp
+import com.bytemedrive.wallet.EventCouponRedeemed
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {
+    COUPON_REDEEMED("coupon-redeemed", EventCouponRedeemed::class.java),
     FILE_DELETED("file-deleted", EventFileDeleted::class.java),
     FILE_UPLOADED("file-uploaded", EventFileUploaded::class.java),
     FOLDER_CREATED("folder-created", EventFolderCreated::class.java),

@@ -18,6 +18,10 @@ class AppNavigator {
 
     enum class NavTarget(val label: String) {
 
+        ADD_CREDIT_CODE("addCreditCode"),
+
+        ADD_CREDIT_METHOD("addCreditMethod"),
+
         BIN("bin"),
 
         FILE("file"),

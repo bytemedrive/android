@@ -41,8 +41,10 @@ fun AppBottomMenu(navHostController: NavHostController, appNavigator: AppNavigat
                 label = { Text(text = item.title, color = MaterialTheme.colorScheme.inversePrimary) },
                 selected = selectedItem.value == item,
                 onClick = {
-                    item.onPress()
-                    selectedItem.value = item
+                    if (item.onPress != null) {
+                        item.onPress.invoke()
+                        selectedItem.value = item
+                    }
                 },
             )
         }

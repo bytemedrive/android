@@ -12,6 +12,8 @@ import com.bytemedrive.file.FileScreen
 import com.bytemedrive.file.bottomsheet.BottomSheetContextFile
 import com.bytemedrive.file.bottomsheet.BottomSheetContextFolder
 import com.bytemedrive.file.bottomsheet.BottomSheetCreate
+import com.bytemedrive.wallet.AddCreditCodeScreen
+import com.bytemedrive.wallet.AddCreditMethodScreen
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.bottomSheet
 import kotlinx.coroutines.flow.launchIn
@@ -38,6 +40,8 @@ fun AppNavHost(
         modifier = Modifier.padding(innerPadding)
     ) {
         composable(route = AppNavigator.NavTarget.FILE.label) { FileScreen() }
+        composable(route = AppNavigator.NavTarget.ADD_CREDIT_METHOD.label) { AddCreditMethodScreen() }
+        composable(route = AppNavigator.NavTarget.ADD_CREDIT_CODE.label) { AddCreditCodeScreen() }
 
         bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE.label) { backstackEntry ->
             BottomSheetContextFile(backstackEntry.arguments?.getString("id")!!)

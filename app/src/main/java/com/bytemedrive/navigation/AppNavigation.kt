@@ -38,6 +38,7 @@ import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
+import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialNavigationApi::class)
 @Composable
@@ -45,12 +46,13 @@ fun AppNavigation(
     navHostController: NavHostController,
     bottomSheetNavigator: BottomSheetNavigator,
     signInManager: SignInManager = get(),
+    appNavigator: AppNavigator = get(),
 ) {
     val startDestination = AppNavigator.NavTarget.FILE
     val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val navItems = getMenuItems(context, signInManager)
+    val navItems = getMenuItems(context, signInManager, appNavigator)
 
     val selectedItemDefault = remember { navItems.find { it is MenuItem.Navigation && it.route == startDestination } as MenuItem.Navigation? }
     val selectedItem = remember { mutableStateOf(selectedItemDefault) }
@@ -79,9 +81,11 @@ fun AppNavigation(
                                         label = { Text(it.title) },
                                         selected = it == selectedItem.value,
                                         onClick = {
-                                            it.onPress()
-                                            scope.launch { drawerState.close() }
-                                            selectedItem.value = it
+                                            if (it.onPress != null) {
+                                                it.onPress.invoke()
+                                                scope.launch { drawerState.close() }
+                                                selectedItem.value = it
+                                            }
                                         },
                                         modifier = Modifier.padding(horizontal = 12.dp)
                                     )
@@ -105,44 +109,46 @@ fun AppNavigation(
     )
 }
 
-private fun getMenuItems(context: Context, signInManager: SignInManager): List<MenuItem> = listOf(
+private fun getMenuItems(context: Context, signInManager: SignInManager, appNavigator: AppNavigator): List<MenuItem> = listOf(
     MenuItem.Navigation(
         AppState.customer.value?.username?.value.orEmpty(),
         null,
-        Icons.Default.Person
-    ) { },
+        Icons.Default.Person,
+    ),
     MenuItem.Divider,
     MenuItem.Label(context.getString(R.string.menu_app_my_data)),
     MenuItem.Navigation(
-        context.getString(R.string.menu_app_used_storage, AppState.customer.value?.usedStorage ?: 0),
+        context.getString(R.string.menu_app_used_storage, usedStorage()),
         null,
         Icons.Default.Language
-    ) { },
+    ),
     MenuItem.Navigation(
         context.getString(R.string.menu_app_credit_amount, AppState.customer.value?.creditAmount ?: 0),
         null,
         Icons.Default.WbSunny
-    ) { },
+    ),
     MenuItem.Navigation(
         context.getString(R.string.menu_app_credit_add),
-        null,
+        AppNavigator.NavTarget.ADD_CREDIT_METHOD,
         Icons.Default.AddCard
-    ) { },
+    ) { appNavigator.navigateTo(AppNavigator.NavTarget.ADD_CREDIT_METHOD) },
     MenuItem.Divider,
     MenuItem.Label(context.getString(R.string.menu_app_my_account)),
     MenuItem.Navigation(
         context.getString(R.string.menu_app_settings),
         AppNavigator.NavTarget.SETTINGS,
         Icons.Default.Settings
-    ) { },
+    ),
     MenuItem.Navigation(
         context.getString(R.string.menu_app_bin),
         AppNavigator.NavTarget.BIN,
         Icons.Default.Delete
-    ) { },
+    ),
     MenuItem.Navigation(
         context.getString(R.string.common_sign_out),
         AppNavigator.NavTarget.SIGN_IN,
         Icons.Default.Logout
     ) { signInManager.signOut() },
 )
+
+private fun usedStorage() = AppState.customer.value?.files?.sumOf { it.sizeBytes }?.div(1_073_741_824.0)?.let { DecimalFormat("#.##").format(it) } ?: 0
