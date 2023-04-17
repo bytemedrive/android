@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.bytemedrive.application.GlobalExceptionHandler
 import com.bytemedrive.config.ConfigProperty
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.ui.MainScreen
@@ -20,6 +21,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler)
 
         loadProperties(assets)
 

@@ -3,6 +3,7 @@ package com.bytemedrive.ui.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -12,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -24,39 +26,41 @@ fun FieldRadio(
     selected: Boolean,
     onChangeValue: (value: String) -> Unit,
 ) =
-
-    Column(
+    Row(
         modifier = modifier
-            .height(48.dp)
+            .fillMaxWidth()
+            .alpha(if (item.enabled) 1f else 0.5f)
             .selectable(
                 selected = selected,
                 onClick = { onChangeValue(item.value) },
                 role = Role.RadioButton,
                 enabled = item.enabled
             )
-            .background(Color(0xC6FFFBFE))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(vertical = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+        RadioButton(
+            modifier = Modifier.padding(horizontal = 18.dp),
+            selected = selected,
+            onClick = null
+        )
+        Column(
+            horizontalAlignment = Alignment.Start
         ) {
-            RadioButton(
-                selected = selected,
-                onClick = null
-            )
+
             Text(
                 text = item.label,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(start = 8.dp)
+                style = MaterialTheme.typography.bodyLarge,
             )
+            if (!item.subLabel.isNullOrBlank()) {
+                Text(
+                    text = item.subLabel,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
 
-        if (!item.subLabel.isNullOrBlank()) {
-            Text(
-                text = item.subLabel,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        }
+
     }
 
 data class RadioItem(val value: String, val label: String, val subLabel: String?, val enabled: Boolean = true)
