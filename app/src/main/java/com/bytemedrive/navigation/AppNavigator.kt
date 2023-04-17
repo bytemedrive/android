@@ -22,15 +22,17 @@ class AppNavigator {
 
         ADD_CREDIT_METHOD("addCreditMethod"),
 
+        BACK("back"),
+
         BIN("bin"),
 
-        FILE("file"),
+        FILE("file?folderId={folderId}"),
 
         FILE_BOTTOM_SHEET_CONTEXT_FILE("fileBottomSheetContextFile/{id}"),
 
         FILE_BOTTOM_SHEET_CONTEXT_FOLDER("fileBottomSheetContextFolder/{id}"),
 
-        FILE_BOTTOM_SHEET_CREATE("fileBottomSheetCreate"),
+        FILE_BOTTOM_SHEET_CREATE("fileBottomSheetCreate?folderId={folderId}"),
 
         SETTINGS("settings"),
 

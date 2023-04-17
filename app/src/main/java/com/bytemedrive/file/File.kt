@@ -10,7 +10,7 @@ class File(
     val sizeBytes: Long,
     val contentType: String,
     val secretKey: SecretKey,
-    folderId: UUID?
+    val folderId: UUID?
 )
 
 fun formatFileSize(bytes: Long): String {
