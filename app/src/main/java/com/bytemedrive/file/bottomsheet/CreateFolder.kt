@@ -1,5 +1,6 @@
 package com.bytemedrive.file.bottomsheet
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.OutlinedTextField
@@ -61,7 +62,9 @@ fun CreateFolder(
         )
     }
 
-    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier
+        .padding(16.dp)
+        .clickable { dialogNewFolderOpened = true }, horizontalAlignment = Alignment.CenterHorizontally) {
         IconButton(onClick = { dialogNewFolderOpened = true }) {
             Icon(
                 imageVector = Icons.Outlined.Folder,
