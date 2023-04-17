@@ -33,10 +33,8 @@ class FileViewModel(
 
     init {
         viewModelScope.launch {
-            combine(files, folders) { tempFiles, tempFolder ->
-                val foo = tempFolder.map { Item(it.id, it.name, ItemType.Folder) } + tempFiles.map { Item(it.id, it.name, ItemType.File) }
-
-                foo
+            combine(files, folders) { files, folders ->
+                folders.map { Item(it.id, it.name, ItemType.Folder) } + files.map { Item(it.id, it.name, ItemType.File) }
             }.collect { value ->
                 list.value = value
             }
