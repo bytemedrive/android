@@ -14,9 +14,7 @@ class CreateFolderViewModel(private val eventPublisher: EventPublisher) : ViewMo
     val name = MutableStateFlow("")
 
     fun createFolder(folderId: String?, onSuccess: () -> Unit) = viewModelScope.launch {
-        AppState.customer.value!!.folders.find { it.id.toString() == folderId }.let { folder ->
-            eventPublisher.publishEvent(EventFolderCreated(UUID.randomUUID(), name.value, folder?.id))
-            onSuccess()
-        }
+        eventPublisher.publishEvent(EventFolderCreated(UUID.randomUUID(), name.value, folderId?.let { UUID.fromString(it) }))
+        onSuccess()
     }
 }
