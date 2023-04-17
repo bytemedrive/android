@@ -30,9 +30,9 @@ fun UploadFile(
 ) {
     val context = LocalContext.current
 
-    val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            context.contentResolver.openInputStream(it).use { inputStream ->
+    val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uries: List<Uri> ->
+        uries.forEach { uri ->
+            context.contentResolver.openInputStream(uri).use { inputStream ->
                 val file = DocumentFile.fromSingleUri(context, uri)
 
                 inputStream?.let {
