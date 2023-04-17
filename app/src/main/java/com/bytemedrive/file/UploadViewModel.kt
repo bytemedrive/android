@@ -33,7 +33,7 @@ class UploadViewModel(
                         ShaService.hashSha1(bytes),
                         contentType,
                         Base64.getEncoder().encodeToString(secretKey.encoded),
-                        UUID.fromString(folderId)
+                        folderId?.let { UUID.fromString(folderId) }
                     )
                 )
                 fileRepository.upload(FileUpload(chunkId, fileBase64, wallet))
