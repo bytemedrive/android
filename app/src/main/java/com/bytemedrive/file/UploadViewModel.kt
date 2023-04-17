@@ -33,6 +33,7 @@ class UploadViewModel(
                         ShaService.hashSha1(bytes),
                         contentType,
                         Base64.getEncoder().encodeToString(secretKey.encoded),
+                        false,
                         folderId?.let { UUID.fromString(folderId) }
                     )
                 )

@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,7 +38,18 @@ fun BottomSheetContextFile(
 ) =
     fileViewModel.singleFile(id)?.let { file ->
         val context = LocalContext.current
-        val remove = { fileViewModel.removeFile(file.id) { appNavigator.navigateTo(AppNavigator.NavTarget.FILE) } }
+
+        val navigateBack = {
+            file.folderId?.let {
+                appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to file.folderId.toString()))
+            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
+        }
+
+        val remove = {
+            fileViewModel.removeFile(file.id) { navigateBack() }
+        }
+
+        val toggleStarred = { fileViewModel.toggleStarredFile(file.id, file.starred) { navigateBack() } }
 
         Column(
             Modifier
@@ -57,6 +71,20 @@ fun BottomSheetContextFile(
             )
 
             Divider()
+
+            ListItem(
+                modifier = Modifier
+                    .height(32.dp)
+                    .clickable(onClick = { toggleStarred() }),
+                leadingContent = {
+                    Icon(
+                        imageVector = if (file.starred) Icons.Default.Star else Icons.Default.StarOutline,
+                        contentDescription = if (file.starred) "Remove from starred" else "Add to starred",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(text = if (file.starred) "Remove from starred" else "Add to starred") },
+            )
 
             ListItem(
                 modifier = Modifier

@@ -11,6 +11,8 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.bytemedrive.folder.EventFolderDeleted
+import com.bytemedrive.folder.EventFolderStarAdded
+import com.bytemedrive.folder.EventFolderStarRemoved
 import com.bytemedrive.folder.Folder
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
@@ -38,10 +40,10 @@ class FileViewModel(
         combine(files, folders) { files, folders ->
             folders
                 .filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
-                .map { Item(it.id, it.name, ItemType.Folder) } +
+                .map { Item(it.id, it.name, ItemType.Folder, it.starred) } +
                 files
                     .filter { folder -> folder.folderId == folderId?.let { UUID.fromString(it) } }
-                    .map { Item(it.id, it.name, ItemType.File) }
+                    .map { Item(it.id, it.name, ItemType.File, it.starred) }
         }.collect { value ->
             list.value = value
         }
@@ -66,6 +68,24 @@ class FileViewModel(
             (findFoldersToRemove(id, folders.value) + folder).forEach {
                 eventPublisher.publishEvent(EventFolderDeleted(it.id))
             }
+        }
+
+        onSuccess()
+    }
+
+    fun toggleStarredFile(id: UUID, value: Boolean, onSuccess: () -> Unit) = viewModelScope.launch {
+        when (value) {
+            true -> eventPublisher.publishEvent(EventFileStarRemoved(id))
+            false -> eventPublisher.publishEvent(EventFileStarAdded(id))
+        }
+
+        onSuccess()
+    }
+
+    fun toggleStarredFolder(id: UUID, value: Boolean, onSuccess: () -> Unit) = viewModelScope.launch {
+        when (value) {
+            true -> eventPublisher.publishEvent(EventFolderStarRemoved(id))
+            false -> eventPublisher.publishEvent(EventFolderStarAdded(id))
         }
 
         onSuccess()
