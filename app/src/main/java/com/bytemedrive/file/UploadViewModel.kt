@@ -24,6 +24,7 @@ class UploadViewModel(
 
         viewModelScope.launch {
             AppState.customer.value?.wallet?.let { wallet ->
+                fileRepository.upload(FileUpload(chunkId, fileBase64, wallet))
                 eventPublisher.publishEvent(
                     EventFileUploaded(
                         fileId,
@@ -36,7 +37,6 @@ class UploadViewModel(
                         folderId?.let { UUID.fromString(folderId) }
                     )
                 )
-                fileRepository.upload(FileUpload(chunkId, fileBase64, wallet))
                 onSuccess()
             }
         }

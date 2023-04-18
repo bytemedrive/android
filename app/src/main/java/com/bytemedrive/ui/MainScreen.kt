@@ -29,7 +29,7 @@ fun MainScreen() {
     val error by GlobalExceptionHandler.throwable.collectAsState()
 
     error?.let {
-        Log.e("Main Screen", it.message, it.cause)
+        Log.e("Main Screen", it.message, it)
 
         when (it) {
             is UnknownHostException -> NoInternet()
