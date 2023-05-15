@@ -1,4 +1,4 @@
-package com.bytemedrive.file
+package com.bytemedrive.file.root
 
 import com.bytemedrive.store.Convertable
 import com.bytemedrive.store.CustomerAggregate

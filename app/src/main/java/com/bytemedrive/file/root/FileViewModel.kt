@@ -1,4 +1,4 @@
-package com.bytemedrive.file
+package com.bytemedrive.file.root
 
 import android.content.ContentValues
 import android.content.Context
@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.UUID
-import kotlin.math.min
 
 class FileViewModel(
     private val fileRepository: FileRepository,
@@ -42,7 +41,7 @@ class FileViewModel(
                 .filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
                 .map { Item(it.id, it.name, ItemType.Folder, it.starred) } +
                 files
-                    .filter { folder -> folder.folderId == folderId?.let { UUID.fromString(it) } }
+                    .filter { file -> file.folderId == folderId?.let { UUID.fromString(it) } }
                     .map { Item(it.id, it.name, ItemType.File, it.starred) }
         }.collect { value ->
             list.value = value
@@ -114,17 +113,10 @@ class FileViewModel(
         return objectsInFolder + objectsInSubFolders
     }
 
-    private fun takePartOfList(pageIndex: Int = 0, pageSize: Int = 20): List<Item> {
-        val offset = pageIndex * pageSize
-        val lastItemIndex = min(list.value.size - 1, offset + pageSize - 1)
-
-        return list.value.slice(offset..lastItemIndex)
-    }
-
     fun getFilesPages(): Flow<PagingData<Item>> =
         Pager(
             config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { FilePagingSource(this::takePartOfList) }
+            pagingSourceFactory = { FilePagingSource(list.value) }
         ).flow.cachedIn(viewModelScope)
 
     fun downloadFile(id: UUID, context: Context) =

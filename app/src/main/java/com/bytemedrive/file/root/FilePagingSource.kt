@@ -1,9 +1,17 @@
-package com.bytemedrive.file
+package com.bytemedrive.file.root
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import kotlin.math.min
 
-class FilePagingSource(private val getData: (pageIndex: Int, pageSize: Int) -> List<Item>) : PagingSource<Int, Item>() {
+class FilePagingSource(private val data: List<Item>) : PagingSource<Int, Item>() {
+
+    private fun getData(pageIndex: Int = 0, pageSize: Int = 20): List<Item> {
+        val offset = pageIndex * pageSize
+        val lastItemIndex = min(data.size - 1, offset + pageSize - 1)
+
+        return data.slice(offset..lastItemIndex)
+    }
 
     override fun getRefreshKey(state: PagingState<Int, Item>): Int? {
         return state.anchorPosition?.let { anchorPosition ->

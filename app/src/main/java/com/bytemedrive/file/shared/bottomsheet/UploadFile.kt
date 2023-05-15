@@ -1,4 +1,4 @@
-package com.bytemedrive.file.bottomsheet
+package com.bytemedrive.file.shared.bottomsheet
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.documentfile.provider.DocumentFile
-import com.bytemedrive.file.UploadViewModel
+import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.navigation.AppNavigator
 
 @Composable

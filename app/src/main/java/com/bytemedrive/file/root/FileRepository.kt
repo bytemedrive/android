@@ -1,4 +1,4 @@
-package com.bytemedrive.file
+package com.bytemedrive.file.root
 
 import com.bytemedrive.application.httpClient
 import io.ktor.client.request.delete

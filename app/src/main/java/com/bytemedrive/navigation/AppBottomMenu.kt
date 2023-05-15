@@ -5,6 +5,7 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,6 +26,11 @@ fun getMenuItems(context: Context, appNavigator: AppNavigator): List<MenuItem.Na
             AppNavigator.NavTarget.FILE,
             Icons.Filled.Folder
         ) { appNavigator.navigateTo(AppNavigator.NavTarget.FILE) },
+        MenuItem.Navigation(
+            context.getString(R.string.bottom_menu_starred),
+            AppNavigator.NavTarget.STARRED,
+            Icons.Filled.Star
+        ) { appNavigator.navigateTo(AppNavigator.NavTarget.STARRED) },
     )
 
 @Composable

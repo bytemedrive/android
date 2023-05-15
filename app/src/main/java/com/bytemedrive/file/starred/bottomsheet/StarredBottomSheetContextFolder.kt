@@ -1,4 +1,4 @@
-package com.bytemedrive.file.bottomsheet
+package com.bytemedrive.file.starred.bottomsheet
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,25 +21,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.bytemedrive.file.FileViewModel
+import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContextFolder(
+fun StarredBottomSheetContextFolder(
     id: String,
     fileViewModel: FileViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()
 ) =
     fileViewModel.singleFolder(id)?.let { folder ->
 
-        val navigateBack = {
-            folder.parent?.let {
-                appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folder.parent.toString()))
-            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
-        }
+        val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.STARRED) }
 
         val remove = { fileViewModel.removeFolder(folder.id) { navigateBack() } }
 
