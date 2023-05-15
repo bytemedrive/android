@@ -104,7 +104,6 @@ fun FileScreen(
             ) {
                 items(items = items) {
                     it?.let { item ->
-                        println(item)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
