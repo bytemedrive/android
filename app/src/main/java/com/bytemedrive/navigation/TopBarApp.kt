@@ -12,10 +12,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.style.TextOverflow
-import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.TopBarFile
-import com.bytemedrive.file.starred.StarredViewModel
 import com.bytemedrive.file.starred.TopBarStarred
+import com.bytemedrive.navigation.BarType
+import com.bytemedrive.navigation.TopBarViewModel
 import com.bytemedrive.store.AppState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -23,22 +23,19 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun TopBarApp(
     toggleNav: suspend () -> Unit,
-    fileViewModel: FileViewModel = koinViewModel(),
-    starredViewModel: StarredViewModel = koinViewModel()
+    topBarViewModel: TopBarViewModel = koinViewModel(),
 ) {
-    val fileAndFolderRootSelected by fileViewModel.fileAndFolderSelected.collectAsState()
-    val fileAndFolderStarredSelected by starredViewModel.fileAndFolderSelected.collectAsState()
-    val topBarContentVisible = fileAndFolderRootSelected.isEmpty() && fileAndFolderStarredSelected.isEmpty()
+    val barType by topBarViewModel.barType.collectAsState()
 
-    AnimatedVisibility(visible = fileAndFolderRootSelected.isNotEmpty(), enter = slideInVertically()) {
+    AnimatedVisibility(visible = barType == BarType.SELECTION_FILE, enter = slideInVertically()) {
         TopBarFile()
     }
 
-    AnimatedVisibility(visible = fileAndFolderStarredSelected.isNotEmpty(), enter = slideInVertically()) {
+    AnimatedVisibility(visible = barType == BarType.SELECTION_STARRED, enter = slideInVertically()) {
         TopBarStarred()
     }
 
-    AnimatedVisibility(visible = topBarContentVisible, enter = slideInVertically()) {
+    AnimatedVisibility(visible = barType == BarType.SCREEN, enter = slideInVertically()) {
         TopBarAppContent(toggleNav)
     }
 }
