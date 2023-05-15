@@ -1,6 +1,6 @@
 package com.bytemedrive.navigation
 
-import AppTopBar
+import TopBarApp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -23,7 +23,7 @@ fun AppLayout(
         sheetShape = RoundedCornerShape(64f, 64f, 0f, 0f)
     ) {
         Scaffold(
-            topBar = { AppTopBar(toggleNav) },
+            topBar = { TopBarApp(toggleNav) },
             content = { paddingValues -> AppNavHost(navHostController, paddingValues, startDestination) },
             bottomBar = { AppBottomMenu(navHostController) },
         )
