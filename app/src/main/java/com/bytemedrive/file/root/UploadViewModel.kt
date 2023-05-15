@@ -1,4 +1,4 @@
-package com.bytemedrive.file
+package com.bytemedrive.file.root
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

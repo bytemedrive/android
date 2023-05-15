@@ -1,4 +1,4 @@
-package com.bytemedrive.file
+package com.bytemedrive.file.root
 
 import java.util.UUID
 import javax.crypto.SecretKey

@@ -1,4 +1,4 @@
-package com.bytemedrive.file.bottomsheet
+package com.bytemedrive.file.root.bottomsheet
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,14 +23,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.bytemedrive.file.FileViewModel
+import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheetContextFile(
+fun FileBottomSheetContextFile(
     id: String,
     fileViewModel: FileViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()
@@ -45,9 +44,7 @@ fun BottomSheetContextFile(
             } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
         }
 
-        val remove = {
-            fileViewModel.removeFile(file.id) { navigateBack() }
-        }
+        val remove = { fileViewModel.removeFile(file.id) { navigateBack() } }
 
         val toggleStarred = { fileViewModel.toggleStarredFile(file.id, file.starred) { navigateBack() } }
 

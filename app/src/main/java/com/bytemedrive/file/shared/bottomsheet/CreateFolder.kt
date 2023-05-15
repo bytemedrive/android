@@ -1,4 +1,4 @@
-package com.bytemedrive.file.bottomsheet
+package com.bytemedrive.file.shared.bottomsheet
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.navigation.AppNavigator
 
 @Composable

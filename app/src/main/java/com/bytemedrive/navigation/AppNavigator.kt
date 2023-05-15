@@ -8,10 +8,10 @@ class AppNavigator {
     private val _sharedFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val sharedFlow = _sharedFlow.asSharedFlow()
 
-    fun navigateTo(navTarget: NavTarget, arguments: Map<String, String> = mapOf()) {
+    fun navigateTo(navTarget: NavTarget, arguments: Map<String, String?> = mapOf()) {
         var target = navTarget.label
 
-        arguments.forEach { target = target.replace("{${it.key}}", it.value) }
+        arguments.forEach { target = target.replace("{${it.key}}", it.value.orEmpty()) }
 
         _sharedFlow.tryEmit(target)
     }
@@ -39,6 +39,12 @@ class AppNavigator {
         SIGN_IN("signIn"),
 
         SIGN_UP("signUp"),
+
+        STARRED("starred"),
+
+        STARRED_BOTTOM_SHEET_CONTEXT_FILE("starredBottomSheetContextFile/{id}"),
+
+        STARRED_BOTTOM_SHEET_CONTEXT_FOLDER("starredBottomSheetContextFolder/{id}"),
 
         TERMS_AND_CONDITIONS("termsAndConditions"),
     }

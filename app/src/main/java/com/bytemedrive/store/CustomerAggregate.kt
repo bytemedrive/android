@@ -1,6 +1,6 @@
 package com.bytemedrive.store
 
-import com.bytemedrive.file.File
+import com.bytemedrive.file.root.File
 import com.bytemedrive.folder.Folder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

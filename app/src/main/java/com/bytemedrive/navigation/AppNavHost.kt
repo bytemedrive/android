@@ -9,10 +9,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.bytemedrive.file.FileScreen
-import com.bytemedrive.file.bottomsheet.BottomSheetContextFile
-import com.bytemedrive.file.bottomsheet.BottomSheetContextFolder
-import com.bytemedrive.file.bottomsheet.BottomSheetCreate
+import com.bytemedrive.file.root.FileScreen
+import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFile
+import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFolder
+import com.bytemedrive.file.shared.bottomsheet.FileBottomSheetCreate
+import com.bytemedrive.file.starred.StarredScreen
+import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFile
+import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFolder
 import com.bytemedrive.wallet.AddCreditCodeScreen
 import com.bytemedrive.wallet.AddCreditMethodScreen
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
@@ -51,20 +54,37 @@ fun AppNavHost(
         }
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_METHOD.label) { AddCreditMethodScreen() }
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_CODE.label) { AddCreditCodeScreen() }
+        composable(route = AppNavigator.NavTarget.STARRED.label) { StarredScreen() }
 
         bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE.label) { backstackEntry ->
-            BottomSheetContextFile(backstackEntry.arguments?.getString("id")!!)
+            FileBottomSheetContextFile(
+                backstackEntry.arguments?.getString("id")!!,
+            )
         }
 
         bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FOLDER.label) { backstackEntry ->
-            BottomSheetContextFolder(backstackEntry.arguments?.getString("id")!!)
+            FileBottomSheetContextFolder(
+                backstackEntry.arguments?.getString("id")!!,
+            )
+        }
+
+        bottomSheet(AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FILE.label) { backstackEntry ->
+            StarredBottomSheetContextFile(
+                backstackEntry.arguments?.getString("id")!!,
+            )
+        }
+
+        bottomSheet(AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FOLDER.label) { backstackEntry ->
+            StarredBottomSheetContextFolder(
+                backstackEntry.arguments?.getString("id")!!,
+            )
         }
 
         bottomSheet(
             route = AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE.label,
             arguments = listOf(navArgument("folderId") { nullable = true })
         ) { backstackEntry ->
-            BottomSheetCreate(backstackEntry.arguments?.getString("folderId"))
+            FileBottomSheetCreate(backstackEntry.arguments?.getString("folderId"))
         }
     }
 }

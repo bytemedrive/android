@@ -1,4 +1,4 @@
-package com.bytemedrive.file.bottomsheet
+package com.bytemedrive.file.root.bottomsheet
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
