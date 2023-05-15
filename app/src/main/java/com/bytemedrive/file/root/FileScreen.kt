@@ -58,7 +58,6 @@ private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 @Composable
 fun FileScreen(
     folderId: String? = null,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     fileViewModel: FileViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()
 ) {
