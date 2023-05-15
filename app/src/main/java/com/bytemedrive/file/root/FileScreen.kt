@@ -5,7 +5,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Star
@@ -25,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,12 +35,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
@@ -49,36 +54,34 @@ import org.koin.androidx.compose.koinViewModel
 
 private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FileScreen(
     folderId: String? = null,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     fileViewModel: FileViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()
 ) {
     val context = LocalContext.current
-    val items = fileViewModel.getFilesPages().collectAsLazyPagingItems()
-    val selectedFolderId by fileViewModel.selectedFolderId.collectAsState()
+    val fileAndFolderList = fileViewModel.getFilesPages().collectAsLazyPagingItems()
+    val fileAndFolderSelected by fileViewModel.fileAndFolderSelected.collectAsState()
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
-        fileViewModel.updateList(folderId)
+        fileViewModel.updateFileAndFolderList(folderId)
 
         if (folderId == null) {
             AppState.title.value = "My files"
-            fileViewModel.selectedFolderId.value = null
         } else {
             fileViewModel.singleFolder(folderId)?.let { folder ->
                 AppState.title.value = folder.name
-                fileViewModel.selectedFolderId.value = folder.id
             }
         }
     }
 
-    val clickOnItem: (item: Item) -> Unit = { item ->
-        when (item.type) {
-            ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
-            ItemType.File -> null // TODO: Add some action
+    DisposableEffect("unmount") {
+        onDispose {
+            fileViewModel.clearSelectedFileAndFolder()
         }
     }
 
@@ -87,10 +90,10 @@ fun FileScreen(
     }
 
     Scaffold(
-        floatingActionButton = { FloatingActionButtonCreate(selectedFolderId) },
+        floatingActionButton = { FloatingActionButtonCreate(folderId) },
     ) { paddingValues ->
 
-        if (items.itemCount == 0) {
+        if (fileAndFolderList.itemCount == 0) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(text = stringResource(id = R.string.common_no_data))
             }
@@ -106,20 +109,33 @@ fun FileScreen(
                         .fillMaxSize()
                         .padding(horizontal = 16.dp, vertical = 32.dp)
                 ) {
-                    items(items = items) {
+                    items(items = fileAndFolderList) {
                         it?.let { item ->
+                            val itemSelected = fileAndFolderSelected.contains(item)
+
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 4.dp, vertical = 12.dp)
-                                    .clickable { clickOnItem(item) },
+                                    .combinedClickable(
+                                        onClick = { fileViewModel.clickFileAndFolder(item) },
+                                        onLongClick = { fileViewModel.longClickFileAndFolder(item) }
+                                    ),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Icon(
-                                    imageVector = if (item.type == ItemType.File) Icons.Outlined.Description else Icons.Default.Folder,
-                                    contentDescription = "Folder",
-                                    tint = Color.Black,
-                                )
+                                if (itemSelected) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.CheckCircle,
+                                        contentDescription = "Checked",
+                                        tint = Color.Black,
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = if (item.type == ItemType.File) Icons.Outlined.Description else Icons.Default.Folder,
+                                        contentDescription = "Folder",
+                                        tint = Color.Black,
+                                    )
+                                }
                                 Column(
                                     modifier = Modifier
                                         .padding(start = 18.dp)

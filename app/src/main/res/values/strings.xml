@@ -32,4 +32,10 @@
     <string name="menu_app_settings">Settings</string>
     <string name="menu_app_bin">Bin</string>
 
+    <!-- Top Bar -->
+    <plurals name="top_bar_file_items">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+
 </resources>

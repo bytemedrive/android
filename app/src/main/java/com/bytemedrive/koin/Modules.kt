@@ -22,14 +22,14 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelsModule = module {
+    single { FileViewModel(get(), get(), get()) }
+    single { StarredViewModel(get()) }
     viewModel { SignUpViewModel(get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(), get()) }
-    viewModel { FileViewModel(get(), get()) }
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
     viewModel { AddCreditCodeViewModel(get(), get()) }
-    viewModel { StarredViewModel() }
 }
 
 val networkModule = module {

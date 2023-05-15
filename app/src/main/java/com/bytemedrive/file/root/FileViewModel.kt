@@ -14,6 +14,7 @@ import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
 import com.bytemedrive.folder.Folder
+import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
@@ -25,17 +26,43 @@ import java.util.UUID
 
 class FileViewModel(
     private val fileRepository: FileRepository,
-    private val eventPublisher: EventPublisher
+    private val eventPublisher: EventPublisher,
+    private val appNavigator: AppNavigator
 ) : ViewModel() {
-
-    var selectedFolderId = MutableStateFlow<UUID?>(null)
 
     var files = MutableStateFlow(AppState.customer.value!!.files)
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
 
-    var list = MutableStateFlow(listOf<Item>())
+    var fileAndFolderList = MutableStateFlow(listOf<Item>())
 
-    fun updateList(folderId: String?) = viewModelScope.launch {
+    val fileAndFolderSelected = MutableStateFlow(emptyList<Item>())
+
+    fun clickFileAndFolder(item: Item) {
+        val anyFileSelected = fileAndFolderSelected.value.isNotEmpty()
+
+        if (anyFileSelected) {
+            longClickFileAndFolder(item)
+        } else {
+            when (item.type) {
+                ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
+                ItemType.File -> null // TODO: Add some action
+            }
+        }
+    }
+
+    fun longClickFileAndFolder(item: Item) {
+        fileAndFolderSelected.value = if (fileAndFolderSelected.value.contains(item)) {
+            fileAndFolderSelected.value - item
+        } else {
+            fileAndFolderSelected.value + item
+        }
+    }
+
+    fun clearSelectedFileAndFolder() {
+        fileAndFolderSelected.value = emptyList()
+    }
+
+    fun updateFileAndFolderList(folderId: String?) = viewModelScope.launch {
         combine(files, folders) { files, folders ->
             folders
                 .filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
@@ -44,7 +71,7 @@ class FileViewModel(
                     .filter { file -> file.folderId == folderId?.let { UUID.fromString(it) } }
                     .map { Item(it.id, it.name, ItemType.File, it.starred) }
         }.collect { value ->
-            list.value = value
+            fileAndFolderList.value = value
         }
     }
 
@@ -116,7 +143,7 @@ class FileViewModel(
     fun getFilesPages(): Flow<PagingData<Item>> =
         Pager(
             config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { FilePagingSource(list.value) }
+            pagingSourceFactory = { FilePagingSource(fileAndFolderList.value) }
         ).flow.cachedIn(viewModelScope)
 
     fun downloadFile(id: UUID, context: Context) =
