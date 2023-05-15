@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -33,7 +36,15 @@ fun BottomSheetContextFolder(
 ) =
     fileViewModel.singleFolder(id)?.let { folder ->
 
-        val remove = { fileViewModel.removeFolder(folder.id) { appNavigator.navigateTo(AppNavigator.NavTarget.FILE) } }
+        val navigateBack = {
+            folder.parent?.let {
+                appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folder.parent.toString()))
+            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
+        }
+
+        val remove = { fileViewModel.removeFolder(folder.id) { navigateBack() } }
+
+        val toggleStarred = { fileViewModel.toggleStarredFolder(folder.id, folder.starred) { navigateBack() } }
 
         Column(
             Modifier
@@ -55,6 +66,20 @@ fun BottomSheetContextFolder(
             )
 
             Divider()
+
+            ListItem(
+                modifier = Modifier
+                    .height(32.dp)
+                    .clickable(onClick = { toggleStarred() }),
+                leadingContent = {
+                    Icon(
+                        imageVector = if (folder.starred) Icons.Default.Star else Icons.Default.StarOutline,
+                        contentDescription = if (folder.starred) "Remove from starred" else "Add to starred",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(text = if (folder.starred) "Remove from starred" else "Add to starred") },
+            )
 
             ListItem(
                 modifier = Modifier

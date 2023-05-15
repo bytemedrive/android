@@ -11,13 +11,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -119,6 +122,16 @@ fun FileScreen(
                                     .weight(1f)
                             ) {
                                 Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight(500))
+                                Row() {
+                                    if (item.starred) {
+                                        Icon(
+                                            modifier = Modifier.size(16.dp),
+                                            imageVector = Icons.Rounded.Star,
+                                            contentDescription = "Starred",
+                                            tint = Color.Black,
+                                        )
+                                    }
+                                }
                             }
                             IconButton(onClick = {
                                 when (item.type) {

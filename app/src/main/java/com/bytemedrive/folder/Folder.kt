@@ -2,8 +2,9 @@ package com.bytemedrive.folder
 
 import java.util.UUID
 
-class Folder(
+data class Folder(
     val id: UUID,
     val name: String,
-    val parent: UUID?
+    val starred: Boolean = false,
+    val parent: UUID?,
 )
