@@ -74,26 +74,19 @@ class UploadViewModel(
         val chunkId = UUID.randomUUID() // TODO: for now we have one chunk (split will be implemented later)
 
         AppState.customer.value?.wallet?.let { wallet ->
-            try {
-                Log.i(TAG, "Uploading thumbnail with resolution ${resolution.value}. Chunk id=${chunkId}")
-                eventPublisher.publishEvent(
-                    EventThumbnailUploaded(
-                        thumbnailId,
-                        listOf(chunkId),
-                        resolution,
-                        fileId,
-                        contentType,
-                        Base64.getEncoder().encodeToString(secretKey.encoded)
-                    )
+            Log.i(TAG, "Uploading thumbnail with resolution ${resolution.value}. Chunk id=${chunkId}")
+            eventPublisher.publishEvent(
+                EventThumbnailUploaded(
+                    thumbnailId,
+                    listOf(chunkId),
+                    resolution,
+                    fileId,
+                    contentType,
+                    Base64.getEncoder().encodeToString(secretKey.encoded)
                 )
+            )
 
-                val upload = fileRepository.upload(FileUpload(chunkId, fileBase64, wallet))
-
-                println(upload.status)
-            } catch (e: Exception) {
-                println(e)
-            }
-
+            fileRepository.upload(FileUpload(chunkId, fileBase64, wallet))
         }
     }
 

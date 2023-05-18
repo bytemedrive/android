@@ -42,16 +42,7 @@ class FileViewModel(
 
     init {
         viewModelScope.launch {
-            thumbnails.value = files.value.associate {
-                it.id to it.thumbnails
-                    .find { thumbnail -> thumbnail.resolution == Resolution.P360 }
-                    ?.let { thumbnail ->
-                        val bytes = fileRepository.download(thumbnail.chunkId.toString())
-                        val fileDecrypted = AesService.decryptWithKey(bytes, thumbnail.secretKey)
-
-                        BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
-                    }
-            }
+            getThumbnails()
         }
     }
 
@@ -181,4 +172,17 @@ class FileViewModel(
                 contentResolver.openOutputStream(uri!!).use { it?.write(fileDecrypted) }
             }
         }
+
+    private suspend fun getThumbnails() {
+        thumbnails.value = files.value.associate {
+            it.id to it.thumbnails
+                .find { thumbnail -> thumbnail.resolution == Resolution.P360 }
+                ?.let { thumbnail ->
+                    val bytes = fileRepository.download(thumbnail.chunkId.toString())
+                    val fileDecrypted = AesService.decryptWithKey(bytes, thumbnail.secretKey)
+
+                    BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
+                }
+        }
+    }
 }
