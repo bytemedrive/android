@@ -6,6 +6,7 @@ import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.file.starred.StarredViewModel
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.navigation.TopBarViewModel
 import com.bytemedrive.network.HttpClient
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.signin.SignInRepository
@@ -24,6 +25,7 @@ import org.koin.dsl.module
 val viewModelsModule = module {
     single { FileViewModel(get(), get(), get()) }
     single { StarredViewModel(get()) }
+    single { TopBarViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(), get()) }
