@@ -24,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -45,6 +46,7 @@ fun SignInScreen(
     signInViewModel: SignInViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()
 ) {
+    val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val username by signInViewModel.username.collectAsState()
     val password by signInViewModel.password.collectAsState()
@@ -100,7 +102,10 @@ fun SignInScreen(
             label = "Password",
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { signIn() })
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.clearFocus()
+                signIn()
+            })
         )
         Button(
             onClick = { signIn() },
