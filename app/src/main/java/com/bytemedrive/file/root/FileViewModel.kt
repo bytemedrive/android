@@ -2,6 +2,8 @@ package com.bytemedrive.file.root
 
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.lifecycle.ViewModel
@@ -27,15 +29,22 @@ import java.util.UUID
 class FileViewModel(
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
-    private val appNavigator: AppNavigator
+    private val appNavigator: AppNavigator,
 ) : ViewModel() {
 
     var files = MutableStateFlow(AppState.customer.value!!.files)
+    var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
 
     var fileAndFolderList = MutableStateFlow(listOf<Item>())
 
     val fileAndFolderSelected = MutableStateFlow(emptyList<Item>())
+
+    init {
+        viewModelScope.launch {
+            getThumbnails()
+        }
+    }
 
     fun clickFileAndFolder(item: Item) {
         val anyFileSelected = fileAndFolderSelected.value.isNotEmpty()
@@ -163,4 +172,17 @@ class FileViewModel(
                 contentResolver.openOutputStream(uri!!).use { it?.write(fileDecrypted) }
             }
         }
+
+    private suspend fun getThumbnails() {
+        thumbnails.value = files.value.associate {
+            it.id to it.thumbnails
+                .find { thumbnail -> thumbnail.resolution == Resolution.P360 }
+                ?.let { thumbnail ->
+                    val bytes = fileRepository.download(thumbnail.chunkId.toString())
+                    val fileDecrypted = AesService.decryptWithKey(bytes, thumbnail.secretKey)
+
+                    BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
+                }
+        }
+    }
 }

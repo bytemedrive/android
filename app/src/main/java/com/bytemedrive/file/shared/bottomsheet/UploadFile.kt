@@ -27,17 +27,18 @@ import com.bytemedrive.navigation.AppNavigator
 fun UploadFile(
     folderId: String?,
     uploadViewModel: UploadViewModel,
-    appNavigator: AppNavigator
+    appNavigator: AppNavigator,
 ) {
     val context = LocalContext.current
 
     val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uries: List<Uri> ->
         uries.forEach { uri ->
             context.contentResolver.openInputStream(uri).use { inputStream ->
-                val file = DocumentFile.fromSingleUri(context, uri)
+                val documentFile = DocumentFile.fromSingleUri(context, uri)
+                val fileType = context.contentResolver.getType(uri) ?: "unknown"
 
                 inputStream?.let {
-                    uploadViewModel.uploadFile(it.readBytes(), file?.name!!, folderId, context.contentResolver.getType(uri)!!) {
+                    uploadViewModel.uploadFile(it.readBytes(), documentFile?.name!!, folderId, fileType) {
                         folderId?.let {
                             appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
                         } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
@@ -47,9 +48,11 @@ fun UploadFile(
         }
     }
 
-    Column(modifier = Modifier
-        .padding(16.dp)
-        .clickable { pickFileLauncher.launch("*/*") }, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .clickable { pickFileLauncher.launch("*/*") }, horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         IconButton(onClick = { pickFileLauncher.launch("*/*") }) {
             Icon(
                 imageVector = Icons.Outlined.Upload,
