@@ -47,6 +47,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
+import com.bytemedrive.file.shared.selection.FileSelectionDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
@@ -65,6 +66,7 @@ fun FileScreen(
     val fileAndFolderList = fileViewModel.getFilesPages().collectAsLazyPagingItems()
     val fileAndFolderSelected by fileViewModel.fileAndFolderSelected.collectAsState()
     val thumbnails by fileViewModel.thumbnails.collectAsState()
+    val fileSelectionDialogOpened by fileViewModel.fileSelectionDialogOpened.collectAsState()
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
@@ -89,6 +91,10 @@ fun FileScreen(
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
+    if (fileSelectionDialogOpened) {
+        FileSelectionDialog()
+    }
+
     Scaffold(
         floatingActionButton = { FloatingActionButtonCreate(folderId) },
     ) { paddingValues ->
@@ -103,7 +109,6 @@ fun FileScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()

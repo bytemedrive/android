@@ -4,6 +4,7 @@ import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
+import com.bytemedrive.file.shared.selection.FileSelectionViewModel
 import com.bytemedrive.file.starred.StarredViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarViewModel
@@ -26,6 +27,7 @@ val viewModelsModule = module {
     single { FileViewModel(get(), get(), get()) }
     single { StarredViewModel(get()) }
     single { TopBarViewModel(get(), get()) }
+    viewModel { FileSelectionViewModel(get()) }
     viewModel { SignUpViewModel(get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(), get()) }

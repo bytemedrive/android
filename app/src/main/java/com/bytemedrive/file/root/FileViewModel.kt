@@ -6,12 +6,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
@@ -22,7 +22,7 @@ import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -40,17 +40,13 @@ class FileViewModel(
 
     val fileAndFolderSelected = MutableStateFlow(emptyList<Item>())
 
+    val fileSelectionDialogOpened = MutableStateFlow(false)
+
+    val action = MutableStateFlow<Action?>(null)
+
     init {
         viewModelScope.launch {
             getThumbnails()
-        }
-
-        viewModelScope.launch {
-            AppState.customer.collect {
-                files.value = it?.files.orEmpty().toMutableList()
-                folders.value = it?.folders.orEmpty().toMutableList()
-                getThumbnails()
-            }
         }
     }
 
@@ -75,20 +71,32 @@ class FileViewModel(
         }
     }
 
+    fun toggleAllItems(context: Context) {
+        if (fileAndFolderSelected.value.size == fileAndFolderList.value.size) {
+            fileAndFolderSelected.value = emptyList()
+        } else {
+            fileAndFolderSelected.value = fileAndFolderList.value
+            Toast.makeText(context, "${fileAndFolderList.value.size} items selected", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     fun clearSelectedFileAndFolder() {
         fileAndFolderSelected.value = emptyList()
     }
 
     fun updateFileAndFolderList(folderId: String?) = viewModelScope.launch {
-        combine(files, folders) { files, folders ->
-            folders
-                .filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
-                .map { Item(it.id, it.name, ItemType.Folder, it.starred) } +
-                files
-                    .filter { file -> file.folderId == folderId?.let { UUID.fromString(it) } }
-                    .map { Item(it.id, it.name, ItemType.File, it.starred) }
-        }.collect { value ->
-            fileAndFolderList.value = value
+        AppState.customer.collectLatest { customer ->
+            val tempFolders = customer?.folders
+                ?.filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
+                ?.map { Item(it.id, it.name, ItemType.Folder, it.starred) }.orEmpty()
+
+            val tempFiles = customer?.files
+                ?.filter { file -> file.folderId == folderId?.let { UUID.fromString(it) } }
+                ?.map { Item(it.id, it.name, ItemType.File, it.starred) }.orEmpty()
+
+            files.value = customer?.files.orEmpty().toMutableList()
+            folders.value = customer?.folders.orEmpty().toMutableList()
+            fileAndFolderList.value = tempFolders + tempFiles
         }
     }
 
@@ -167,6 +175,11 @@ class FileViewModel(
             pagingSourceFactory = { FilePagingSource(fileAndFolderList.value) }
         ).flow
 
+    fun prepareItemsToMove(ids: List<UUID>) {
+        action.value = Action(ids, Action.Type.MoveItems)
+        fileSelectionDialogOpened.value = true
+    }
+
     fun downloadFile(id: UUID, context: Context) =
         files.value.find { it.id == id }?.let { file ->
             viewModelScope.launch {
@@ -196,5 +209,11 @@ class FileViewModel(
                     BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
                 }
         }
+    }
+}
+
+data class Action(val ids: List<UUID>, val type: Type) {
+    enum class Type(type: String) {
+        MoveItems("moveItems"),
     }
 }

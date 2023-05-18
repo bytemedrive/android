@@ -19,7 +19,7 @@ class TopBarViewModel(
         viewModelScope.launch {
             combine(
                 fileViewModel.fileAndFolderSelected,
-                starredViewModel.fileAndFolderSelected
+                starredViewModel.fileAndFolderSelected,
             ) { fileAndFolderSelectedRoot,
                 fileAndFolderSelectedStarred ->
 
@@ -36,5 +36,5 @@ class TopBarViewModel(
 enum class BarType(type: String) {
     SCREEN("screen"),
     SELECTION_STARRED("selectionStarred"),
-    SELECTION_FILE("selectionFile")
+    SELECTION_FILE("selectionFile"),
 }

@@ -10,9 +10,14 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.DriveFileMove
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.DriveFileMove
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -59,7 +64,7 @@ fun FileBottomSheetContextFile(
                 modifier = Modifier.height(32.dp),
                 leadingContent = {
                     Icon(
-                        imageVector = Icons.Rounded.Description,
+                        imageVector = Icons.Outlined.Description,
                         contentDescription = "File",
                         tint = Color.Black,
                     )
@@ -89,7 +94,7 @@ fun FileBottomSheetContextFile(
                     .clickable(onClick = { fileViewModel.downloadFile(file.id, context) }),
                 leadingContent = {
                     Icon(
-                        imageVector = Icons.Rounded.Download,
+                        imageVector = Icons.Outlined.Download,
                         contentDescription = "Download",
                         tint = Color.Black,
                     )
@@ -100,10 +105,24 @@ fun FileBottomSheetContextFile(
             ListItem(
                 modifier = Modifier
                     .height(32.dp)
+                    .clickable(onClick = { fileViewModel.prepareItemsToMove(listOf(file.id)) }),
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.DriveFileMove,
+                        contentDescription = "Move file",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(text = "Move file") },
+            )
+
+            ListItem(
+                modifier = Modifier
+                    .height(32.dp)
                     .clickable(onClick = { remove() }),
                 leadingContent = {
                     Icon(
-                        imageVector = Icons.Rounded.Delete,
+                        imageVector = Icons.Outlined.Delete,
                         contentDescription = "Remove",
                         tint = Color.Black,
                     )
