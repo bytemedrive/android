@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -47,6 +48,7 @@ fun SignUpScreen(
     signUpViewModel: SignUpViewModel = koinViewModel(),
     appNavigator: AppNavigator = get()
 ) {
+    val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val username by signUpViewModel.username.collectAsState()
     val password by signUpViewModel.password.collectAsState()
@@ -114,7 +116,10 @@ fun SignUpScreen(
             modifier = Modifier.fillMaxWidth(),
             showEye = false,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { signUpHandler() }),
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.clearFocus()
+                signUpHandler()
+            }),
             focusRequester = focusRequester
         )
         FieldCheckbox(
