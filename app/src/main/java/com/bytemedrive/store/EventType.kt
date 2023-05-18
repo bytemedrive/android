@@ -1,6 +1,6 @@
 package com.bytemedrive.store
 
-import com.bytemedrive.file.EventThumbnailUploaded
+import com.bytemedrive.file.root.EventThumbnailUploaded
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.EventFileStarAdded
 import com.bytemedrive.file.root.EventFileStarRemoved
