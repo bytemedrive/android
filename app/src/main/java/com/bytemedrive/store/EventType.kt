@@ -1,5 +1,6 @@
 package com.bytemedrive.store
 
+import com.bytemedrive.file.EventThumbnailUploaded
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.EventFileStarAdded
 import com.bytemedrive.file.root.EventFileStarRemoved
@@ -18,6 +19,7 @@ enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {
     FILE_STAR_ADDED("file-star-added", EventFileStarAdded::class.java),
     FILE_STAR_DELETED("file-star-deleted", EventFileStarRemoved::class.java),
     FILE_UPLOADED("file-uploaded", EventFileUploaded::class.java),
+    FILE_THUMBNAIL_UPLOADED("file-thumbnail-uploaded", EventThumbnailUploaded::class.java),
     FOLDER_STAR_ADDED("folder-star-added", EventFolderStarAdded::class.java),
     FOLDER_STAR_DELETED("folder-star-deleted", EventFolderStarRemoved::class.java),
     FOLDER_CREATED("folder-created", EventFolderCreated::class.java),

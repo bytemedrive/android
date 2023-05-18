@@ -12,17 +12,8 @@ data class File(
     val secretKey: SecretKey,
     val starred: Boolean = false,
     val folderId: UUID?,
-)
+    val thumbnails: MutableList<Thumbnail> = mutableListOf()
+) {
 
-fun formatFileSize(bytes: Long): String {
-    val units = arrayOf("B", "KB", "MB", "GB", "TB")
-    var size = bytes.toDouble()
-    var unit = 0
-
-    while (size >= 1024 && unit < units.size - 1) {
-        size /= 1024
-        unit++
-    }
-
-    return "%.2f %s".format(size, units[unit])
+    data class Thumbnail(val id: UUID, val chunkId: UUID, val resolution: Resolution, val secretKey: SecretKey)
 }

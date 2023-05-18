@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,15 +35,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
@@ -59,11 +59,12 @@ private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 fun FileScreen(
     folderId: String? = null,
     fileViewModel: FileViewModel = koinViewModel(),
-    appNavigator: AppNavigator = get()
+    appNavigator: AppNavigator = get(),
 ) {
     val context = LocalContext.current
     val fileAndFolderList = fileViewModel.getFilesPages().collectAsLazyPagingItems()
     val fileAndFolderSelected by fileViewModel.fileAndFolderSelected.collectAsState()
+    val thumbnails by fileViewModel.thumbnails.collectAsState()
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
@@ -108,8 +109,8 @@ fun FileScreen(
                         .fillMaxSize()
                         .padding(horizontal = 16.dp, vertical = 32.dp)
                 ) {
-                    items(items = fileAndFolderList) {
-                        it?.let { item ->
+                    items(items = fileAndFolderList) { fileAndFolder ->
+                        fileAndFolder?.let { item ->
                             val itemSelected = fileAndFolderSelected.contains(item)
 
                             Row(
@@ -129,11 +130,20 @@ fun FileScreen(
                                         tint = Color.Black,
                                     )
                                 } else {
-                                    Icon(
-                                        imageVector = if (item.type == ItemType.File) Icons.Outlined.Description else Icons.Default.Folder,
-                                        contentDescription = "Folder",
-                                        tint = Color.Black,
-                                    )
+                                    if (item.type == ItemType.File) {
+                                        thumbnails[item.id]?.let { Image(bitmap = it.asImageBitmap(), contentDescription = "Thumbnail") }
+                                            ?: Icon(
+                                                imageVector = Icons.Outlined.Description,
+                                                contentDescription = "File",
+                                                tint = Color.Black,
+                                            )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.Folder,
+                                            contentDescription = "Folder",
+                                            tint = Color.Black,
+                                        )
+                                    }
                                 }
                                 Column(
                                     modifier = Modifier
