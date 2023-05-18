@@ -22,6 +22,7 @@ import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -43,6 +44,14 @@ class FileViewModel(
     init {
         viewModelScope.launch {
             getThumbnails()
+        }
+
+        viewModelScope.launch {
+            AppState.customer.collect {
+                files.value = it?.files.orEmpty().toMutableList()
+                folders.value = it?.folders.orEmpty().toMutableList()
+                getThumbnails()
+            }
         }
     }
 

@@ -1,7 +1,5 @@
-package com.bytemedrive.file
+package com.bytemedrive.file.root
 
-import com.bytemedrive.file.root.File
-import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.store.Convertable
 import com.bytemedrive.store.CustomerAggregate
 import java.util.Base64
