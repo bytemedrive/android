@@ -1,6 +1,8 @@
 package com.bytemedrive.file.root
 
-enum class Resolution(val value: Int) {
+import com.fasterxml.jackson.annotation.JsonValue
+
+enum class Resolution(@JsonValue val value: Int) {
 
     P1280(1280),
 

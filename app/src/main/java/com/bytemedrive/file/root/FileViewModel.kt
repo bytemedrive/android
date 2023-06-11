@@ -22,7 +22,6 @@ import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -98,23 +97,27 @@ class FileViewModel(
     fun singleFolder(id: String) = folders.value.find { it.id == UUID.fromString(id) }
 
     fun removeFile(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
-        eventPublisher.publishEvent(EventFileDeleted(id))
-        fileRepository.remove(id.toString())
-        onSuccess()
+        AppState.customer.value?.wallet?.let { walletId ->
+            eventPublisher.publishEvent(EventFileDeleted(id))
+            fileRepository.remove(walletId, id)
+            onSuccess()
+        }
     }
 
     fun removeFolder(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
-        folders.value.find { it.id == id }?.let { folder ->
-            findFilesToRemove(id, folders.value, files.value).forEach { file ->
-                eventPublisher.publishEvent(EventFileDeleted(file.id))
-                fileRepository.remove(file.id.toString())
+        AppState.customer.value?.wallet?.let { walletId ->
+            folders.value.find { it.id == id }?.let { folder ->
+                findFilesToRemove(id, folders.value, files.value).forEach { file ->
+                    eventPublisher.publishEvent(EventFileDeleted(file.id))
+                    fileRepository.remove(walletId, file.id)
+                }
+                (findFoldersToRemove(id, folders.value) + folder).forEach {
+                    eventPublisher.publishEvent(EventFolderDeleted(it.id))
+                }
             }
-            (findFoldersToRemove(id, folders.value) + folder).forEach {
-                eventPublisher.publishEvent(EventFolderDeleted(it.id))
-            }
-        }
 
-        onSuccess()
+            onSuccess()
+        }
     }
 
     fun toggleStarredFile(id: UUID, value: Boolean, onSuccess: () -> Unit) = viewModelScope.launch {
@@ -167,7 +170,7 @@ class FileViewModel(
     fun downloadFile(id: UUID, context: Context) =
         files.value.find { it.id == id }?.let { file ->
             viewModelScope.launch {
-                val bytes = fileRepository.download(file.chunkId.toString())
+                val bytes = fileRepository.download(file.chunkId)
                 val fileDecrypted = AesService.decryptWithKey(bytes, file.secretKey)
 
                 val contentResolver = context.contentResolver
@@ -187,7 +190,7 @@ class FileViewModel(
             it.id to it.thumbnails
                 .find { thumbnail -> thumbnail.resolution == Resolution.P360 }
                 ?.let { thumbnail ->
-                    val bytes = fileRepository.download(thumbnail.chunkId.toString())
+                    val bytes = fileRepository.download(thumbnail.chunkId)
                     val fileDecrypted = AesService.decryptWithKey(bytes, thumbnail.secretKey)
 
                     BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
