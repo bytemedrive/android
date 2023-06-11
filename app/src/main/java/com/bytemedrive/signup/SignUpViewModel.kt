@@ -10,6 +10,7 @@ import com.bytemedrive.store.EncryptedSecretKey
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventsSecretKey
+import com.bytemedrive.wallet.WalletRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ import java.util.UUID
 
 class SignUpViewModel(
     private val signUpRepository: SignUpRepository,
+    private val walletRepository: WalletRepository,
     private val eventPublisher: EventPublisher,
     private val signInManager: SignInManager
 ) : ViewModel() {
@@ -46,11 +48,13 @@ class SignUpViewModel(
             val encryptedEventsSecretKey = AesService.encryptWithPassword(eventsSecretKey.encoded, password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
             val aesKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.AES256, String(Base64.getEncoder().encode(encryptedEventsSecretKey), StandardCharsets.UTF_8))
             val customerSignUp = CustomerSignUp(credentialsSha3, aesKey)
+            val walletId = UUID.randomUUID()
 
             signUpRepository.signUp(usernameSha3, customerSignUp)
+            walletRepository.createWallet(walletId)
             signInManager.signInSuccess(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey))
 
-            val eventSignUp = EventCustomerSignedUp(username, UUID.randomUUID(), ZonedDateTime.now())
+            val eventSignUp = EventCustomerSignedUp(username, walletId, ZonedDateTime.now())
 
             eventPublisher.publishEvent(eventSignUp)
         } catch (exception: Exception) {

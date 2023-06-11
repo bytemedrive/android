@@ -46,7 +46,7 @@ class EventSyncService(private val storeRepository: StoreRepository, private val
             val customer = CustomerAggregate()
 
             allEvents.stream().forEach { it.data.convert(customer) }
-            customer.creditAmount = walletRepository.getWallet(customer.wallet.toString()).credit
+            customer.creditAmount = walletRepository.getWallet(customer.wallet!!).credit
 
             Log.i(TAG, "Customer refreshed.")
             AppState.customer.value = customer

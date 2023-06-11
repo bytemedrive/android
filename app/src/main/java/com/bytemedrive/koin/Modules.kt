@@ -21,15 +21,16 @@ import com.bytemedrive.store.StoreRepository
 import com.bytemedrive.wallet.AddCreditCodeViewModel
 import com.bytemedrive.wallet.AddCreditMethodViewModel
 import com.bytemedrive.wallet.WalletRepository
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelsModule = module {
-    single { FileViewModel(get(), get(), get(), get()) }
+    single { FileViewModel(get(), get(), get(), get(), androidContext()) }
     single { StarredViewModel(get()) }
     single { TopBarViewModel(get(), get()) }
+    viewModel { SignUpViewModel(get(), get(), get(), get()) }
     viewModel { FileSelectionViewModel(get(), get()) }
-    viewModel { SignUpViewModel(get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(), get()) }
     viewModel { CreateFolderViewModel(get()) }

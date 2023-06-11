@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.documentfile.provider.DocumentFile
 import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.navigation.AppNavigator
+import java.io.File
+import java.util.UUID
 
 @Composable
 fun UploadFile(
@@ -38,7 +40,7 @@ fun UploadFile(
                 val fileType = context.contentResolver.getType(uri) ?: "unknown"
 
                 inputStream?.let {
-                    uploadViewModel.uploadFile(it.readBytes(), documentFile?.name!!, folderId, fileType) {
+                    uploadViewModel.uploadFile(inputStream, context.cacheDir, documentFile?.name!!, folderId, fileType) {
                         folderId?.let {
                             appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
                         } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)

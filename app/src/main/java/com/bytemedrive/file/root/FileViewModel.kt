@@ -21,17 +21,22 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.readBytes
+import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.UUID
+import java.io.File as FileJava
 
 class FileViewModel(
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
     private val appNavigator: AppNavigator,
-    private val folderManager: FolderManager
+    private val folderManager: FolderManager,
+    context: Context,
 ) : ViewModel() {
 
     var files = MutableStateFlow(AppState.customer.value!!.files)
@@ -48,7 +53,7 @@ class FileViewModel(
 
     init {
         viewModelScope.launch {
-            getThumbnails()
+            getThumbnails(context)
         }
     }
 
@@ -86,7 +91,7 @@ class FileViewModel(
         fileAndFolderSelected.value = emptyList()
     }
 
-    fun updateFileAndFolderList(folderId: String?) = viewModelScope.launch {
+    fun updateFileAndFolderList(folderId: String?, context: Context) = viewModelScope.launch {
         AppState.customer.collectLatest { customer ->
             val tempFolders = customer?.folders
                 ?.filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
@@ -99,6 +104,7 @@ class FileViewModel(
             files.value = customer?.files.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
             fileAndFolderList.value = tempFolders + tempFiles
+            getThumbnails(context)
         }
     }
 
@@ -181,8 +187,19 @@ class FileViewModel(
     fun downloadFile(id: UUID, context: Context) =
         files.value.find { it.id == id }?.let { file ->
             viewModelScope.launch {
-                val bytes = fileRepository.download(file.chunkId)
-                val fileDecrypted = AesService.decryptWithKey(bytes, file.secretKey)
+                val encryptedFile = FileJava.createTempFile("${file.name}-encrypted", null, context.cacheDir)
+
+
+                encryptedFile.outputStream().use { outputStream ->
+                    file.chunksViewIds
+                        .forEach { chunkViewId ->
+                            val response = fileRepository.download(chunkViewId)
+
+                            response.bodyAsChannel().toInputStream().use { inputStream ->
+                                inputStream.copyTo(outputStream, UploadViewModel.BUFFER_SIZE)
+                            }
+                        }
+                }
 
                 val contentResolver = context.contentResolver
                 val contentValues = ContentValues().apply {
@@ -192,7 +209,7 @@ class FileViewModel(
                 }
                 val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
 
-                contentResolver.openOutputStream(uri!!).use { it?.write(fileDecrypted) }
+                AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, file.secretKey)
             }
         }
 
@@ -213,8 +230,19 @@ class FileViewModel(
             it.id to it.thumbnails
                 .find { thumbnail -> thumbnail.resolution == Resolution.P360 }
                 ?.let { thumbnail ->
-                    val bytes = fileRepository.download(thumbnail.chunkId)
-                    val fileDecrypted = AesService.decryptWithKey(bytes, thumbnail.secretKey)
+                    val encryptedFile = FileJava.createTempFile("${thumbnail.id}-encrypted", null, context.cacheDir)
+
+                    encryptedFile.outputStream().use { outputStream ->
+                        thumbnail.chunksViewIds.forEach { chunkViewId ->
+                            val response = fileRepository.download(chunkViewId)
+
+                            response.bodyAsChannel().toInputStream().use { inputStream ->
+                                inputStream.copyTo(outputStream, UploadViewModel.BUFFER_SIZE)
+                            }
+                        }
+                    }
+
+                    val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), thumbnail.secretKey)
 
                     BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
                 }

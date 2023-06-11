@@ -8,6 +8,7 @@ import javax.crypto.spec.SecretKeySpec
 data class EventFileUploaded(
     val id: UUID,
     val chunksIds: List<UUID>,
+    val chunksViewIds: List<UUID>,
     val name: String,
     val sizeBytes: Long,
     val checksum: String,
@@ -22,6 +23,6 @@ data class EventFileUploaded(
         val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
 
         // TODO: Temporary, fix when we work with chunks
-        customer.files.add(File(id, chunksIds[0], name, sizeBytes, contentType, secretKey, starred, folderId))
+        customer.files.add(File(id, chunksIds, chunksViewIds, name, sizeBytes, contentType, secretKey, starred, folderId))
     }
 }
