@@ -52,6 +52,7 @@ fun AppNavHost(
         ) { backstackEntry ->
             FileScreen(backstackEntry.arguments?.getString("folderId"))
         }
+
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_METHOD.label) { AddCreditMethodScreen() }
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_CODE.label) { AddCreditCodeScreen() }
         composable(route = AppNavigator.NavTarget.STARRED.label) { StarredScreen() }

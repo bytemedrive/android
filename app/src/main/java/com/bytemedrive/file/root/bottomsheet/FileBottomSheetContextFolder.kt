@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DriveFileMove
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -78,6 +79,20 @@ fun FileBottomSheetContextFolder(
                     )
                 },
                 headlineText = { Text(text = if (folder.starred) "Remove from starred" else "Add to starred") },
+            )
+
+            ListItem(
+                modifier = Modifier
+                    .height(32.dp)
+                    .clickable(onClick = { fileViewModel.prepareItemsToMove(listOf(folder.id)) }),
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Rounded.DriveFileMove,
+                        contentDescription = "Move folder",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(text = "Move folder") },
             )
 
             ListItem(

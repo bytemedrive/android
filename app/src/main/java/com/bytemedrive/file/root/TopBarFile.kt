@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
@@ -26,6 +27,7 @@ import org.koin.androidx.compose.koinViewModel
 fun TopBarFile(
     fileViewModel: FileViewModel = get(),
 ) {
+    val context = LocalContext.current
     val fileAndFolderSelected by fileViewModel.fileAndFolderSelected.collectAsState()
 
     TopAppBar(
@@ -40,7 +42,7 @@ fun TopBarFile(
             IconButton(onClick = { fileViewModel.clearSelectedFileAndFolder() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Unselect files"
+                    contentDescription = "Close"
                 )
             }
         },
@@ -51,7 +53,10 @@ fun TopBarFile(
                     contentDescription = "File copy"
                 )
             }
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = {
+                fileViewModel.prepareItemsToMove(fileAndFolderSelected.map { it.id })
+                fileViewModel.clearSelectedFileAndFolder()
+            }) {
                 Icon(
                     imageVector = Icons.Filled.DriveFileMove,
                     contentDescription = "File move"
@@ -60,10 +65,10 @@ fun TopBarFile(
             IconButton(onClick = { /* doSomething() */ }) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
-                    contentDescription = "File move"
+                    contentDescription = "File delete"
                 )
             }
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = { fileViewModel.toggleAllItems(context) }) {
                 Icon(
                     imageVector = Icons.Filled.SelectAll,
                     contentDescription = "Select all"

@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
@@ -28,6 +29,7 @@ import org.koin.androidx.compose.koinViewModel
 fun TopBarStarred(
     starredViewModel: StarredViewModel = get(),
 ) {
+    val context = LocalContext.current
     val fileAndFolderSelected by starredViewModel.fileAndFolderSelected.collectAsState()
 
     TopAppBar(
@@ -42,30 +44,18 @@ fun TopBarStarred(
             IconButton(onClick = { starredViewModel.clearSelectedFileAndFolder() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Unselect files"
+                    contentDescription = "Close"
                 )
             }
         },
         actions = {
             IconButton(onClick = { /* doSomething() */ }) {
                 Icon(
-                    imageVector = Icons.Filled.FileCopy,
-                    contentDescription = "File copy"
-                )
-            }
-            IconButton(onClick = { /* doSomething() */ }) {
-                Icon(
-                    imageVector = Icons.Filled.DriveFileMove,
-                    contentDescription = "File move"
-                )
-            }
-            IconButton(onClick = { /* doSomething() */ }) {
-                Icon(
                     imageVector = Icons.Filled.Delete,
-                    contentDescription = "File move"
+                    contentDescription = "File delete"
                 )
             }
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = { starredViewModel.toggleAllItems(context) }) {
                 Icon(
                     imageVector = Icons.Filled.SelectAll,
                     contentDescription = "Select all"
