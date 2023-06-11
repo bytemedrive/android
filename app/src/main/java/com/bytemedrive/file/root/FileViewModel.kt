@@ -106,8 +106,15 @@ class FileViewModel(
 
     fun removeFile(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
+            val file = files.value.find { it.id == id }
+            val physicalFileCanBeRemoved = files.value.none { it.chunkId == file?.chunkId }
+
             eventPublisher.publishEvent(EventFileDeleted(id))
-            fileRepository.remove(walletId, id)
+
+            if (physicalFileCanBeRemoved) {
+                fileRepository.remove(walletId, id)
+            }
+
             onSuccess()
         }
     }
@@ -115,11 +122,16 @@ class FileViewModel(
     fun removeFolder(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
             folders.value.find { it.id == id }?.let { folder ->
-                findFilesToRemove(id, folders.value, files.value).forEach { file ->
+                File.findAllFilesRecursively(id, folders.value, files.value).forEach { file ->
+                    val physicalFileCanBeRemoved = files.value.none { it.chunkId == file.chunkId }
+
                     eventPublisher.publishEvent(EventFileDeleted(file.id))
-                    fileRepository.remove(walletId, file.id)
+
+                    if (physicalFileCanBeRemoved) {
+                        fileRepository.remove(walletId, file.id)
+                    }
                 }
-                (findFoldersToRemove(id, folders.value) + folder).forEach {
+                (Folder.findAllFoldersRecursively(id, folders.value) + folder).forEach {
                     eventPublisher.publishEvent(EventFolderDeleted(it.id))
                 }
             }
@@ -146,37 +158,21 @@ class FileViewModel(
         onSuccess()
     }
 
-    private fun findFilesToRemove(folderId: UUID, allFolders: List<Folder>, allFiles: List<File>): List<File> {
-        val filesToRemove = allFiles.filter { it.folderId == folderId }
-        val subFolders = allFolders.filter { it.parent == folderId }
-
-        val filesInSubFolders = mutableListOf<File>()
-        for (subfolder in subFolders) {
-            filesInSubFolders.addAll(findFilesToRemove(subfolder.id, allFolders, allFiles))
-        }
-
-        return filesToRemove + filesInSubFolders
-    }
-
-    private fun findFoldersToRemove(folderId: UUID, allFolders: List<Folder>): List<Folder> {
-        val objectsInFolder = allFolders.filter { it.parent == folderId }
-
-        val objectsInSubFolders = mutableListOf<Folder>()
-        for (subfolder in objectsInFolder) {
-            objectsInSubFolders.addAll(findFoldersToRemove(subfolder.id, allFolders))
-        }
-
-        return objectsInFolder + objectsInSubFolders
-    }
-
     fun getFilesPages(): Flow<PagingData<Item>> =
         Pager(
             config = PagingConfig(pageSize = 20),
             pagingSourceFactory = { FilePagingSource(fileAndFolderList.value) }
         ).flow
 
-    fun prepareItemsToMove(ids: List<UUID>) {
+    fun useSelectionScreenToMoveItems(id: UUID) = useSelectionScreenToMoveItems(listOf(id))
+
+    fun useSelectionScreenToMoveItems(ids: List<UUID>) {
         action.value = Action(ids, Action.Type.MoveItems)
+        fileSelectionDialogOpened.value = true
+    }
+
+    fun useSelectionScreenToCopyItem(id: UUID) {
+        action.value = Action(listOf(id), Action.Type.CopyItem)
         fileSelectionDialogOpened.value = true
     }
 
@@ -214,6 +210,7 @@ class FileViewModel(
 
 data class Action(val ids: List<UUID>, val type: Type) {
     enum class Type(type: String) {
-        MoveItems("moveItems"),
+        CopyItem("copyItem"),
+        MoveItems("moveItems")
     }
 }

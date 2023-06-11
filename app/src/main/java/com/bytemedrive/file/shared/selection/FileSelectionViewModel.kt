@@ -7,11 +7,14 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.bytemedrive.file.root.Action
+import com.bytemedrive.file.root.EventFileCopied
 import com.bytemedrive.file.root.EventFileMoved
 import com.bytemedrive.file.root.FilePagingSource
 import com.bytemedrive.file.root.Item
 import com.bytemedrive.file.root.ItemType
+import com.bytemedrive.folder.EventFolderCopied
 import com.bytemedrive.folder.EventFolderMoved
+import com.bytemedrive.folder.Folder
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
@@ -34,16 +37,6 @@ class FileSelectionViewModel(
 
     private val history = MutableStateFlow(emptyList<UUID>())
 
-    fun moveItems(action: Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
-        val selectedFolders = folders.value.filter { folder -> action.ids.contains(folder.id) }
-        val selectedFiles = files.value.filter { file -> action.ids.contains(file.id) }
-
-        selectedFolders.forEach { eventPublisher.publishEvent(EventFolderMoved(it.id, folderId)) }
-        selectedFiles.forEach { eventPublisher.publishEvent(EventFileMoved(it.id, folderId)) }
-
-        closeDialog()
-    }
-
     fun openFolder(id: UUID?) {
         selectedFolderId.value = id
         updateFileAndFolderList(id)
@@ -64,15 +57,17 @@ class FileSelectionViewModel(
 
     fun updateFileAndFolderList(folderId: UUID?) = viewModelScope.launch {
         AppState.customer.collectLatest { customer ->
-            val folders = customer?.folders
+            val tempFolders = customer?.folders
                 ?.filter { folder -> folder.parent == folderId }
                 ?.map { Item(it.id, it.name, ItemType.Folder, it.starred) }.orEmpty()
 
-            val files = customer?.files
+            val tempFiles = customer?.files
                 ?.filter { file -> file.folderId == folderId }
                 ?.map { Item(it.id, it.name, ItemType.File, it.starred) }.orEmpty()
 
-            fileAndFolderList.value = folders + files
+            files.value = customer?.files.orEmpty().toMutableList()
+            folders.value = customer?.folders.orEmpty().toMutableList()
+            fileAndFolderList.value = tempFolders + tempFiles
         }
     }
 
@@ -81,4 +76,53 @@ class FileSelectionViewModel(
             config = PagingConfig(pageSize = 20),
             pagingSourceFactory = { FilePagingSource(fileAndFolderList.value) }
         ).flow.cachedIn(viewModelScope)
+
+    fun copyItem(action: Action, folderId: UUID?, closeDialog: () -> Unit) {
+        folders.value.find { folder -> action.ids.firstOrNull() == folder.id }?.let { folder ->
+            val currentFolderToCopy = folder.copy(id = UUID.randomUUID(), name = "Copy of ${folder.name}", parent = folderId)
+            val innerFoldersToCopy = Folder.findAllFoldersRecursively(folder.id, folders.value).toMutableList()
+
+            innerFoldersToCopy.forEach { innerFolder ->
+                val parent = if (innerFolder.parent == folder.id) currentFolderToCopy.id else innerFolder.parent
+                val newFolder = innerFolder.copy(id = UUID.randomUUID(), parent = parent)
+
+                copyFolders(innerFolder.id, newFolder.id)
+                copyFiles(innerFolder.id, UUID.randomUUID(), newFolder.id)
+
+                viewModelScope.launch { eventPublisher.publishEvent(EventFolderCopied(innerFolder.id, newFolder.id, newFolder.parent)) }
+            }
+
+            copyFiles(folder.id, UUID.randomUUID(), currentFolderToCopy.id)
+
+            viewModelScope.launch { eventPublisher.publishEvent(EventFolderCopied(folder.id, currentFolderToCopy.id, currentFolderToCopy.parent)) }
+        }
+
+        files.value.find { file -> action.ids.firstOrNull() == file.id }?.let { file ->
+            viewModelScope.launch { eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}")) }
+        }
+
+        closeDialog()
+    }
+
+    private fun copyFolders(currentFolderId: UUID, newFolderId: UUID) = viewModelScope.launch {
+        folders.value.filter { it.parent == currentFolderId }.forEach {
+            eventPublisher.publishEvent(EventFolderCopied(it.id, parentId = newFolderId))
+        }
+    }
+
+    private fun copyFiles(currentFolderId: UUID, newId: UUID, newFolderId: UUID, name: String? = null) = viewModelScope.launch {
+        files.value.filter { it.folderId == currentFolderId }.forEach { file ->
+            eventPublisher.publishEvent(EventFileCopied(file.id, newId, newFolderId, name))
+        }
+    }
+
+    fun moveItems(action: Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
+        val selectedFolders = folders.value.filter { folder -> action.ids.contains(folder.id) }
+        val selectedFiles = files.value.filter { file -> action.ids.contains(file.id) }
+
+        selectedFolders.forEach { eventPublisher.publishEvent(EventFolderMoved(it.id, folderId)) }
+        selectedFiles.forEach { eventPublisher.publishEvent(EventFileMoved(it.id, folderId)) }
+
+        closeDialog()
+    }
 }

@@ -1,11 +1,13 @@
 package com.bytemedrive.store
 
-import com.bytemedrive.file.root.EventThumbnailUploaded
+import com.bytemedrive.file.root.EventFileCopied
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.EventFileMoved
 import com.bytemedrive.file.root.EventFileStarAdded
 import com.bytemedrive.file.root.EventFileStarRemoved
 import com.bytemedrive.file.root.EventFileUploaded
+import com.bytemedrive.folder.EventFolderCopied
+import com.bytemedrive.file.root.EventThumbnailUploaded
 import com.bytemedrive.folder.EventFolderCreated
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderMoved
@@ -18,12 +20,14 @@ import com.fasterxml.jackson.annotation.JsonValue
 enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {
     COUPON_REDEEMED("coupon-redeemed", EventCouponRedeemed::class.java),
     CUSTOMER_SIGNED_UP("customer-signed-up", EventCustomerSignedUp::class.java),
+    FILE_COPIED("file-copied", EventFileCopied::class.java),
     FILE_DELETED("file-deleted", EventFileDeleted::class.java),
     FILE_MOVED("file-moved", EventFileMoved::class.java),
     FILE_STAR_ADDED("file-star-added", EventFileStarAdded::class.java),
     FILE_STAR_DELETED("file-star-deleted", EventFileStarRemoved::class.java),
     FILE_UPLOADED("file-uploaded", EventFileUploaded::class.java),
     FILE_THUMBNAIL_UPLOADED("file-thumbnail-uploaded", EventThumbnailUploaded::class.java),
+    FOLDER_COPIED("folder-copied", EventFolderCopied::class.java),
     FOLDER_CREATED("folder-created", EventFolderCreated::class.java),
     FOLDER_DELETED("folder-deleted", EventFolderDeleted::class.java),
     FOLDER_MOVED("folder-moved", EventFolderMoved::class.java),
