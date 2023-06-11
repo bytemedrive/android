@@ -7,12 +7,13 @@ import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.readBytes
+import java.util.UUID
 
 class FileRepository {
 
-    suspend fun upload(body: FileUpload) = httpClient.post("files") { setBody(body) }
+    suspend fun upload(body: FileUpload) = httpClient.post("/wallets/${body.wallet}/files") { setBody(body) }
 
-    suspend fun download(id: String) = httpClient.get("files/$id") { header("Accept", "application/octet-stream") }.readBytes()
+    suspend fun download(id: UUID) = httpClient.get("files/$id") { header("Accept", "application/octet-stream") }.readBytes()
 
-    suspend fun remove(id: String) = httpClient.delete("files/$id")
+    suspend fun remove(walletId: UUID, id: UUID) = httpClient.delete("/wallets/$walletId/files/$id")
 }
