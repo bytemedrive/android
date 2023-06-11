@@ -58,7 +58,7 @@ private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 @Composable
 fun FileScreen(
     folderId: String? = null,
-    fileViewModel: FileViewModel = koinViewModel(),
+    fileViewModel: FileViewModel = get(),
     appNavigator: AppNavigator = get(),
 ) {
     val context = LocalContext.current

@@ -165,7 +165,7 @@ class FileViewModel(
         Pager(
             config = PagingConfig(pageSize = 20),
             pagingSourceFactory = { FilePagingSource(fileAndFolderList.value) }
-        ).flow.cachedIn(viewModelScope)
+        ).flow
 
     fun downloadFile(id: UUID, context: Context) =
         files.value.find { it.id == id }?.let { file ->

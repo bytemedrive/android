@@ -47,7 +47,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun StarredScreen(
-    starredViewModel: StarredViewModel = koinViewModel(),
+    starredViewModel: StarredViewModel = get(),
     appNavigator: AppNavigator = get()
 ) {
     val items = starredViewModel.getStarredFilesPages().collectAsLazyPagingItems()

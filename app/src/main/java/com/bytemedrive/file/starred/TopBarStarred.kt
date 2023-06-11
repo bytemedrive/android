@@ -20,12 +20,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.starred.StarredViewModel
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TopBarStarred(
-    starredViewModel: StarredViewModel = koinViewModel(),
+    starredViewModel: StarredViewModel = get(),
 ) {
     val fileAndFolderSelected by starredViewModel.fileAndFolderSelected.collectAsState()
 

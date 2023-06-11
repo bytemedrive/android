@@ -18,12 +18,13 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TopBarFile(
-    fileViewModel: FileViewModel = koinViewModel(),
+    fileViewModel: FileViewModel = get(),
 ) {
     val fileAndFolderSelected by fileViewModel.fileAndFolderSelected.collectAsState()
 

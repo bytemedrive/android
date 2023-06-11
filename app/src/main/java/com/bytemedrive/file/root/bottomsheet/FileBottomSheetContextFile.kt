@@ -32,7 +32,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun FileBottomSheetContextFile(
     id: String,
-    fileViewModel: FileViewModel = koinViewModel(),
+    fileViewModel: FileViewModel = get(),
     appNavigator: AppNavigator = get()
 ) =
     fileViewModel.singleFile(id)?.let { file ->
