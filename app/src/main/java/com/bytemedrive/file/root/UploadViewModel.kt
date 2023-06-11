@@ -29,11 +29,12 @@ class UploadViewModel(
         val fileEncrypted = AesService.encryptWithKey(bytes, secretKey)
         val fileBase64 = Base64.getEncoder().encodeToString(fileEncrypted)
         val fileId = UUID.randomUUID()
+        val fileViewId = UUID.randomUUID()
         val chunkId = UUID.randomUUID() // TODO: for now we have one chunk (split will be implemented later)
 
         viewModelScope.launch {
             AppState.customer.value?.wallet?.let { wallet ->
-                fileRepository.upload(FileUpload(chunkId, fileBase64, wallet))
+                fileRepository.upload(wallet, FileUpload(chunkId, fileViewId, fileBase64))
                 eventPublisher.publishEvent(
                     EventFileUploaded(
                         fileId,
@@ -70,6 +71,7 @@ class UploadViewModel(
         val fileEncrypted = AesService.encryptWithKey(bytes, secretKey)
         val fileBase64 = Base64.getEncoder().encodeToString(fileEncrypted)
         val thumbnailId = UUID.randomUUID()
+        val fileViewId = UUID.randomUUID()
         val chunkId = UUID.randomUUID() // TODO: for now we have one chunk (split will be implemented later)
 
         AppState.customer.value?.wallet?.let { wallet ->
@@ -85,7 +87,7 @@ class UploadViewModel(
                 )
             )
 
-            fileRepository.upload(FileUpload(chunkId, fileBase64, wallet))
+            fileRepository.upload(wallet, FileUpload(chunkId, fileViewId, fileBase64))
         }
     }
 

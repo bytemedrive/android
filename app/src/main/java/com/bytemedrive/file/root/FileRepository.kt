@@ -11,7 +11,7 @@ import java.util.UUID
 
 class FileRepository {
 
-    suspend fun upload(body: FileUpload) = httpClient.post("wallets/${body.wallet}/files") { setBody(body) }
+    suspend fun upload(walletId: UUID, body: FileUpload) = httpClient.post("wallets/$walletId/files") { setBody(body) }
 
     suspend fun download(id: UUID) = httpClient.get("files/$id") { header("Accept", "application/octet-stream") }.readBytes()
 
