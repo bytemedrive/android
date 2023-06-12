@@ -207,8 +207,10 @@ class FileViewModel(
         fileSelectionDialogOpened.value = true
     }
 
-    fun useSelectionScreenToCopyItem(id: UUID) {
-        action.value = Action(listOf(id), Action.Type.CopyItem)
+    fun useSelectionScreenToCopyItems(id: UUID) = useSelectionScreenToCopyItems(listOf(id))
+
+    fun useSelectionScreenToCopyItems(ids: List<UUID>) {
+        action.value = Action(ids, Action.Type.CopyItems)
         fileSelectionDialogOpened.value = true
     }
 
@@ -268,7 +270,7 @@ class FileViewModel(
 
 data class Action(val ids: List<UUID>, val type: Type) {
     enum class Type(type: String) {
-        CopyItem("copyItem"),
+        CopyItems("copyItems"),
         MoveItems("moveItems")
     }
 }

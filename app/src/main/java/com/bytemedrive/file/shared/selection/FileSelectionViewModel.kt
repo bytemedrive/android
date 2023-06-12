@@ -14,7 +14,6 @@ import com.bytemedrive.file.root.Item
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.folder.EventFolderCopied
 import com.bytemedrive.folder.EventFolderMoved
-import com.bytemedrive.folder.Folder
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
@@ -81,7 +80,7 @@ class FileSelectionViewModel(
 
     // TODO: Rework with use of recursive function to have single iteration
     fun copyItem(action: Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
-        folders.value.find { folder -> action.ids.firstOrNull() == folder.id }?.let { folder ->
+        folders.value.filter { folder -> action.ids.contains(folder.id) }.forEach { folder ->
             val currentFolderToCopy = folder.copy(id = UUID.randomUUID(), name = "Copy of ${folder.name}", parent = folderId)
             val innerFoldersToCopy = folderManager.findAllFoldersRecursively(folder.id, folders.value).toMutableList()
 
@@ -92,7 +91,7 @@ class FileSelectionViewModel(
                 copyFolders(innerFolder.id, newFolder.id)
                 copyFiles(innerFolder.id, UUID.randomUUID(), newFolder.id)
 
-                 eventPublisher.publishEvent(EventFolderCopied(innerFolder.id, newFolder.id, newFolder.parent))
+                eventPublisher.publishEvent(EventFolderCopied(innerFolder.id, newFolder.id, newFolder.parent))
             }
 
             copyFiles(folder.id, UUID.randomUUID(), currentFolderToCopy.id)
@@ -100,8 +99,8 @@ class FileSelectionViewModel(
             eventPublisher.publishEvent(EventFolderCopied(folder.id, currentFolderToCopy.id, currentFolderToCopy.parent))
         }
 
-        files.value.find { file -> action.ids.firstOrNull() == file.id }?.let { file ->
-             eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}"))
+        files.value.filter { file -> action.ids.contains(file.id) }.forEach { file ->
+            eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}"))
         }
 
         closeDialog()
