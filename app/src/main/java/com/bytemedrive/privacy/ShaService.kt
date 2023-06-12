@@ -1,9 +1,8 @@
 package com.bytemedrive.privacy
 
-import com.bytemedrive.file.root.UploadViewModel
+import com.bytemedrive.file.shared.FileManager
 import org.bouncycastle.crypto.digests.SHA3Digest
 import org.bouncycastle.util.encoders.Hex
-import java.io.FileInputStream
 import java.io.InputStream
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -31,9 +30,8 @@ object ShaService {
     }
 
     fun checksum(inputStream: InputStream): String {
-        val bufferSize = UploadViewModel.BUFFER_SIZE
         val digest = MessageDigest.getInstance("SHA-256")
-        val buffer = ByteArray(bufferSize)
+        val buffer = ByteArray(FileManager.BUFFER_SIZE)
 
         inputStream.use { fis ->
             var bytesRead = fis.read(buffer)
