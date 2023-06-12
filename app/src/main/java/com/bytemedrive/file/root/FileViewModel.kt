@@ -115,7 +115,7 @@ class FileViewModel(
     fun removeFile(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
             val file = files.value.find { it.id == id }
-            val physicalFileRemovable = files.value.none { it.chunkId == file?.chunkId }
+            val physicalFileRemovable = files.value.none { it.id == file?.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
             eventPublisher.publishEvent(EventFileDeleted(id))
 
@@ -131,7 +131,7 @@ class FileViewModel(
         AppState.customer.value?.wallet?.let { walletId ->
             folders.value.find { it.id == id }?.let { folder ->
                 findAllFilesRecursively(id, folders.value, files.value).forEach { file ->
-                    val physicalFileRemovable = files.value.none { it.chunkId == file.chunkId }
+                    val physicalFileRemovable = files.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
                     eventPublisher.publishEvent(EventFileDeleted(file.id))
 
@@ -225,7 +225,7 @@ class FileViewModel(
         return filesToRemove + filesInSubFolders
     }
 
-    private suspend fun getThumbnails() {
+    private suspend fun getThumbnails(context: Context) {
         thumbnails.value = files.value.associate {
             it.id to it.thumbnails
                 .find { thumbnail -> thumbnail.resolution == Resolution.P360 }
