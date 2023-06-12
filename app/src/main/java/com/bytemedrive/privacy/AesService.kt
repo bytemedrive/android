@@ -1,5 +1,6 @@
 package com.bytemedrive.privacy
 
+import com.bytemedrive.file.shared.FileManager
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -15,6 +16,7 @@ import javax.crypto.spec.SecretKeySpec
 
 object AesService {
 
+    private const val ENCRYPT_ALGO_PROVIDER = "BC"
     private const val ENCRYPT_ALGO = "AES/GCM/NoPadding"
     private const val TAG_LENGTH_BIT = 128 // must be one of {128, 120, 112, 104, 96}
     private const val IV_LENGTH_BYTE = 12
@@ -40,7 +42,7 @@ object AesService {
     fun encryptWithKey(bytes: ByteArray, key: SecretKey): ByteArray {
         // GCM recommended 12 bytes iv?
         val iv = getRandomBytes(IV_LENGTH_BYTE)
-        val cipher = Cipher.getInstance(ENCRYPT_ALGO)
+        val cipher = Cipher.getInstance(ENCRYPT_ALGO, ENCRYPT_ALGO_PROVIDER)
 
         // ASE-GCM needs GCMParameterSpec
         cipher.init(
@@ -60,10 +62,10 @@ object AesService {
             outputStream.use {
                 val iv = getRandomBytes(IV_LENGTH_BYTE)
                 outputStream.write(iv)
-                val cipher = Cipher.getInstance(ENCRYPT_ALGO, "BC")
+                val cipher = Cipher.getInstance(ENCRYPT_ALGO, ENCRYPT_ALGO_PROVIDER)
 
                 cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-                val buffer = ByteArray(1024)
+                val buffer = ByteArray(FileManager.BUFFER_SIZE)
                 var bytesRead: Int
                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                     cipher.update(buffer, 0, bytesRead).let { outputStream.write(it) }
@@ -80,7 +82,7 @@ object AesService {
         bb[iv]
         val cipherText = ByteArray(bb.remaining())
         bb[cipherText]
-        val cipher = Cipher.getInstance(ENCRYPT_ALGO)
+        val cipher = Cipher.getInstance(ENCRYPT_ALGO, ENCRYPT_ALGO_PROVIDER)
         cipher.init(
             Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv)
         )
@@ -92,10 +94,10 @@ object AesService {
             outputStream.use {
                 val iv = ByteArray(IV_LENGTH_BYTE)
                 inputStream.read(iv)
-                val cipher = Cipher.getInstance(ENCRYPT_ALGO, "BC")
+                val cipher = Cipher.getInstance(ENCRYPT_ALGO, ENCRYPT_ALGO_PROVIDER)
 
                 cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-                val buffer = ByteArray(64)
+                val buffer = ByteArray(FileManager.BUFFER_SIZE)
                 var bytesRead: Int
                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                     cipher.update(buffer, 0, bytesRead).let { outputStream.write(it) }

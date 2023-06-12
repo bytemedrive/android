@@ -6,7 +6,9 @@ import android.media.ThumbnailUtils
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes.*
+import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.privacy.AesService
+import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.launch
@@ -15,27 +17,27 @@ import java.io.File
 import java.io.InputStream
 import java.util.Base64
 import java.util.UUID
-import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 class UploadViewModel(
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
+    private val fileManager: FileManager,
 ) : ViewModel() {
 
     private val TAG = UploadViewModel::class.qualifiedName
 
-    fun uploadFile(inputStream: InputStream, folder: File, fileName: String, folderId: String?, contentType: String, onSuccess: () -> Unit) {
+    fun uploadFile(inputStream: InputStream, tmpFolder: File, fileName: String, folderId: String?, contentType: String, onSuccess: () -> Unit) {
         val fileId = UUID.randomUUID()
-        val tmpFile = File.createTempFile(fileId.toString(), null, folder)
-        inputStream.copyTo(tmpFile.outputStream(), BUFFER_SIZE)
+        val tmpOriginalFile = File.createTempFile(fileId.toString(), null, tmpFolder)
+        inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE)
 
-        val tmpEncryptedFile = File.createTempFile("$fileId-encrypted", null, folder)
+        val tmpEncryptedFile = File.createTempFile("$fileId-encrypted", null, tmpFolder)
 
         val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(tmpFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
+        AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
 
-        val chunks = getChunks(tmpEncryptedFile, folder)
+        val chunks = fileManager.getChunks(tmpEncryptedFile, tmpFolder)
 
         viewModelScope.launch {
             AppState.customer.value?.wallet?.let { wallet ->
@@ -47,7 +49,7 @@ class UploadViewModel(
                         chunks.map { it.viewId },
                         fileName,
                         tmpEncryptedFile.length(),
-                        "xxx",
+                        ShaService.checksum(tmpOriginalFile.inputStream()),
                         contentType,
                         Base64.getEncoder().encodeToString(secretKey.encoded),
                         false,
@@ -57,13 +59,13 @@ class UploadViewModel(
 
                 when (contentType) {
                     IMAGE_JPEG -> {
-                        val bytes = tmpFile.readBytes()
+                        val bytes = tmpOriginalFile.readBytes()
 
                         getThumbnails(BitmapFactory.decodeByteArray(bytes, 0, bytes.size)).forEach {
                             val stream = ByteArrayOutputStream()
                             it.value.compress(Bitmap.CompressFormat.JPEG, 100, stream)
 
-                            uploadThumbnail(stream.toByteArray(), folder, fileId, contentType, it.key)
+                            uploadThumbnail(stream.toByteArray(), tmpFolder, fileId, contentType, it.key)
                         }
                     }
                 }
@@ -75,12 +77,12 @@ class UploadViewModel(
 
     private suspend fun uploadThumbnail(bytes: ByteArray, folder: File, fileId: UUID, contentType: String, resolution: Resolution) {
         val thumbnailId = UUID.randomUUID()
-        val tmpFile = File.createTempFile(fileId.toString(), null, folder)
+        val tmpEncryptedFile = File.createTempFile("$thumbnailId-encrypted", null, folder)
 
         val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(bytes.inputStream(), tmpFile.outputStream(), secretKey)
+        AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
 
-        val chunks = getChunks(tmpFile, folder)
+        val chunks = fileManager.getChunks(tmpEncryptedFile, folder)
 
         AppState.customer.value?.wallet?.let { wallet ->
             eventPublisher.publishEvent(
@@ -99,76 +101,9 @@ class UploadViewModel(
         }
     }
 
-    private fun getThumbnails(original: Bitmap): Map<Resolution, Bitmap> = Resolution.values().associate {
+    private fun getThumbnails(original: Bitmap): Map<Resolution, Bitmap> = Resolution.values().associateWith {
         val ratio = it.value.toDouble() / original.height
 
-        it to ThumbnailUtils.extractThumbnail(original, (original.width * ratio).roundToInt(), (original.height * ratio).roundToInt())
-    }
-
-    private fun getChunks(original: File, folder: File): List<Chunk> {
-        val sizeBytes = original.length()
-
-        if (sizeBytes <= CHUNK_SIZE_BYTES) {
-            val sizeFirst = (0..sizeBytes).random()
-            val sizeSecond = sizeBytes - sizeFirst
-
-            val chunkFirst = chunk(original, folder, 0, sizeFirst)
-            val chunkSecond = chunk(original, folder, sizeFirst, sizeSecond)
-
-            return listOf(chunkFirst, chunkSecond)
-        }
-
-        val chunksCount = ceil(sizeBytes / CHUNK_SIZE_BYTES.toDouble()).toInt()
-        var idealChunkSize = sizeBytes / chunksCount
-        var lastPosition = 0L
-
-        return (0..chunksCount.minus(1)).map { chunkIndex ->
-            if (chunkIndex + 1 == chunksCount) {
-                chunk(original, folder, lastPosition, sizeBytes - lastPosition)
-            } else {
-                val size = (0..(2 * idealChunkSize)).random()
-
-                val chunk = chunk(original, folder, lastPosition, size)
-
-                lastPosition += size
-                idealChunkSize = (sizeBytes - lastPosition) / (chunksCount - (chunkIndex + 1))
-
-                chunk
-            }
-        }
-    }
-
-    private fun chunk(original: File, outputFolder: File, start: Long, length: Long): Chunk {
-        val id = UUID.randomUUID()
-        val viewId = UUID.randomUUID()
-        val file = File.createTempFile(id.toString(), null, outputFolder)
-
-        original.inputStream().use { inputStream ->
-            file.outputStream().use { outputStream ->
-                inputStream.skip(start)
-
-                val buffer = ByteArray(BUFFER_SIZE)
-                var bytesRead: Int
-                var bytesRemaining = length
-
-                while (inputStream.read(buffer).also { bytesRead = it } != -1 && bytesRemaining > 0) {
-                    if (bytesRead <= bytesRemaining) {
-                        outputStream.write(buffer, 0, bytesRead)
-                        bytesRemaining -= bytesRead
-                    } else {
-                        outputStream.write(buffer, 0, bytesRemaining.toInt())
-                        break
-                    }
-                }
-            }
-        }
-
-        return Chunk(id, viewId, file)
-    }
-
-    companion object {
-
-        const val CHUNK_SIZE_BYTES = 16 * 1024 * 1024
-        const val BUFFER_SIZE = 1024
+        ThumbnailUtils.extractThumbnail(original, (original.width * ratio).roundToInt(), (original.height * ratio).roundToInt())
     }
 }
