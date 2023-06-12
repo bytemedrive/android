@@ -22,7 +22,6 @@ data class EventFileUploaded(
         val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
         val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
 
-        // TODO: Temporary, fix when we work with chunks
         customer.files.add(File(id, chunksIds, chunksViewIds, name, sizeBytes, contentType, secretKey, starred, folderId))
     }
 }

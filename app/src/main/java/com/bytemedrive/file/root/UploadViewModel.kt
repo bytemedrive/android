@@ -37,7 +37,6 @@ class UploadViewModel(
 
         val chunks = getChunks(tmpEncryptedFile, folder)
 
-        println(chunks.map { it.file.length() / (1024*1024) }.joinToString())
         viewModelScope.launch {
             AppState.customer.value?.wallet?.let { wallet ->
                 fileRepository.upload(wallet, chunks)
