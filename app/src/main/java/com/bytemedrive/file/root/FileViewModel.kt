@@ -16,6 +16,7 @@ import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
 import com.bytemedrive.folder.Folder
+import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
@@ -30,6 +31,7 @@ class FileViewModel(
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
     private val appNavigator: AppNavigator,
+    private val folderManager: FolderManager
 ) : ViewModel() {
 
     var files = MutableStateFlow(AppState.customer.value!!.files)
@@ -107,11 +109,11 @@ class FileViewModel(
     fun removeFile(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
             val file = files.value.find { it.id == id }
-            val physicalFileCanBeRemoved = files.value.none { it.chunkId == file?.chunkId }
+            val physicalFileRemovable = files.value.none { it.chunkId == file?.chunkId }
 
             eventPublisher.publishEvent(EventFileDeleted(id))
 
-            if (physicalFileCanBeRemoved) {
+            if (physicalFileRemovable) {
                 fileRepository.remove(walletId, id)
             }
 
@@ -122,16 +124,16 @@ class FileViewModel(
     fun removeFolder(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
             folders.value.find { it.id == id }?.let { folder ->
-                File.findAllFilesRecursively(id, folders.value, files.value).forEach { file ->
-                    val physicalFileCanBeRemoved = files.value.none { it.chunkId == file.chunkId }
+                findAllFilesRecursively(id, folders.value, files.value).forEach { file ->
+                    val physicalFileRemovable = files.value.none { it.chunkId == file.chunkId }
 
                     eventPublisher.publishEvent(EventFileDeleted(file.id))
 
-                    if (physicalFileCanBeRemoved) {
+                    if (physicalFileRemovable) {
                         fileRepository.remove(walletId, file.id)
                     }
                 }
-                (Folder.findAllFoldersRecursively(id, folders.value) + folder).forEach {
+                (folderManager.findAllFoldersRecursively(id, folders.value) + folder).forEach {
                     eventPublisher.publishEvent(EventFolderDeleted(it.id))
                 }
             }
@@ -193,6 +195,18 @@ class FileViewModel(
                 contentResolver.openOutputStream(uri!!).use { it?.write(fileDecrypted) }
             }
         }
+
+    private fun findAllFilesRecursively(folderId: UUID, allFolders: List<Folder>, allFiles: List<File>): List<File> {
+        val filesToRemove = allFiles.filter { it.folderId == folderId }
+        val subFolders = allFolders.filter { it.parent == folderId }
+
+        val filesInSubFolders = mutableListOf<File>()
+        for (subfolder in subFolders) {
+            filesInSubFolders.addAll(findAllFilesRecursively(subfolder.id, allFolders, allFiles))
+        }
+
+        return filesToRemove + filesInSubFolders
+    }
 
     private suspend fun getThumbnails() {
         thumbnails.value = files.value.associate {

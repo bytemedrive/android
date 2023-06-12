@@ -15,6 +15,7 @@ import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.folder.EventFolderCopied
 import com.bytemedrive.folder.EventFolderMoved
 import com.bytemedrive.folder.Folder
+import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,7 @@ import kotlin.math.max
 
 class FileSelectionViewModel(
     private val eventPublisher: EventPublisher,
+    private val folderManager: FolderManager
 ) : ViewModel() {
 
     var files = MutableStateFlow(AppState.customer.value!!.files)
@@ -77,10 +79,11 @@ class FileSelectionViewModel(
             pagingSourceFactory = { FilePagingSource(fileAndFolderList.value) }
         ).flow.cachedIn(viewModelScope)
 
+    // TODO: Rework with use of recursive function to have single iteration
     fun copyItem(action: Action, folderId: UUID?, closeDialog: () -> Unit) {
         folders.value.find { folder -> action.ids.firstOrNull() == folder.id }?.let { folder ->
             val currentFolderToCopy = folder.copy(id = UUID.randomUUID(), name = "Copy of ${folder.name}", parent = folderId)
-            val innerFoldersToCopy = Folder.findAllFoldersRecursively(folder.id, folders.value).toMutableList()
+            val innerFoldersToCopy = folderManager.findAllFoldersRecursively(folder.id, folders.value).toMutableList()
 
             innerFoldersToCopy.forEach { innerFolder ->
                 val parent = if (innerFolder.parent == folder.id) currentFolderToCopy.id else innerFolder.parent

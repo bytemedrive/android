@@ -6,6 +6,7 @@ import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.file.shared.selection.FileSelectionViewModel
 import com.bytemedrive.file.starred.StarredViewModel
+import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarViewModel
 import com.bytemedrive.network.HttpClient
@@ -24,10 +25,10 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelsModule = module {
-    single { FileViewModel(get(), get(), get()) }
+    single { FileViewModel(get(), get(), get(), get()) }
     single { StarredViewModel(get()) }
     single { TopBarViewModel(get(), get()) }
-    viewModel { FileSelectionViewModel(get()) }
+    viewModel { FileSelectionViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(), get()) }
@@ -42,6 +43,7 @@ val networkModule = module {
 
 val accountModule = module {
     single { AppNavigator() }
+    single { FolderManager() }
     single { SignUpRepository() }
     single { SignInManager(get(), get()) }
     single { SignInRepository() }
