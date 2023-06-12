@@ -10,6 +10,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.outlined.FileCopy
+import androidx.compose.material.icons.outlined.FolderCopy
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DriveFileMove
 import androidx.compose.material.icons.rounded.Folder
@@ -25,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +85,21 @@ fun FileBottomSheetContextFolder(
             ListItem(
                 modifier = Modifier
                     .height(32.dp)
-                    .clickable(onClick = { fileViewModel.prepareItemsToMove(listOf(folder.id)) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItem(folder.id) }),
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.FolderCopy,
+                        contentDescription = "Copy folder",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(text = "Copy folder") },
+            )
+
+            ListItem(
+                modifier = Modifier
+                    .height(32.dp)
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(folder.id) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.DriveFileMove,

@@ -1,5 +1,6 @@
 package com.bytemedrive.file.shared.selection
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import com.bytemedrive.R
 import com.bytemedrive.file.root.Action
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.ItemType
+import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
@@ -54,6 +56,7 @@ import org.koin.androidx.compose.koinViewModel
 fun FileSelectionDialog(
     fileSelectionViewModel: FileSelectionViewModel = koinViewModel(),
     fileViewModel: FileViewModel = get(),
+    appNavigator: AppNavigator = get(),
 ) {
     val action by fileViewModel.action.collectAsState()
     val folders by fileSelectionViewModel.folders.collectAsState()
@@ -62,7 +65,10 @@ fun FileSelectionDialog(
     val folder = folders.find { it.id == selectedFolderId }
     val innerFolder = folder != null
     val title = folder?.name ?: "My drive"
-    val closeDialog = { fileViewModel.fileSelectionDialogOpened.value = false }
+    val closeDialog = {
+        fileViewModel.fileSelectionDialogOpened.value = false
+        appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
+    }
 
     LaunchedEffect(selectedFolderId) {
         fileSelectionViewModel.updateFileAndFolderList(selectedFolderId)
@@ -76,16 +82,6 @@ fun FileSelectionDialog(
 
     BackHandler(true) { fileSelectionViewModel.goBack(closeDialog) }
 
-    val moveItem = {
-        selectedFolderId?.let { selectedFolderId_ ->
-            action?.let { action_ ->
-                when (action_.type) {
-                    Action.Type.MoveItems -> fileSelectionViewModel.moveItems(action_, selectedFolderId_, closeDialog)
-                }
-            }
-        }
-    }
-
     Dialog(
         onDismissRequest = { fileViewModel.fileSelectionDialogOpened.value = false },
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -96,7 +92,7 @@ fun FileSelectionDialog(
                     IconButton(onClick = { fileSelectionViewModel.goBack(closeDialog) }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Localized description"
+                            contentDescription = "Cancel"
                         )
                     }
 
@@ -125,8 +121,21 @@ fun FileSelectionDialog(
                     TextButton(onClick = closeDialog) {
                         Text(text = "Cancel")
                     }
-                    Button(onClick = { moveItem() }, enabled = innerFolder) {
-                        Text(text = "Move")
+
+                    when (action?.type) {
+                        Action.Type.CopyItem -> Button(onClick = {
+                            action?.let { action_ ->
+                                fileSelectionViewModel.copyItem(action_, selectedFolderId, closeDialog)
+                            }
+                        }) { Text(text = "Select") }
+                        Action.Type.MoveItems -> Button(onClick = {
+                            action?.let { action_ ->
+                                selectedFolderId?.let { selectedFolderId_ ->
+                                    fileSelectionViewModel.moveItems(action_, selectedFolderId_, closeDialog)
+                                }
+                            }
+                        }, enabled = innerFolder) { Text(text = "Move") }
+                        else -> Log.w("FileSelectionDialog", "Action type ${action?.type} should be implemented")
                     }
                 }
             }

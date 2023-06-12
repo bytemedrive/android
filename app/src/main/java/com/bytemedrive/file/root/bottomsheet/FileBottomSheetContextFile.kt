@@ -14,10 +14,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.DriveFileMove
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Description
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.DriveFileMove
+import androidx.compose.material.icons.outlined.FileCopy
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,7 +101,21 @@ fun FileBottomSheetContextFile(
             ListItem(
                 modifier = Modifier
                     .height(32.dp)
-                    .clickable(onClick = { fileViewModel.prepareItemsToMove(listOf(file.id)) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItem(file.id) }),
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.FileCopy,
+                        contentDescription = "Copy file",
+                        tint = Color.Black,
+                    )
+                },
+                headlineText = { Text(text = "Copy file") },
+            )
+
+            ListItem(
+                modifier = Modifier
+                    .height(32.dp)
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(file.id) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.DriveFileMove,
