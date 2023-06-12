@@ -1,4 +1,4 @@
-https://img.shields.io/github/license/bytemedrive/android
+![GitHub](https://img.shields.io/github/license/bytemedrive/android)
 
 # android
 The best privacy upload Android application ever
