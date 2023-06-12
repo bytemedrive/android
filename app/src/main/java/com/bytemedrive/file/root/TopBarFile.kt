@@ -46,7 +46,10 @@ fun TopBarFile(
             }
         },
         actions = {
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = {
+                fileViewModel.useSelectionScreenToCopyItems(itemsSelected.map { it.id })
+                fileViewModel.clearSelectedItems()
+            }) {
                 Icon(
                     imageVector = Icons.Filled.FileCopy,
                     contentDescription = "Item copy"

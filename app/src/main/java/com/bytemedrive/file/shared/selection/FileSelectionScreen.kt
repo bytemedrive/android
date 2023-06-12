@@ -123,7 +123,7 @@ fun FileSelectionDialog(
                     }
 
                     when (action?.type) {
-                        Action.Type.CopyItem -> Button(onClick = {
+                        Action.Type.CopyItems -> Button(onClick = {
                             action?.let { action_ ->
                                 fileSelectionViewModel.copyItem(action_, selectedFolderId, closeDialog)
                             }

@@ -101,7 +101,7 @@ fun FileBottomSheetContextFile(
             ListItem(
                 modifier = Modifier
                     .height(32.dp)
-                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItem(file.id) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItems(file.id) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.FileCopy,
