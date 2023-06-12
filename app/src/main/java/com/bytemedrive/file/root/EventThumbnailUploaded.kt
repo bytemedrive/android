@@ -9,6 +9,7 @@ import javax.crypto.spec.SecretKeySpec
 data class EventThumbnailUploaded(
     val id: UUID,
     val chunksIds: List<UUID>,
+    val chunksViewIds: List<UUID>,
     val resolution: Resolution,
     val fileId: UUID,
     val contentType: String,
@@ -20,7 +21,7 @@ data class EventThumbnailUploaded(
             val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
             val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
 
-            it.thumbnails.add(File.Thumbnail(id, chunksIds[0], resolution, secretKey))
+            it.thumbnails.add(File.Thumbnail(id, chunksIds, chunksViewIds, resolution, secretKey))
 
             it
         }.toMutableList()

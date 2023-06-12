@@ -13,7 +13,7 @@ class AddCreditCodeViewModel(private val walletRepository: WalletRepository, pri
 
     fun redeemCoupon(walletId: UUID, couponCode: String) {
         viewModelScope.launch {
-            walletRepository.redeemCoupon(walletId.toString(), couponCode)
+            walletRepository.redeemCoupon(walletId, couponCode)
             eventPublisher.publishEvent(EventCouponRedeemed(walletId, couponCode))
         }
     }

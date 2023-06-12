@@ -5,7 +5,8 @@ import javax.crypto.SecretKey
 
 data class File(
     val id: UUID,
-    val chunkId: UUID,
+    val chunksIds: List<UUID>,
+    val chunksViewIds: List<UUID>,
     val name: String,
     val sizeBytes: Long,
     val contentType: String,
@@ -15,5 +16,5 @@ data class File(
     val thumbnails: MutableList<Thumbnail> = mutableListOf()
 ) {
 
-    data class Thumbnail(val id: UUID, val chunkId: UUID, val resolution: Resolution, val secretKey: SecretKey)
+    data class Thumbnail(val id: UUID, val chunksIds: List<UUID>, val chunksViewIds: List<UUID>, val resolution: Resolution, val secretKey: SecretKey)
 }

@@ -1,5 +1,8 @@
 package com.bytemedrive.privacy
 
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -52,6 +55,25 @@ object AesService {
             .array()
     }
 
+    fun encryptWithKey(inputStream: InputStream, outputStream: FileOutputStream, key: SecretKey) {
+        inputStream.use {
+            outputStream.use {
+                val iv = getRandomBytes(IV_LENGTH_BYTE)
+                outputStream.write(iv)
+                val cipher = Cipher.getInstance(ENCRYPT_ALGO, "BC")
+
+                cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
+                val buffer = ByteArray(1024)
+                var bytesRead: Int
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    cipher.update(buffer, 0, bytesRead).let { outputStream.write(it) }
+                }
+
+                cipher.doFinal().let { outputStream.write(it) }
+            }
+        }
+    }
+
     fun decryptWithKey(bytes: ByteArray, key: SecretKey): ByteArray {
         val bb = ByteBuffer.wrap(bytes)
         val iv = ByteArray(IV_LENGTH_BYTE)
@@ -63,6 +85,25 @@ object AesService {
             Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv)
         )
         return cipher.doFinal(cipherText)
+    }
+
+    fun decryptWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey) {
+        inputStream.use {
+            outputStream.use {
+                val iv = ByteArray(IV_LENGTH_BYTE)
+                inputStream.read(iv)
+                val cipher = Cipher.getInstance(ENCRYPT_ALGO, "BC")
+
+                cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
+                val buffer = ByteArray(64)
+                var bytesRead: Int
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    cipher.update(buffer, 0, bytesRead).let { outputStream.write(it) }
+                }
+
+                cipher.doFinal().let { outputStream.write(it) }
+            }
+        }
     }
 
     fun decryptWithPassword(bytes: ByteArray, password: CharArray, salt: ByteArray): ByteArray {

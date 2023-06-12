@@ -6,12 +6,15 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import java.net.URL
+import java.util.UUID
 
 class WalletRepository {
 
-    suspend fun getWallet(walletId: String): Wallet = httpClient.get("wallets/$walletId").body()
+    suspend fun getWallet(walletId: UUID): Wallet = httpClient.get("wallets/$walletId").body()
 
-    suspend fun redeemCoupon(walletId: String, couponCode: String) = httpClient.post("wallets/$walletId/redeem-coupon") {
+    suspend fun createWallet(walletId: UUID) = httpClient.post("wallets/$walletId")
+
+    suspend fun redeemCoupon(walletId: UUID, couponCode: String) = httpClient.post("wallets/$walletId/redeem-coupon") {
         setBody(object {
             val code: String = couponCode
         })

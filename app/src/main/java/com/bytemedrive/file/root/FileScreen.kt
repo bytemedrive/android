@@ -70,7 +70,7 @@ fun FileScreen(
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
-        fileViewModel.updateFileAndFolderList(folderId)
+        fileViewModel.updateFileAndFolderList(folderId, context)
 
         if (folderId == null) {
             AppState.title.value = "My files"
