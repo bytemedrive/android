@@ -27,18 +27,18 @@ fun TopBarFile(
     fileViewModel: FileViewModel = get(),
 ) {
     val context = LocalContext.current
-    val fileAndFolderSelected by fileViewModel.fileAndFolderSelected.collectAsState()
+    val itemsSelected by fileViewModel.itemsSelected.collectAsState()
 
     TopAppBar(
         title = {
             Text(
-                pluralStringResource(id = R.plurals.top_bar_file_items, fileAndFolderSelected.size, fileAndFolderSelected.size),
+                pluralStringResource(id = R.plurals.top_bar_file_items, itemsSelected.size, itemsSelected.size),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         },
         navigationIcon = {
-            IconButton(onClick = { fileViewModel.clearSelectedFileAndFolder() }) {
+            IconButton(onClick = { fileViewModel.clearSelectedItems() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Close"
@@ -49,28 +49,31 @@ fun TopBarFile(
             IconButton(onClick = { /* doSomething() */ }) {
                 Icon(
                     imageVector = Icons.Filled.FileCopy,
-                    contentDescription = "File copy"
+                    contentDescription = "Item copy"
                 )
             }
             IconButton(onClick = {
-                fileViewModel.useSelectionScreenToMoveItems(fileAndFolderSelected.map { it.id })
-                fileViewModel.clearSelectedFileAndFolder()
+                fileViewModel.useSelectionScreenToMoveItems(itemsSelected.map { it.id })
+                fileViewModel.clearSelectedItems()
             }) {
                 Icon(
                     imageVector = Icons.Filled.DriveFileMove,
-                    contentDescription = "File move"
+                    contentDescription = "Item move"
                 )
             }
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = {
+                fileViewModel.removeItems(itemsSelected.map { it.id })
+                fileViewModel.clearSelectedItems()
+            }) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
-                    contentDescription = "File delete"
+                    contentDescription = "Item delete"
                 )
             }
             IconButton(onClick = { fileViewModel.toggleAllItems(context) }) {
                 Icon(
                     imageVector = Icons.Filled.SelectAll,
-                    contentDescription = "Select all"
+                    contentDescription = "Select all items"
                 )
             }
         }

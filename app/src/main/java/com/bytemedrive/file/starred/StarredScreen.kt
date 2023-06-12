@@ -42,7 +42,6 @@ import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCrea
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -51,7 +50,7 @@ fun StarredScreen(
     appNavigator: AppNavigator = get()
 ) {
     val items = starredViewModel.getStarredFilesPages().collectAsLazyPagingItems()
-    val fileAndFolderSelected by starredViewModel.fileAndFolderSelected.collectAsState()
+    val fileAndFolderSelected by starredViewModel.itemsSelected.collectAsState()
 
     LaunchedEffect("initialize") {
         AppState.title.value = "Starred files"
@@ -59,7 +58,7 @@ fun StarredScreen(
 
     DisposableEffect("unmount") {
         onDispose {
-            starredViewModel.clearSelectedFileAndFolder()
+            starredViewModel.clearSelectedItems()
         }
     }
 

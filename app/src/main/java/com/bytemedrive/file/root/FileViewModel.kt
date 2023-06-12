@@ -12,17 +12,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
-import com.bytemedrive.folder.Folder
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.client.statement.readBytes
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +35,7 @@ class FileViewModel(
     private val eventPublisher: EventPublisher,
     private val appNavigator: AppNavigator,
     private val folderManager: FolderManager,
+    private val fileManager: FileManager,
     context: Context,
 ) : ViewModel() {
 
@@ -43,9 +43,9 @@ class FileViewModel(
     var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
 
-    var fileAndFolderList = MutableStateFlow(listOf<Item>())
+    var items = MutableStateFlow(listOf<Item>())
 
-    val fileAndFolderSelected = MutableStateFlow(emptyList<Item>())
+    val itemsSelected = MutableStateFlow(emptyList<Item>())
 
     val fileSelectionDialogOpened = MutableStateFlow(false)
 
@@ -58,7 +58,7 @@ class FileViewModel(
     }
 
     fun clickFileAndFolder(item: Item) {
-        val anyFileSelected = fileAndFolderSelected.value.isNotEmpty()
+        val anyFileSelected = itemsSelected.value.isNotEmpty()
 
         if (anyFileSelected) {
             longClickFileAndFolder(item)
@@ -71,27 +71,27 @@ class FileViewModel(
     }
 
     fun longClickFileAndFolder(item: Item) {
-        fileAndFolderSelected.value = if (fileAndFolderSelected.value.contains(item)) {
-            fileAndFolderSelected.value - item
+        itemsSelected.value = if (itemsSelected.value.contains(item)) {
+            itemsSelected.value - item
         } else {
-            fileAndFolderSelected.value + item
+            itemsSelected.value + item
         }
     }
 
     fun toggleAllItems(context: Context) {
-        if (fileAndFolderSelected.value.size == fileAndFolderList.value.size) {
-            fileAndFolderSelected.value = emptyList()
+        if (itemsSelected.value.size == items.value.size) {
+            itemsSelected.value = emptyList()
         } else {
-            fileAndFolderSelected.value = fileAndFolderList.value
-            Toast.makeText(context, "${fileAndFolderList.value.size} items selected", Toast.LENGTH_SHORT).show()
+            itemsSelected.value = items.value
+            Toast.makeText(context, "${items.value.size} items selected", Toast.LENGTH_SHORT).show()
         }
     }
 
-    fun clearSelectedFileAndFolder() {
-        fileAndFolderSelected.value = emptyList()
+    fun clearSelectedItems() {
+        itemsSelected.value = emptyList()
     }
 
-    fun updateFileAndFolderList(folderId: String?, context: Context) = viewModelScope.launch {
+    suspend fun updateItems(folderId: String?, context: Context) {
         AppState.customer.collectLatest { customer ->
             val tempFolders = customer?.folders
                 ?.filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
@@ -103,7 +103,7 @@ class FileViewModel(
 
             files.value = customer?.files.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
-            fileAndFolderList.value = tempFolders + tempFiles
+            items.value = tempFolders + tempFiles
             getThumbnails(context)
         }
     }
@@ -112,7 +112,35 @@ class FileViewModel(
 
     fun singleFolder(id: String) = folders.value.find { it.id == UUID.fromString(id) }
 
-    fun removeFile(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
+    fun removeItems(ids: List<UUID>) = viewModelScope.launch {
+        AppState.customer.value?.wallet?.let { walletId ->
+            files.value.filter { ids.contains(it.id) }.forEach { file ->
+                val physicalFileRemovable = files.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+
+                eventPublisher.publishEvent(EventFileDeleted(file.id))
+
+                if (physicalFileRemovable) {
+                    fileRepository.remove(walletId, file.id)
+                }
+            }
+            folders.value.filter { ids.contains(it.id) }.forEach { folder ->
+                fileManager.findAllFilesRecursively(folder.id, folders.value, files.value).forEach { file ->
+                    val physicalFileRemovable = files.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+
+                    eventPublisher.publishEvent(EventFileDeleted(file.id))
+
+                    if (physicalFileRemovable) {
+                        fileRepository.remove(walletId, file.id)
+                    }
+                }
+                (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).forEach {
+                    eventPublisher.publishEvent(EventFolderDeleted(it.id))
+                }
+            }
+        }
+    }
+
+    fun removeFile(id: UUID, onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
             val file = files.value.find { it.id == id }
             val physicalFileRemovable = files.value.none { it.id == file?.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
@@ -123,14 +151,14 @@ class FileViewModel(
                 fileRepository.remove(walletId, id)
             }
 
-            onSuccess()
+            onSuccess?.invoke()
         }
     }
 
-    fun removeFolder(id: UUID, onSuccess: () -> Unit) = viewModelScope.launch {
+    fun removeFolder(id: UUID, onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
             folders.value.find { it.id == id }?.let { folder ->
-                findAllFilesRecursively(id, folders.value, files.value).forEach { file ->
+                fileManager.findAllFilesRecursively(id, folders.value, files.value).forEach { file ->
                     val physicalFileRemovable = files.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
                     eventPublisher.publishEvent(EventFileDeleted(file.id))
@@ -144,7 +172,7 @@ class FileViewModel(
                 }
             }
 
-            onSuccess()
+            onSuccess?.invoke()
         }
     }
 
@@ -166,10 +194,10 @@ class FileViewModel(
         onSuccess()
     }
 
-    fun getFilesPages(): Flow<PagingData<Item>> =
+    fun getItemsPages(items: List<Item>): Flow<PagingData<Item>> =
         Pager(
             config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { FilePagingSource(fileAndFolderList.value) }
+            pagingSourceFactory = { FilePagingSource(items) }
         ).flow
 
     fun useSelectionScreenToMoveItems(id: UUID) = useSelectionScreenToMoveItems(listOf(id))
@@ -212,18 +240,6 @@ class FileViewModel(
                 AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, file.secretKey)
             }
         }
-
-    private fun findAllFilesRecursively(folderId: UUID, allFolders: List<Folder>, allFiles: List<File>): List<File> {
-        val filesToRemove = allFiles.filter { it.folderId == folderId }
-        val subFolders = allFolders.filter { it.parent == folderId }
-
-        val filesInSubFolders = mutableListOf<File>()
-        for (subfolder in subFolders) {
-            filesInSubFolders.addAll(findAllFilesRecursively(subfolder.id, allFolders, allFiles))
-        }
-
-        return filesToRemove + filesInSubFolders
-    }
 
     private suspend fun getThumbnails(context: Context) {
         thumbnails.value = files.value.associate {

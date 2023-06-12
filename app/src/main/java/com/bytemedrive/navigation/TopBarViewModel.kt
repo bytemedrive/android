@@ -18,14 +18,14 @@ class TopBarViewModel(
     init {
         viewModelScope.launch {
             combine(
-                fileViewModel.fileAndFolderSelected,
-                starredViewModel.fileAndFolderSelected,
-            ) { fileAndFolderSelectedRoot,
-                fileAndFolderSelectedStarred ->
+                fileViewModel.itemsSelected,
+                starredViewModel.itemsSelected,
+            ) { itemsSelectedRoot,
+                itemsSelectedStarred ->
 
                 when {
-                    fileAndFolderSelectedRoot.isNotEmpty() -> BarType.SELECTION_FILE
-                    fileAndFolderSelectedStarred.isNotEmpty() -> BarType.SELECTION_STARRED
+                    itemsSelectedRoot.isNotEmpty() -> BarType.SELECTION_FILE
+                    itemsSelectedStarred.isNotEmpty() -> BarType.SELECTION_STARRED
                     else -> BarType.SCREEN
                 }
             }.collect { item -> barType.value = item }
