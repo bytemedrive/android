@@ -51,7 +51,6 @@ import com.bytemedrive.file.shared.selection.FileSelectionDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.koinViewModel
 
 private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 
@@ -63,14 +62,15 @@ fun FileScreen(
     appNavigator: AppNavigator = get(),
 ) {
     val context = LocalContext.current
-    val fileAndFolderList = fileViewModel.getFilesPages().collectAsLazyPagingItems()
-    val fileAndFolderSelected by fileViewModel.fileAndFolderSelected.collectAsState()
+    val items by fileViewModel.items.collectAsState()
+    val itemsPaged = fileViewModel.getItemsPages(items).collectAsLazyPagingItems()
+    val itemsSelected by fileViewModel.itemsSelected.collectAsState()
     val thumbnails by fileViewModel.thumbnails.collectAsState()
     val fileSelectionDialogOpened by fileViewModel.fileSelectionDialogOpened.collectAsState()
 
     LaunchedEffect("initialize") {
         requestPermissions(context)
-        fileViewModel.updateFileAndFolderList(folderId, context)
+        fileViewModel.updateItems(folderId, context)
 
         if (folderId == null) {
             AppState.title.value = "My files"
@@ -83,7 +83,7 @@ fun FileScreen(
 
     DisposableEffect("unmount") {
         onDispose {
-            fileViewModel.clearSelectedFileAndFolder()
+            fileViewModel.clearSelectedItems()
         }
     }
 
@@ -99,7 +99,7 @@ fun FileScreen(
         floatingActionButton = { FloatingActionButtonCreate(folderId) },
     ) { paddingValues ->
 
-        if (fileAndFolderList.itemCount == 0) {
+        if (itemsPaged.itemCount == 0) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(text = stringResource(id = R.string.common_no_data))
             }
@@ -114,9 +114,9 @@ fun FileScreen(
                         .fillMaxSize()
                         .padding(horizontal = 16.dp, vertical = 32.dp)
                 ) {
-                    items(items = fileAndFolderList) { fileAndFolder ->
+                    items(items = itemsPaged) { fileAndFolder ->
                         fileAndFolder?.let { item ->
-                            val itemSelected = fileAndFolderSelected.contains(item)
+                            val itemSelected = itemsSelected.contains(item)
 
                             Row(
                                 modifier = Modifier

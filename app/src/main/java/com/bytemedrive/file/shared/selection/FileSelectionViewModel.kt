@@ -80,7 +80,7 @@ class FileSelectionViewModel(
         ).flow.cachedIn(viewModelScope)
 
     // TODO: Rework with use of recursive function to have single iteration
-    fun copyItem(action: Action, folderId: UUID?, closeDialog: () -> Unit) {
+    fun copyItem(action: Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
         folders.value.find { folder -> action.ids.firstOrNull() == folder.id }?.let { folder ->
             val currentFolderToCopy = folder.copy(id = UUID.randomUUID(), name = "Copy of ${folder.name}", parent = folderId)
             val innerFoldersToCopy = folderManager.findAllFoldersRecursively(folder.id, folders.value).toMutableList()
@@ -92,28 +92,28 @@ class FileSelectionViewModel(
                 copyFolders(innerFolder.id, newFolder.id)
                 copyFiles(innerFolder.id, UUID.randomUUID(), newFolder.id)
 
-                viewModelScope.launch { eventPublisher.publishEvent(EventFolderCopied(innerFolder.id, newFolder.id, newFolder.parent)) }
+                 eventPublisher.publishEvent(EventFolderCopied(innerFolder.id, newFolder.id, newFolder.parent))
             }
 
             copyFiles(folder.id, UUID.randomUUID(), currentFolderToCopy.id)
 
-            viewModelScope.launch { eventPublisher.publishEvent(EventFolderCopied(folder.id, currentFolderToCopy.id, currentFolderToCopy.parent)) }
+            eventPublisher.publishEvent(EventFolderCopied(folder.id, currentFolderToCopy.id, currentFolderToCopy.parent))
         }
 
         files.value.find { file -> action.ids.firstOrNull() == file.id }?.let { file ->
-            viewModelScope.launch { eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}")) }
+             eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}"))
         }
 
         closeDialog()
     }
 
-    private fun copyFolders(currentFolderId: UUID, newFolderId: UUID) = viewModelScope.launch {
+    private suspend fun copyFolders(currentFolderId: UUID, newFolderId: UUID) {
         folders.value.filter { it.parent == currentFolderId }.forEach {
             eventPublisher.publishEvent(EventFolderCopied(it.id, parentId = newFolderId))
         }
     }
 
-    private fun copyFiles(currentFolderId: UUID, newId: UUID, newFolderId: UUID, name: String? = null) = viewModelScope.launch {
+    private suspend fun copyFiles(currentFolderId: UUID, newId: UUID, newFolderId: UUID, name: String? = null) {
         files.value.filter { it.folderId == currentFolderId }.forEach { file ->
             eventPublisher.publishEvent(EventFileCopied(file.id, newId, newFolderId, name))
         }

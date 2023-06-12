@@ -7,18 +7,29 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.FilePagingSource
+import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Item
 import com.bytemedrive.file.root.ItemType
+import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.folder.EventFolderDeleted
+import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
+import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class StarredViewModel(
     private val appNavigator: AppNavigator,
+    private val eventPublisher: EventPublisher,
+    private val fileRepository: FileRepository,
+    private val fileManager: FileManager,
+    private val folderManager: FolderManager
 ) : ViewModel() {
 
     var files = MutableStateFlow(AppState.customer.value!!.files)
@@ -27,7 +38,7 @@ class StarredViewModel(
     var list = MutableStateFlow(listOf<Item>())
     var starred = MutableStateFlow(listOf<Item>())
 
-    val fileAndFolderSelected = MutableStateFlow(emptyList<Item>())
+    val itemsSelected = MutableStateFlow(emptyList<Item>())
 
     init {
         viewModelScope.launch {
@@ -41,7 +52,7 @@ class StarredViewModel(
     }
 
     fun clickFileAndFolder(item: Item) {
-        val anyFileSelected = fileAndFolderSelected.value.isNotEmpty()
+        val anyFileSelected = itemsSelected.value.isNotEmpty()
 
         if (anyFileSelected) {
             longClickFileAndFolder(item)
@@ -54,15 +65,43 @@ class StarredViewModel(
     }
 
     fun longClickFileAndFolder(item: Item) {
-        fileAndFolderSelected.value = if (fileAndFolderSelected.value.contains(item)) {
-            fileAndFolderSelected.value - item
+        itemsSelected.value = if (itemsSelected.value.contains(item)) {
+            itemsSelected.value - item
         } else {
-            fileAndFolderSelected.value + item
+            itemsSelected.value + item
         }
     }
 
-    fun clearSelectedFileAndFolder() {
-        fileAndFolderSelected.value = emptyList()
+    fun clearSelectedItems() {
+        itemsSelected.value = emptyList()
+    }
+
+    fun removeItems(ids: List<UUID>) = viewModelScope.launch {
+        AppState.customer.value?.wallet?.let { walletId ->
+            files.value.filter { ids.contains(it.id) }.forEach { file ->
+                val physicalFileRemovable = files.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+
+                eventPublisher.publishEvent(EventFileDeleted(file.id))
+
+                if (physicalFileRemovable) {
+                    fileRepository.remove(walletId, file.id)
+                }
+            }
+            folders.value.filter { ids.contains(it.id) }.forEach { folder ->
+                fileManager.findAllFilesRecursively(folder.id, folders.value, files.value).forEach { file ->
+                    val physicalFileRemovable = files.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+
+                    eventPublisher.publishEvent(EventFileDeleted(file.id))
+
+                    if (physicalFileRemovable) {
+                        fileRepository.remove(walletId, file.id)
+                    }
+                }
+                (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).forEach {
+                    eventPublisher.publishEvent(EventFolderDeleted(it.id))
+                }
+            }
+        }
     }
 
     fun getStarredFilesPages(): Flow<PagingData<Item>> =
@@ -72,10 +111,10 @@ class StarredViewModel(
         ).flow
 
     fun toggleAllItems(context: Context) {
-        if (fileAndFolderSelected.value.size == starred.value.size) {
-            fileAndFolderSelected.value = emptyList()
+        if (itemsSelected.value.size == starred.value.size) {
+            itemsSelected.value = emptyList()
         } else {
-            fileAndFolderSelected.value = starred.value
+            itemsSelected.value = starred.value
             Toast.makeText(context, "${starred.value.size} items selected", Toast.LENGTH_SHORT).show()
         }
     }

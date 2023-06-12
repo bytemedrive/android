@@ -3,8 +3,6 @@ package com.bytemedrive.file.starred
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DriveFileMove
-import androidx.compose.material.icons.filled.FileCopy
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -19,10 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
-import com.bytemedrive.file.root.FileViewModel
-import com.bytemedrive.file.starred.StarredViewModel
 import org.koin.androidx.compose.get
-import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -30,18 +25,18 @@ fun TopBarStarred(
     starredViewModel: StarredViewModel = get(),
 ) {
     val context = LocalContext.current
-    val fileAndFolderSelected by starredViewModel.fileAndFolderSelected.collectAsState()
+    val itemsSelected by starredViewModel.itemsSelected.collectAsState()
 
     TopAppBar(
         title = {
             Text(
-                pluralStringResource(id = R.plurals.top_bar_file_items, fileAndFolderSelected.size, fileAndFolderSelected.size),
+                pluralStringResource(id = R.plurals.top_bar_file_items, itemsSelected.size, itemsSelected.size),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         },
         navigationIcon = {
-            IconButton(onClick = { starredViewModel.clearSelectedFileAndFolder() }) {
+            IconButton(onClick = { starredViewModel.clearSelectedItems() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Close"
@@ -49,7 +44,10 @@ fun TopBarStarred(
             }
         },
         actions = {
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = {
+                starredViewModel.removeItems(itemsSelected.map { it.id })
+                starredViewModel.clearSelectedItems()
+            }) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
                     contentDescription = "File delete"
