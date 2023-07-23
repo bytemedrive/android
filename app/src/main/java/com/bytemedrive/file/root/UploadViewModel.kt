@@ -75,7 +75,7 @@ class UploadViewModel(
         }
     }
 
-    private suspend fun uploadThumbnail(bytes: ByteArray, folder: File, fileId: UUID, contentType: String, resolution: Resolution) {
+    private suspend fun uploadThumbnail(bytes: ByteArray, folder: File, sourceDataFileId: UUID, contentType: String, resolution: Resolution) {
         val thumbnailDataFileId = UUID.randomUUID()
         val tmpEncryptedFile = File.createTempFile("$thumbnailDataFileId-encrypted", null, folder)
 
@@ -101,8 +101,8 @@ class UploadViewModel(
             )
             eventPublisher.publishEvent(
                 EventThumbnailUploaded(
+                    sourceDataFileId,
                     thumbnailDataFileId,
-                    UUID.randomUUID(),
                     resolution,
                 )
             )

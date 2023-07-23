@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,7 +37,6 @@ class FileViewModel(
     context: Context,
 ) : ViewModel() {
 
-    var dataFiles = MutableStateFlow(AppState.customer.value!!.dataFiles)
     var dataFileLinks = MutableStateFlow(AppState.customer.value!!.dataFilesLinks)
     var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
@@ -123,7 +123,8 @@ class FileViewModel(
             }
             folders.value.filter { ids.contains(it.id) }.forEach { folder ->
                 fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).forEach { file ->
-                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                    val physicalFileRemovable =
+                        dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
                     eventPublisher.publishEvent(EventFileDeleted(file.id))
 
@@ -157,7 +158,8 @@ class FileViewModel(
         AppState.customer.value?.wallet?.let { walletId ->
             folders.value.find { it.id == id }?.let { folder ->
                 fileManager.findAllFilesRecursively(id, folders.value, dataFileLinks.value).forEach { file ->
-                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                    val physicalFileRemovable =
+                        dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
                     eventPublisher.publishEvent(EventFileDeleted(file.id))
 
@@ -214,7 +216,7 @@ class FileViewModel(
 
     fun downloadFile(id: UUID, context: Context) =
         dataFileLinks.value.find { it.id == id }?.let { dataFileLink ->
-            dataFiles.value.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
+            AppState.customer.value?.dataFiles?.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
                 viewModelScope.launch {
                     val contentResolver = context.contentResolver
                     val contentValues = ContentValues().apply {
@@ -231,16 +233,27 @@ class FileViewModel(
         }
 
     private suspend fun getThumbnails(context: Context) {
-        /*thumbnails.value = dataFileLinks.value.associate { dataFileLink ->
-            dataFileLink.id to dataFileLink.thumbnails
-                .find { thumbnail -> thumbnail.resolution == Resolution.P360 }
-                ?.let { thumbnail ->
-                    val encryptedFile = fileManager.rebuildFile(thumbnail.chunksViewIds, "${thumbnail.id}-encrypted", context.cacheDir)
-                    val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), thumbnail.secretKey)
+        thumbnails.value = dataFileLinks.value.associate { dataFileLink ->
+            dataFileLink.id to findThumbnailForDataFileLink(dataFileLink, context)
+        }
+    }
 
+    private suspend fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, context: Context): Bitmap? {
+        val dataFiles = AppState.customer.value?.dataFiles
+        if(dataFiles != null) {
+            val dataFile = dataFiles.find { it.id == dataFileLink.dataFileId }
+            val thumbnail = dataFile?.thumbnails?.find { thumbnail -> thumbnail.resolution == Resolution.P360 }
+
+            return thumbnail?.let { thumbnail ->
+                val dataFileThumbnail = dataFiles.find { it.id == thumbnail.thumbnailDataFileId }
+                dataFileThumbnail?.let {
+                    val encryptedFile = fileManager.rebuildFile(it.chunksViewIds, "${it.id}-encrypted", context.cacheDir)
+                    val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), it.secretKey)
                     BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
                 }
-        }*/
+            }
+        }
+        return null
     }
 }
 
