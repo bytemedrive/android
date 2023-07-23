@@ -65,7 +65,8 @@ fun CreateFolder(
 
     Column(modifier = Modifier
         .padding(16.dp)
-        .clickable { dialogNewFolderOpened = true }, horizontalAlignment = Alignment.CenterHorizontally) {
+        .clickable { dialogNewFolderOpened = true }, horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         IconButton(onClick = { dialogNewFolderOpened = true }) {
             Icon(
                 imageVector = Icons.Outlined.Folder,

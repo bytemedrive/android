@@ -5,8 +5,9 @@ import com.bytemedrive.store.CustomerAggregate
 import java.util.Base64
 import java.util.UUID
 import javax.crypto.spec.SecretKeySpec
+
 data class EventFileUploaded(
-    val id: UUID,
+    val dataFileId: UUID,
     val chunksIds: List<UUID>,
     val chunksViewIds: List<UUID>,
     val name: String,
@@ -14,14 +15,15 @@ data class EventFileUploaded(
     val checksum: String,
     val contentType: String,
     val secretKeyBase64: String,
-    val starred: Boolean = false,
-    val folderId: UUID? = null,
+    val dataFileLinkId: UUID?, // nullable because thumbnails does not have DataFileLink only DataFile
+    val folderId: UUID?,
 ) : Convertable {
 
     override fun convert(customer: CustomerAggregate) {
         val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
         val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
-
-        customer.files.add(File(id, chunksIds, chunksViewIds, name, sizeBytes, contentType, secretKey, starred, folderId))
+        val dataFile = DataFile(dataFileId, chunksIds, chunksViewIds, name, sizeBytes, contentType, secretKey)
+        customer.dataFiles.add(dataFile)
+        dataFileLinkId?.let { customer.dataFilesLinks.add(DataFileLink(it, dataFileId, name, folderId)) }
     }
 }

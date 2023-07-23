@@ -29,7 +29,8 @@ class FileSelectionViewModel(
     private val folderManager: FolderManager
 ) : ViewModel() {
 
-    var files = MutableStateFlow(AppState.customer.value!!.files)
+    var dataFiles = MutableStateFlow(AppState.customer.value!!.dataFiles)
+    var dataFileLinks = MutableStateFlow(AppState.customer.value!!.dataFilesLinks)
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
 
     val selectedFolderId = MutableStateFlow<UUID?>(null)
@@ -62,11 +63,11 @@ class FileSelectionViewModel(
                 ?.filter { folder -> folder.parent == folderId }
                 ?.map { Item(it.id, it.name, ItemType.Folder, it.starred) }.orEmpty()
 
-            val tempFiles = customer?.files
-                ?.filter { file -> file.folderId == folderId }
+            val tempFiles = customer?.dataFilesLinks
+                ?.filter { dataFileLink -> dataFileLink.folderId == folderId }
                 ?.map { Item(it.id, it.name, ItemType.File, it.starred) }.orEmpty()
 
-            files.value = customer?.files.orEmpty().toMutableList()
+            dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
             fileAndFolderList.value = tempFolders + tempFiles
         }
@@ -89,17 +90,17 @@ class FileSelectionViewModel(
                 val newFolder = innerFolder.copy(id = UUID.randomUUID(), parent = parent)
 
                 copyFolders(innerFolder.id, newFolder.id)
-                copyFiles(innerFolder.id, UUID.randomUUID(), newFolder.id)
+                copyFiles(innerFolder.id, newFolder.id)
 
                 eventPublisher.publishEvent(EventFolderCopied(innerFolder.id, newFolder.id, newFolder.parent))
             }
 
-            copyFiles(folder.id, UUID.randomUUID(), currentFolderToCopy.id)
+            copyFiles(folder.id, currentFolderToCopy.id)
 
             eventPublisher.publishEvent(EventFolderCopied(folder.id, currentFolderToCopy.id, currentFolderToCopy.parent))
         }
 
-        files.value.filter { file -> action.ids.contains(file.id) }.forEach { file ->
+        dataFileLinks.value.filter { file -> action.ids.contains(file.id) }.forEach { file ->
             eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}"))
         }
 
@@ -112,15 +113,17 @@ class FileSelectionViewModel(
         }
     }
 
-    private suspend fun copyFiles(currentFolderId: UUID, newId: UUID, newFolderId: UUID, name: String? = null) {
-        files.value.filter { it.folderId == currentFolderId }.forEach { file ->
-            eventPublisher.publishEvent(EventFileCopied(file.id, newId, newFolderId, name))
+    private suspend fun copyFiles(currentFolderId: UUID, newFolderId: UUID?) {
+        dataFileLinks.value.filter { it.folderId == currentFolderId }.forEach { dataFileLink ->
+            dataFiles.value.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
+                eventPublisher.publishEvent(EventFileCopied(dataFile.id, UUID.randomUUID(), newFolderId, dataFile.name))
+            }
         }
     }
 
     fun moveItems(action: Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
         val selectedFolders = folders.value.filter { folder -> action.ids.contains(folder.id) }
-        val selectedFiles = files.value.filter { file -> action.ids.contains(file.id) }
+        val selectedFiles = dataFileLinks.value.filter { file -> action.ids.contains(file.id) }
 
         selectedFolders.forEach { eventPublisher.publishEvent(EventFolderMoved(it.id, folderId)) }
         selectedFiles.forEach { eventPublisher.publishEvent(EventFileMoved(it.id, folderId)) }

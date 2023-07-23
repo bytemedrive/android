@@ -1,6 +1,7 @@
 package com.bytemedrive.store
 
-import com.bytemedrive.file.root.File
+import com.bytemedrive.file.root.DataFile
+import com.bytemedrive.file.root.DataFileLink
 import com.bytemedrive.folder.Folder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +19,9 @@ class CustomerAggregate {
         _username.update { username }
     }
 
-    var files: MutableList<File> = mutableListOf()
+    var dataFiles: MutableList<DataFile> = mutableListOf()
+
+    var dataFilesLinks: MutableList<DataFileLink> = mutableListOf()
 
     var folders: MutableList<Folder> = mutableListOf()
 
@@ -26,9 +29,9 @@ class CustomerAggregate {
 
     var signUpAt: ZonedDateTime? = null
 
-    var creditAmount: Long? = null
+    var balanceGbm: Long? = null
 
     override fun toString(): String {
-        return "CustomerAggregate(username=${_username.value}, files=$files, wallet=$wallet, signUpAt=$signUpAt)"
+        return "CustomerAggregate(username=${_username.value}, wallet=$wallet, wallet=$wallet, signUpAt=$signUpAt)"
     }
 }

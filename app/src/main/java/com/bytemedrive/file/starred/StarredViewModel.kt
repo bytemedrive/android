@@ -32,7 +32,7 @@ class StarredViewModel(
     private val folderManager: FolderManager
 ) : ViewModel() {
 
-    var files = MutableStateFlow(AppState.customer.value!!.files)
+    var dataFileLinks = MutableStateFlow(AppState.customer.value!!.dataFilesLinks)
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
 
     var list = MutableStateFlow(listOf<Item>())
@@ -44,9 +44,9 @@ class StarredViewModel(
         viewModelScope.launch {
             AppState.customer.collectLatest { customer ->
                 val folders = customer?.folders?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.Folder, it.starred) }.orEmpty().toMutableList()
-                val files = customer?.files?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.File, it.starred) }.orEmpty().toMutableList()
+                val dataFileLinks = customer?.dataFilesLinks?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.File, it.starred) }.orEmpty().toMutableList()
 
-                starred.value = folders + files
+                starred.value = folders + dataFileLinks
             }
         }
     }
@@ -78,8 +78,8 @@ class StarredViewModel(
 
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
-            files.value.filter { ids.contains(it.id) }.forEach { file ->
-                val physicalFileRemovable = files.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+            dataFileLinks.value.filter { ids.contains(it.id) }.forEach { file ->
+                val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
                 eventPublisher.publishEvent(EventFileDeleted(file.id))
 
@@ -88,8 +88,9 @@ class StarredViewModel(
                 }
             }
             folders.value.filter { ids.contains(it.id) }.forEach { folder ->
-                fileManager.findAllFilesRecursively(folder.id, folders.value, files.value).forEach { file ->
-                    val physicalFileRemovable = files.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).forEach { file ->
+                    val physicalFileRemovable =
+                        dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
                     eventPublisher.publishEvent(EventFileDeleted(file.id))
 

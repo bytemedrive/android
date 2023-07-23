@@ -5,7 +5,7 @@ import android.graphics.BitmapFactory
 import android.media.ThumbnailUtils
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MimeTypes.*
+import androidx.media3.common.MimeTypes.IMAGE_JPEG
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
@@ -28,11 +28,11 @@ class UploadViewModel(
     private val TAG = UploadViewModel::class.qualifiedName
 
     fun uploadFile(inputStream: InputStream, tmpFolder: File, fileName: String, folderId: String?, contentType: String, onSuccess: () -> Unit) {
-        val fileId = UUID.randomUUID()
-        val tmpOriginalFile = File.createTempFile(fileId.toString(), null, tmpFolder)
+        val dataFileId = UUID.randomUUID()
+        val tmpOriginalFile = File.createTempFile(dataFileId.toString(), null, tmpFolder)
         inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE)
 
-        val tmpEncryptedFile = File.createTempFile("$fileId-encrypted", null, tmpFolder)
+        val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", null, tmpFolder)
 
         val secretKey = AesService.generateNewFileSecretKey()
         AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
@@ -44,7 +44,7 @@ class UploadViewModel(
                 fileRepository.upload(wallet, chunks)
                 eventPublisher.publishEvent(
                     EventFileUploaded(
-                        fileId,
+                        dataFileId,
                         chunks.map { it.id },
                         chunks.map { it.viewId },
                         fileName,
@@ -52,7 +52,7 @@ class UploadViewModel(
                         ShaService.checksum(tmpOriginalFile.inputStream()),
                         contentType,
                         Base64.getEncoder().encodeToString(secretKey.encoded),
-                        false,
+                        UUID.randomUUID(),
                         folderId?.let { UUID.fromString(folderId) }
                     )
                 )
@@ -65,7 +65,7 @@ class UploadViewModel(
                             val stream = ByteArrayOutputStream()
                             it.value.compress(Bitmap.CompressFormat.JPEG, 100, stream)
 
-                            uploadThumbnail(stream.toByteArray(), tmpFolder, fileId, contentType, it.key)
+                            uploadThumbnail(stream.toByteArray(), tmpFolder, dataFileId, contentType, it.key)
                         }
                     }
                 }
@@ -76,8 +76,8 @@ class UploadViewModel(
     }
 
     private suspend fun uploadThumbnail(bytes: ByteArray, folder: File, fileId: UUID, contentType: String, resolution: Resolution) {
-        val thumbnailId = UUID.randomUUID()
-        val tmpEncryptedFile = File.createTempFile("$thumbnailId-encrypted", null, folder)
+        val thumbnailDataFileId = UUID.randomUUID()
+        val tmpEncryptedFile = File.createTempFile("$thumbnailDataFileId-encrypted", null, folder)
 
         val secretKey = AesService.generateNewFileSecretKey()
         AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
@@ -86,14 +86,24 @@ class UploadViewModel(
 
         AppState.customer.value?.wallet?.let { wallet ->
             eventPublisher.publishEvent(
-                EventThumbnailUploaded(
-                    thumbnailId,
+                EventFileUploaded(
+                    thumbnailDataFileId,
                     chunks.map { it.id },
                     chunks.map { it.viewId },
-                    resolution,
-                    fileId,
+                    "thumbnail.jpg",
+                    tmpEncryptedFile.length(),
+                    ShaService.checksum(bytes.inputStream()),
                     contentType,
-                    Base64.getEncoder().encodeToString(secretKey.encoded)
+                    Base64.getEncoder().encodeToString(secretKey.encoded),
+                    null,
+                    null
+                )
+            )
+            eventPublisher.publishEvent(
+                EventThumbnailUploaded(
+                    thumbnailDataFileId,
+                    UUID.randomUUID(),
+                    resolution,
                 )
             )
 
