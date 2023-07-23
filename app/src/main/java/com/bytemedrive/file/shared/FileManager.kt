@@ -1,7 +1,7 @@
 package com.bytemedrive.file.shared
 
 import com.bytemedrive.file.root.Chunk
-import com.bytemedrive.file.root.File
+import com.bytemedrive.file.root.DataFileLink
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.folder.Folder
 import io.ktor.client.statement.bodyAsChannel
@@ -14,11 +14,11 @@ class FileManager(
     private val fileRepository: FileRepository,
 ) {
 
-    fun findAllFilesRecursively(folderId: UUID, allFolders: List<Folder>, allFiles: List<File>): List<File> {
+    fun findAllFilesRecursively(folderId: UUID, allFolders: List<Folder>, allFiles: List<DataFileLink>): List<DataFileLink> {
         val filesToRemove = allFiles.filter { it.folderId == folderId }
         val subFolders = allFolders.filter { it.parent == folderId }
 
-        val filesInSubFolders = mutableListOf<File>()
+        val filesInSubFolders = mutableListOf<DataFileLink>()
         for (subfolder in subFolders) {
             filesInSubFolders.addAll(findAllFilesRecursively(subfolder.id, allFolders, allFiles))
         }

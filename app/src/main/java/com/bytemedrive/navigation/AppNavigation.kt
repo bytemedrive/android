@@ -89,6 +89,7 @@ fun AppNavigation(
                                         },
                                         modifier = Modifier.padding(horizontal = 12.dp)
                                     )
+
                                 is MenuItem.Divider -> Divider(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                                 is MenuItem.Label -> Text(modifier = Modifier.padding(horizontal = 12.dp), text = it.title)
                             }
@@ -123,7 +124,7 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
         Icons.Default.Language
     ),
     MenuItem.Navigation(
-        context.getString(R.string.menu_app_credit_amount, AppState.customer.value?.creditAmount ?: 0),
+        context.getString(R.string.menu_app_credit_amount, AppState.customer.value?.balanceGbm ?: 0),
         null,
         Icons.Default.WbSunny
     ),
@@ -151,4 +152,4 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
     ) { signInManager.signOut() },
 )
 
-private fun usedStorage() = AppState.customer.value?.files?.sumOf { it.sizeBytes }?.div(1_073_741_824.0)?.let { DecimalFormat("#.##").format(it) } ?: 0
+private fun usedStorage() = AppState.customer.value?.dataFiles?.sumOf { it.sizeBytes }?.div(1_073_741_824.0)?.let { DecimalFormat("#.##").format(it) } ?: 0

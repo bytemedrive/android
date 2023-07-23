@@ -2,28 +2,15 @@ package com.bytemedrive.file.root
 
 import com.bytemedrive.store.Convertable
 import com.bytemedrive.store.CustomerAggregate
-import java.util.Base64
 import java.util.UUID
-import javax.crypto.spec.SecretKeySpec
 
 data class EventThumbnailUploaded(
-    val id: UUID,
-    val chunksIds: List<UUID>,
-    val chunksViewIds: List<UUID>,
+    val sourceDataFileId: UUID,
+    val thumbnailDataFileId: UUID,
     val resolution: Resolution,
-    val fileId: UUID,
-    val contentType: String,
-    val secretKeyBase64: String
 ) : Convertable {
 
     override fun convert(customer: CustomerAggregate) {
-        customer.files = customer.files.map {
-            val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
-            val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
-
-            it.thumbnails.add(File.Thumbnail(id, chunksIds, chunksViewIds, resolution, secretKey))
-
-            it
-        }.toMutableList()
+        customer.dataFiles.find { it.id == sourceDataFileId }?.thumbnails?.add(DataFile.Thumbnail(thumbnailDataFileId, resolution))
     }
 }

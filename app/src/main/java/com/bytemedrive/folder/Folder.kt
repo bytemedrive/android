@@ -6,5 +6,5 @@ data class Folder(
     val id: UUID,
     val name: String,
     val starred: Boolean = false,
-    val parent: UUID?,
+    val parent: UUID? = null,
 )
