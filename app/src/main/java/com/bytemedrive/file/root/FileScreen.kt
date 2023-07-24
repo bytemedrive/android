@@ -47,10 +47,12 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
+import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.file.shared.selection.FileSelectionDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
+import java.util.UUID
 
 private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 
@@ -66,6 +68,7 @@ fun FileScreen(
     val itemsPaged = fileViewModel.getItemsPages(items).collectAsLazyPagingItems()
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
     val thumbnails by fileViewModel.thumbnails.collectAsState()
+    val dataFilePreview by fileViewModel.dataFilePreview.collectAsState()
     val fileSelectionDialogOpened by fileViewModel.fileSelectionDialogOpened.collectAsState()
 
     LaunchedEffect("initialize") {
@@ -89,6 +92,15 @@ fun FileScreen(
 
     BackHandler(true) {
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
+    }
+
+    dataFilePreview?.let { dataFilePreview_ ->
+        val folderUUID = folderId?.let { UUID.fromString(it) }
+        val dataFileIds = AppState.customer.value?.dataFilesLinks
+            ?.filter { dataFileLink -> dataFileLink.folderId == folderUUID}
+            ?.map { it.dataFileId }.orEmpty()
+
+        FilePreviewDialog(dataFilePreview_, dataFileIds, { fileViewModel.dataFilePreview.value = null })
     }
 
     if (fileSelectionDialogOpened) {
@@ -172,6 +184,7 @@ fun FileScreen(
                                         ItemType.File -> appNavigator.navigateTo(
                                             AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE, mapOf("id" to item.id.toString())
                                         )
+
                                         ItemType.Folder -> appNavigator.navigateTo(
                                             AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FOLDER, mapOf("id" to item.id.toString())
                                         )

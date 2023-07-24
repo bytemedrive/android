@@ -1,5 +1,6 @@
 package com.bytemedrive.koin
 
+import com.bytemedrive.file.shared.preview.FilePreviewViewModel
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.UploadViewModel
@@ -31,6 +32,7 @@ val viewModelsModule = module {
     single { StarredViewModel(get(), get(), get(), get(), get()) }
     single { TopBarViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
+    viewModel { FilePreviewViewModel(get()) }
     viewModel { FileSelectionViewModel(get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(), get(), get()) }

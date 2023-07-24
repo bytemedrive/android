@@ -4,9 +4,11 @@ import android.content.Context
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MimeTypes
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.bytemedrive.file.root.DataFile
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.FilePagingSource
 import com.bytemedrive.file.root.FileRepository
@@ -40,6 +42,8 @@ class StarredViewModel(
 
     val itemsSelected = MutableStateFlow(emptyList<Item>())
 
+    val dataFilePreview = MutableStateFlow<DataFile?>(null)
+
     init {
         viewModelScope.launch {
             AppState.customer.collectLatest { customer ->
@@ -59,7 +63,15 @@ class StarredViewModel(
         } else {
             when (item.type) {
                 ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
-                ItemType.File -> null // TODO: Add some action
+                ItemType.File -> {
+                    AppState.customer.value?.dataFilesLinks?.find { it.id == item.id }?.let { dataFileLink ->
+                        val dataFile = AppState.customer.value?.dataFiles?.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
+
+                        if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
+                            dataFilePreview.value = dataFile
+                        }
+                    }
+                }
             }
         }
     }
