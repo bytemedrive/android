@@ -51,7 +51,8 @@ class FilePreviewViewModel(
                     }
                 }
             }
-            ?.filterNotNull().orEmpty()
+            ?.filterNotNull()
+            .orEmpty()
 
         loading.value = false
     }
