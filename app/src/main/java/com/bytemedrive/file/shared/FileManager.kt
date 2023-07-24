@@ -41,7 +41,7 @@ class FileManager(
 
         resultFile.outputStream().use { outputStream ->
             viewIds.forEach { chunkViewId ->
-                fileRepository.download(chunkViewId).bodyAsChannel().toInputStream().use { it.copyTo(outputStream, BUFFER_SIZE) }
+                fileRepository.download(chunkViewId)?.bodyAsChannel()?.toInputStream()?.use { it.copyTo(outputStream, BUFFER_SIZE) }
             }
         }
 
