@@ -59,10 +59,12 @@ class HttpClient {
         }
 
         client.plugin(HttpSend).intercept { request ->
-            Log.i(TAG, "Sending request to ${request.url}")
+            Log.i(TAG, "Sending request ${request.method.value} ${request.url}")
+            val start = System.currentTimeMillis()
 
             val originalCall = execute(request)
 
+            Log.i(TAG, "Response[${originalCall.response.status.value}] in ${System.currentTimeMillis() - start}ms for request ${request.method.value} ${request.url}")
             originalCall
         }
 

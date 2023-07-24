@@ -11,6 +11,7 @@ import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -32,14 +33,14 @@ class UploadViewModel(
         val tmpOriginalFile = File.createTempFile(dataFileId.toString(), null, tmpFolder)
         inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE)
 
-        val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", null, tmpFolder)
+        viewModelScope.launch(Dispatchers.IO) {
+            val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", null, tmpFolder)
 
-        val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
+            val secretKey = AesService.generateNewFileSecretKey()
+            AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
 
-        val chunks = fileManager.getChunks(tmpEncryptedFile, tmpFolder)
+            val chunks = fileManager.getChunks(tmpEncryptedFile, tmpFolder)
 
-        viewModelScope.launch {
             AppState.customer.value?.wallet?.let { wallet ->
                 fileRepository.upload(wallet, chunks)
                 eventPublisher.publishEvent(
