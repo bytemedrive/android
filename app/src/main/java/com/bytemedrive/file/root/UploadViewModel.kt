@@ -28,8 +28,19 @@ class UploadViewModel(
 
     private val TAG = UploadViewModel::class.qualifiedName
 
-    fun uploadFile(inputStream: InputStream, tmpFolder: File, fileName: String, folderId: String?, contentType: String, onSuccess: () -> Unit) {
+    fun uploadFile(
+        inputStream: InputStream,
+                   tmpFolder: File,
+                   fileName: String,
+                   folderId: String?,
+                   contentType: String,
+        onStart: (id: UUID, name: String) -> Unit,
+                   onSuccess: (id: UUID) -> Unit
+    ) {
         val dataFileId = UUID.randomUUID()
+
+        onStart(dataFileId, fileName)
+
         val tmpOriginalFile = File.createTempFile(dataFileId.toString(), null, tmpFolder)
         inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE)
 
@@ -71,7 +82,7 @@ class UploadViewModel(
                     }
                 }
 
-                onSuccess()
+                onSuccess(dataFileId)
             }
         }
     }

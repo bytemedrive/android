@@ -47,8 +47,8 @@ class StarredViewModel(
     init {
         viewModelScope.launch {
             AppState.customer.collectLatest { customer ->
-                val folders = customer?.folders?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.Folder, it.starred) }.orEmpty().toMutableList()
-                val dataFileLinks = customer?.dataFilesLinks?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.File, it.starred) }.orEmpty().toMutableList()
+                val folders = customer?.folders?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }.orEmpty().toMutableList()
+                val dataFileLinks = customer?.dataFilesLinks?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.File, it.starred, false) }.orEmpty().toMutableList()
 
                 starred.value = folders + dataFileLinks
             }
@@ -63,6 +63,7 @@ class StarredViewModel(
         } else {
             when (item.type) {
                 ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
+
                 ItemType.File -> {
                     AppState.customer.value?.dataFilesLinks?.find { it.id == item.id }?.let { dataFileLink ->
                         val dataFile = AppState.customer.value?.dataFiles?.find { dataFile -> dataFile.id == dataFileLink.dataFileId }

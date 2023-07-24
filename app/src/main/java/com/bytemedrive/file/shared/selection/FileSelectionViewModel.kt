@@ -61,11 +61,11 @@ class FileSelectionViewModel(
         AppState.customer.collectLatest { customer ->
             val tempFolders = customer?.folders
                 ?.filter { folder -> folder.parent == folderId }
-                ?.map { Item(it.id, it.name, ItemType.Folder, it.starred) }.orEmpty()
+                ?.map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }.orEmpty()
 
             val tempFiles = customer?.dataFilesLinks
                 ?.filter { dataFileLink -> dataFileLink.folderId == folderId }
-                ?.map { Item(it.id, it.name, ItemType.File, it.starred) }.orEmpty()
+                ?.map { Item(it.id, it.name, ItemType.File, it.starred, false) }.orEmpty()
 
             dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
