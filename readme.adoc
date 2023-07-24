@@ -1,0 +1,5 @@
+= ByteMe Drive Android
+
+image:https://img.shields.io/github/license/bytemedrive/android[GitHub]
+
+Discover Android's foremost privacy-centric storage solution.
