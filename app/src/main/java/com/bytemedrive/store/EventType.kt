@@ -14,7 +14,7 @@ import com.bytemedrive.folder.EventFolderMoved
 import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
 import com.bytemedrive.signup.EventCustomerSignedUp
-import com.bytemedrive.wallet.EventCouponRedeemed
+import com.bytemedrive.wallet.credit.EventCouponRedeemed
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {

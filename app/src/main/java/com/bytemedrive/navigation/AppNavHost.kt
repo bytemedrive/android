@@ -17,8 +17,10 @@ import com.bytemedrive.file.shared.bottomsheet.FileBottomSheetCreate
 import com.bytemedrive.file.starred.StarredScreen
 import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFile
 import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFolder
-import com.bytemedrive.wallet.AddCreditCodeScreen
-import com.bytemedrive.wallet.AddCreditMethodScreen
+import com.bytemedrive.wallet.credit.AddCreditCodeScreen
+import com.bytemedrive.wallet.credit.AddCreditMethodScreen
+import com.bytemedrive.wallet.credit.AddCryptoMethodAmountScreen
+import com.bytemedrive.wallet.credit.AddCryptoMethodPaymentScreen
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.bottomSheet
 import kotlinx.coroutines.flow.launchIn
@@ -56,6 +58,13 @@ fun AppNavHost(
 
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_METHOD.label) { AddCreditMethodScreen() }
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_CODE.label) { AddCreditCodeScreen() }
+        composable(route = AppNavigator.NavTarget.ADD_CRYPTO_METHOD_AMOUNT.label) { AddCryptoMethodAmountScreen() }
+        composable(
+            route = AppNavigator.NavTarget.ADD_CRYPTO_METHOD_PAYMENT.label,
+            arguments = listOf(navArgument("storageAmount") {})
+        ) {
+                backstackEntry -> AddCryptoMethodPaymentScreen(backstackEntry.arguments?.getString("storageAmount")?.toInt() ?: 0)
+        }
         composable(route = AppNavigator.NavTarget.STARRED.label) { StarredScreen() }
 
         bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE.label) { backstackEntry ->

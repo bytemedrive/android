@@ -1,11 +1,10 @@
-package com.bytemedrive.wallet
+package com.bytemedrive.wallet.root
 
 import com.bytemedrive.application.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import java.net.URL
 import java.util.UUID
 
 class WalletRepository {
@@ -19,4 +18,7 @@ class WalletRepository {
             val code: String = couponCode
         })
     }
+
+    suspend fun createMoneroPayment(walletId: UUID, request: MoneroPaymentRequest): MoneroPaymentResponse =
+        httpClient.post("wallets/$walletId/monero-payments") { setBody(request) }.body()
 }

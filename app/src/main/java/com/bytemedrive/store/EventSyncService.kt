@@ -5,7 +5,7 @@ import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.network.JsonConfig.mapper
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
-import com.bytemedrive.wallet.WalletRepository
+import com.bytemedrive.wallet.root.WalletRepository
 import java.util.Base64
 import kotlin.streams.toList
 
