@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.file.root.FileScreen
 import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFile
 import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFolder

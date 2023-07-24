@@ -39,6 +39,7 @@ import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
+import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
@@ -50,6 +51,7 @@ fun StarredScreen(
     appNavigator: AppNavigator = get()
 ) {
     val items = starredViewModel.getStarredFilesPages().collectAsLazyPagingItems()
+    val dataFilePreview by starredViewModel.dataFilePreview.collectAsState()
     val fileAndFolderSelected by starredViewModel.itemsSelected.collectAsState()
 
     LaunchedEffect("initialize") {
@@ -64,6 +66,14 @@ fun StarredScreen(
 
     BackHandler(true) {
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
+    }
+
+    dataFilePreview?.let { dataFilePreview_ ->
+        val dataFileIds = AppState.customer.value?.dataFilesLinks
+            ?.filter { dataFileLink -> dataFileLink.starred }
+            ?.map { it.dataFileId }.orEmpty()
+
+        FilePreviewDialog(dataFilePreview_, dataFileIds, { starredViewModel.dataFilePreview.value = null })
     }
 
     Scaffold(
@@ -135,6 +145,7 @@ fun StarredScreen(
                                         ItemType.File -> appNavigator.navigateTo(
                                             AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FILE, mapOf("id" to item.id.toString())
                                         )
+
                                         ItemType.Folder -> appNavigator.navigateTo(
                                             AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FOLDER, mapOf("id" to item.id.toString())
                                         )

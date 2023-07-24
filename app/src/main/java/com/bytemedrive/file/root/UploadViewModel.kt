@@ -75,14 +75,14 @@ class UploadViewModel(
         }
     }
 
-    private suspend fun uploadThumbnail(bytes: ByteArray, folder: File, sourceDataFileId: UUID, contentType: String, resolution: Resolution) {
+    private suspend fun uploadThumbnail(bytes: ByteArray, file: File, sourceDataFileId: UUID, contentType: String, resolution: Resolution) {
         val thumbnailDataFileId = UUID.randomUUID()
-        val tmpEncryptedFile = File.createTempFile("$thumbnailDataFileId-encrypted", null, folder)
+        val tmpEncryptedFile = File.createTempFile("$thumbnailDataFileId-encrypted", null, file)
 
         val secretKey = AesService.generateNewFileSecretKey()
         AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
 
-        val chunks = fileManager.getChunks(tmpEncryptedFile, folder)
+        val chunks = fileManager.getChunks(tmpEncryptedFile, file)
 
         AppState.customer.value?.wallet?.let { wallet ->
             eventPublisher.publishEvent(

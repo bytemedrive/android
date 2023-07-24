@@ -6,10 +6,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MimeTypes
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -49,6 +49,8 @@ class FileViewModel(
 
     val action = MutableStateFlow<Action?>(null)
 
+    val dataFilePreview = MutableStateFlow<DataFile?>(null)
+
     init {
         viewModelScope.launch {
             getThumbnails(context)
@@ -63,7 +65,15 @@ class FileViewModel(
         } else {
             when (item.type) {
                 ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
-                ItemType.File -> null // TODO: Add some action
+                ItemType.File -> {
+                    AppState.customer.value?.dataFilesLinks?.find { it.id == item.id }?.let { dataFileLink ->
+                        val dataFile = AppState.customer.value?.dataFiles?.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
+
+                        if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
+                            dataFilePreview.value = dataFile
+                        }
+                    }
+                }
             }
         }
     }
@@ -102,7 +112,7 @@ class FileViewModel(
             dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
             items.value = tempFolders + tempFiles
-            getThumbnails(context)
+            getThumbnails(context) // TODO: Look at loading thumbnails after new files are added
         }
     }
 
