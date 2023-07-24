@@ -20,6 +20,10 @@ class AppNavigator {
 
         ADD_CREDIT_CODE("addCreditCode"),
 
+        ADD_CRYPTO_METHOD_AMOUNT("addCryptoMethodAmount"),
+
+        ADD_CRYPTO_METHOD_PAYMENT("addCryptoMethodPayment?storageAmount={storageAmount}"),
+
         ADD_CREDIT_METHOD("addCreditMethod"),
 
         BACK("back"),

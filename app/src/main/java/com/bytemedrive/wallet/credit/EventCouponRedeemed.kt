@@ -1,4 +1,4 @@
-package com.bytemedrive.wallet
+package com.bytemedrive.wallet.credit
 
 import com.bytemedrive.store.Convertable
 import com.bytemedrive.store.CustomerAggregate

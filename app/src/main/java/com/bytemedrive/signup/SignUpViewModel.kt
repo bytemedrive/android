@@ -10,7 +10,7 @@ import com.bytemedrive.store.EncryptedSecretKey
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventsSecretKey
-import com.bytemedrive.wallet.WalletRepository
+import com.bytemedrive.wallet.root.WalletRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

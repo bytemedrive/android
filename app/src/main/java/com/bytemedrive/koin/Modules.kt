@@ -12,6 +12,7 @@ import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarViewModel
 import com.bytemedrive.network.HttpClient
+import com.bytemedrive.price.PricesRepository
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.signin.SignInRepository
 import com.bytemedrive.signin.SignInViewModel
@@ -20,9 +21,11 @@ import com.bytemedrive.signup.SignUpViewModel
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.StoreRepository
-import com.bytemedrive.wallet.AddCreditCodeViewModel
-import com.bytemedrive.wallet.AddCreditMethodViewModel
-import com.bytemedrive.wallet.WalletRepository
+import com.bytemedrive.wallet.credit.AddCreditCodeViewModel
+import com.bytemedrive.wallet.credit.AddCreditMethodViewModel
+import com.bytemedrive.wallet.credit.AddCryptoMethodAmountViewModel
+import com.bytemedrive.wallet.credit.AddCryptoMethodPaymentViewModel
+import com.bytemedrive.wallet.root.WalletRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -39,6 +42,8 @@ val viewModelsModule = module {
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
     viewModel { AddCreditCodeViewModel(get(), get()) }
+    viewModel { AddCryptoMethodAmountViewModel(get()) }
+    viewModel { AddCryptoMethodPaymentViewModel(get()) }
 }
 
 val networkModule = module {
@@ -55,6 +60,7 @@ val accountModule = module {
     single { FileRepository() }
     single { StoreRepository() }
     single { WalletRepository() }
+    single { PricesRepository() }
 }
 
 val storeModule = module {

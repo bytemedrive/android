@@ -1,4 +1,4 @@
-package com.bytemedrive.wallet
+package com.bytemedrive.wallet.root
 
 data class Wallet(
     val id: String,
