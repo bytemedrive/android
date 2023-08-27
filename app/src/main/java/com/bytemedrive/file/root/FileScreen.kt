@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,7 +66,8 @@ fun FileScreen(
 ) {
     val context = LocalContext.current
     val items by fileViewModel.items.collectAsState()
-    val itemsPaged = fileViewModel.getItemsPages(items).collectAsLazyPagingItems()
+    val itemsUploading by fileViewModel.itemsUploading.collectAsState()
+    val itemsPaged = fileViewModel.getItemsPages(itemsUploading + items).collectAsLazyPagingItems()
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
     val thumbnails by fileViewModel.thumbnails.collectAsState()
     val dataFilePreview by fileViewModel.dataFilePreview.collectAsState()
@@ -147,7 +149,9 @@ fun FileScreen(
                                         tint = Color.Black,
                                     )
                                 } else {
-                                    if (item.type == ItemType.File) {
+                                    if (item.uploading) {
+                                        CircularProgressIndicator()
+                                    } else if (item.type == ItemType.File) {
                                         thumbnails[item.id]?.let { Image(bitmap = it.asImageBitmap(), contentDescription = "Thumbnail") }
                                             ?: Icon(
                                                 imageVector = Icons.Outlined.Description,
@@ -169,7 +173,9 @@ fun FileScreen(
                                 ) {
                                     Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight(500))
                                     Row() {
-                                        if (item.starred) {
+                                        if (item.uploading) {
+                                            Text(text = "Uploading")
+                                        } else if (item.starred) {
                                             Icon(
                                                 modifier = Modifier.size(16.dp),
                                                 imageVector = Icons.Rounded.Star,

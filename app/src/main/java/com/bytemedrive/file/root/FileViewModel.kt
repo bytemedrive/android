@@ -45,6 +45,8 @@ class FileViewModel(
 
     val itemsSelected = MutableStateFlow(emptyList<Item>())
 
+    val itemsUploading = MutableStateFlow(emptyList<Item>())
+
     val fileSelectionDialogOpened = MutableStateFlow(false)
 
     val action = MutableStateFlow<Action?>(null)
@@ -78,6 +80,14 @@ class FileViewModel(
         }
     }
 
+    fun addItemToUploadQueue(id: UUID, name: String) {
+        itemsUploading.value = itemsUploading.value + Item(id, name, ItemType.File, starred = false, uploading = true)
+    }
+
+    fun removeItemFromUploadQueue(id: UUID) {
+        itemsUploading.value = itemsUploading.value.filter { it.id != id }
+    }
+
     fun longClickFileAndFolder(item: Item) {
         itemsSelected.value = if (itemsSelected.value.contains(item)) {
             itemsSelected.value - item
@@ -103,16 +113,16 @@ class FileViewModel(
         AppState.customer.collectLatest { customer ->
             val tempFolders = customer?.folders
                 ?.filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
-                ?.map { Item(it.id, it.name, ItemType.Folder, it.starred) }.orEmpty()
+                ?.map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }.orEmpty()
 
             val tempFiles = customer?.dataFilesLinks
                 ?.filter { file -> file.folderId == folderId?.let { UUID.fromString(it) } }
-                ?.map { Item(it.id, it.name, ItemType.File, it.starred) }.orEmpty()
+                ?.map { Item(it.id, it.name, ItemType.File, it.starred, false) }.orEmpty()
 
             dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
             items.value = tempFolders + tempFiles
-            getThumbnails(context) // TODO: Look at loading thumbnails after new files are added
+//            getThumbnails(context) // TODO: Look at loading thumbnails after new files are added
         }
     }
 

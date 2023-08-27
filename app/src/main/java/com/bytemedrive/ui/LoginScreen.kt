@@ -1,4 +1,4 @@
-package com.bytemedrive.authentication
+package com.bytemedrive.ui
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
