@@ -67,6 +67,7 @@ class FileViewModel(
         } else {
             when (item.type) {
                 ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
+
                 ItemType.File -> {
                     AppState.customer.value?.dataFilesLinks?.find { it.id == item.id }?.let { dataFileLink ->
                         val dataFile = AppState.customer.value?.dataFiles?.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
@@ -109,7 +110,7 @@ class FileViewModel(
         itemsSelected.value = emptyList()
     }
 
-    suspend fun updateItems(folderId: String?, context: Context) {
+    fun updateItems(folderId: String?, context: Context) = viewModelScope.launch {
         AppState.customer.collectLatest { customer ->
             val tempFolders = customer?.folders
                 ?.filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
@@ -260,7 +261,7 @@ class FileViewModel(
 
     private suspend fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, context: Context): Bitmap? {
         val dataFiles = AppState.customer.value?.dataFiles
-        if(dataFiles != null) {
+        if (dataFiles != null) {
             val dataFile = dataFiles.find { it.id == dataFileLink.dataFileId }
             val thumbnail = dataFile?.thumbnails?.find { thumbnail -> thumbnail.resolution == Resolution.P360 }
 
