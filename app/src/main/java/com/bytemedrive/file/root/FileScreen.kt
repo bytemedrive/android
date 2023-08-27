@@ -97,7 +97,7 @@ fun FileScreen(
     dataFilePreview?.let { dataFilePreview_ ->
         val folderUUID = folderId?.let { UUID.fromString(it) }
         val dataFileIds = AppState.customer.value?.dataFilesLinks
-            ?.filter { dataFileLink -> dataFileLink.folderId == folderUUID}
+            ?.filter { dataFileLink -> dataFileLink.folderId == folderUUID }
             ?.map { it.dataFileId }.orEmpty()
 
         FilePreviewDialog(dataFilePreview_, dataFileIds, { fileViewModel.dataFilePreview.value = null })
