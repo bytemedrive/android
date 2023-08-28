@@ -1,15 +1,18 @@
 package com.bytemedrive
 
+import android.content.Intent
 import android.content.res.AssetManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.content.ContextCompat
 import com.bytemedrive.application.GlobalExceptionHandler
 import com.bytemedrive.config.ConfigProperty
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.ui.MainScreen
 import com.bytemedrive.ui.theme.ByteMeTheme
+import com.bytemedrive.service.FileUploadService
 import org.koin.android.ext.android.get
 import java.io.IOException
 import java.io.InputStream
@@ -31,6 +34,7 @@ class MainActivity : ComponentActivity() {
                 MainScreen()
             }
         }
+
         get<SignInManager>().autoSignIn()
     }
 

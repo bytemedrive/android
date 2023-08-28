@@ -10,7 +10,6 @@ import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.readBytes
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -47,7 +46,7 @@ class FileRepository {
         } catch (e: RequestFailedException) {
             if (e.response.status == HttpStatusCode.NotFound) {
                 Log.w(TAG, "File with id=$id not found")
-                
+
                 null
             } else {
                 throw e

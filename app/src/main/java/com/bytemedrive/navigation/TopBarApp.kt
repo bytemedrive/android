@@ -19,11 +19,12 @@ import com.bytemedrive.navigation.TopBarViewModel
 import com.bytemedrive.store.AppState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @Composable
 fun TopBarApp(
     toggleNav: suspend () -> Unit,
-    topBarViewModel: TopBarViewModel = get(),
+    topBarViewModel: TopBarViewModel = koinInject(),
 ) {
     val barType by topBarViewModel.barType.collectAsState()
 

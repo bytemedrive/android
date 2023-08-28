@@ -11,11 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @Composable
 fun FloatingActionButtonCreate(
     selectedFolderId: String? = null,
-    appNavigator: AppNavigator = get()
+    appNavigator: AppNavigator = koinInject()
 ) {
     FloatingActionButton(
         onClick = {

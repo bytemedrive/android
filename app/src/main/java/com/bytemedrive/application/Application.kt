@@ -2,12 +2,14 @@ package com.bytemedrive.application
 
 import androidx.security.crypto.MasterKeys
 import com.bytemedrive.koin.accountModule
+import com.bytemedrive.koin.databaseModule
 import com.bytemedrive.koin.networkModule
 import com.bytemedrive.koin.storeModule
 import com.bytemedrive.koin.viewModelsModule
 import com.bytemedrive.store.EncryptedPrefs
 import io.ktor.client.HttpClient
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
 
 val encryptedSharedPreferences: EncryptedPrefs by lazy {
@@ -35,8 +37,10 @@ class Application : android.app.Application() {
         if (!isKoinStarted) {
             startKoin {
                 androidContext(applicationContext)
-                modules(accountModule, viewModelsModule, networkModule, storeModule)
+                workManagerFactory()
+                modules(accountModule, viewModelsModule, databaseModule, networkModule, storeModule)
             }
+
             isKoinStarted = true
         }
 

@@ -21,11 +21,12 @@ import com.bytemedrive.store.AppState
 import com.bytemedrive.ui.component.FieldRadioGroup
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun AddCreditMethodScreen(
     addCreditMethodViewModel: AddCreditMethodViewModel = koinViewModel(),
-    appNavigator: AppNavigator = get(),
+    appNavigator: AppNavigator = koinInject(),
 ) {
     LaunchedEffect("initialize") {
         AppState.title.value = "Add credit"

@@ -43,12 +43,13 @@ import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun StarredScreen(
-    starredViewModel: StarredViewModel = get(),
-    appNavigator: AppNavigator = get()
+    starredViewModel: StarredViewModel = koinInject(),
+    appNavigator: AppNavigator = koinInject()
 ) {
     val items = starredViewModel.getStarredFilesPages().collectAsLazyPagingItems()
     val dataFilePreview by starredViewModel.dataFilePreview.collectAsState()

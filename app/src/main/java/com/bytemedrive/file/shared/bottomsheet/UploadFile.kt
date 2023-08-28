@@ -1,5 +1,6 @@
 package com.bytemedrive.file.shared.bottomsheet
 
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,6 +16,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,22 +26,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.documentfile.provider.DocumentFile
-import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.service.FileUploadService
 import com.bytemedrive.store.AppState
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
 fun UploadFile(
     folderId: String?,
     uploadViewModel: UploadViewModel,
-    fileViewModel: FileViewModel,
     appNavigator: AppNavigator,
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val customer by AppState.customer.collectAsState()
     val folder = folderId?.let { folderId_ -> customer?.folders?.find { it.id == UUID.fromString(folderId_) } }
+    val serviceIntent = remember { Intent(context, FileUploadService::class.java) }
 
     val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uries: List<Uri> ->
         val message = folder?.let { "Your ${uries.size} files are being uploaded to: ${folder.name}" } ?: "Your ${uries.size} files are being uploaded"
@@ -47,19 +52,20 @@ fun UploadFile(
 
         uries.forEach { uri ->
             context.contentResolver.openInputStream(uri).use { inputStream ->
-                val documentFile = DocumentFile.fromSingleUri(context, uri)
-                val fileType = context.contentResolver.getType(uri) ?: "unknown"
-
-                inputStream?.let {
-                    uploadViewModel.uploadFile(inputStream, context.cacheDir, documentFile?.name!!, folderId, fileType, fileViewModel::addItemToUploadQueue) { dataFileId ->
-                        fileViewModel.removeItemFromUploadQueue(dataFileId)
-
-                        folderId?.let {
-                            appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
-                        } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
+                inputStream?.let { inputStream_ ->
+                    DocumentFile.fromSingleUri(context, uri)?.let { documentFile ->
+                        uploadViewModel.uploadFile(inputStream_, documentFile, context.cacheDir, folderId) {
+                            folderId?.let {
+                                appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
+                            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
+                        }
                     }
                 }
             }
+        }
+
+        coroutineScope.launch {
+            context.startService(serviceIntent)
         }
     }
 

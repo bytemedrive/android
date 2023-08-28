@@ -40,13 +40,14 @@ import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
     snackbarHostState: SnackbarHostState,
     signUpViewModel: SignUpViewModel = koinViewModel(),
-    appNavigator: AppNavigator = get()
+    appNavigator: AppNavigator = koinInject()
 ) {
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()

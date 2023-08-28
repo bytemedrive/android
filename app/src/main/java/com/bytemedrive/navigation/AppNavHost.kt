@@ -26,6 +26,7 @@ import com.google.accompanist.navigation.material.bottomSheet
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterialNavigationApi::class)
 @Composable
@@ -33,7 +34,7 @@ fun AppNavHost(
     navHostController: NavHostController,
     innerPadding: PaddingValues,
     startDestination: AppNavigator.NavTarget,
-    appNavigator: AppNavigator = get()
+    appNavigator: AppNavigator = koinInject()
 ) {
     LaunchedEffect("navigation") {
         appNavigator.sharedFlow.onEach {

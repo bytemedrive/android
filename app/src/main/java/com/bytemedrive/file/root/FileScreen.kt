@@ -52,7 +52,7 @@ import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.file.shared.selection.FileSelectionDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 import java.util.UUID
 
 private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
@@ -61,12 +61,12 @@ private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 @Composable
 fun FileScreen(
     folderId: String? = null,
-    fileViewModel: FileViewModel = get(),
-    appNavigator: AppNavigator = get(),
+    fileViewModel: FileViewModel = koinInject(),
+    appNavigator: AppNavigator = koinInject(),
 ) {
     val context = LocalContext.current
     val items by fileViewModel.items.collectAsState()
-    val itemsUploading by fileViewModel.itemsUploading.collectAsState()
+    val itemsUploading by fileViewModel.itemsUploading.collectAsState(emptyList())
     val itemsPaged = fileViewModel.getItemsPages(itemsUploading + items).collectAsLazyPagingItems()
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
     val thumbnails by fileViewModel.thumbnails.collectAsState()

@@ -50,13 +50,14 @@ import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FileSelectionDialog(
     fileSelectionViewModel: FileSelectionViewModel = koinViewModel(),
-    fileViewModel: FileViewModel = get(),
-    appNavigator: AppNavigator = get(),
+    fileViewModel: FileViewModel = koinInject(),
+    appNavigator: AppNavigator = koinInject(),
 ) {
     val action by fileViewModel.action.collectAsState()
     val folders by fileSelectionViewModel.folders.collectAsState()

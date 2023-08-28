@@ -25,12 +25,13 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCryptoMethodAmountScreen(
     addCryptoMethodViewModel: AddCryptoMethodAmountViewModel = koinViewModel(),
-    appNavigator: AppNavigator = get(),
+    appNavigator: AppNavigator = koinInject(),
 ) {
 
     LaunchedEffect("initialize") {
