@@ -7,6 +7,7 @@ import com.bytemedrive.koin.networkModule
 import com.bytemedrive.koin.storeModule
 import com.bytemedrive.koin.viewModelsModule
 import com.bytemedrive.store.EncryptedPrefs
+import com.stripe.stripeterminal.TerminalApplicationDelegate
 import io.ktor.client.HttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -46,5 +47,7 @@ class Application : android.app.Application() {
 
         httpClient = com.bytemedrive.network.HttpClient().client
         encryptedSharedPreferences = EncryptedPrefs(applicationContext, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC))
+
+        TerminalApplicationDelegate.onCreate(this)
     }
 }

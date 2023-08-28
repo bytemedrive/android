@@ -1,4 +1,4 @@
-package com.bytemedrive.wallet.credit
+package com.bytemedrive.wallet.payment.crypto
 
 import android.content.Intent
 import android.net.Uri
@@ -31,24 +31,24 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 @Composable
-fun AddCryptoMethodPaymentScreen(
+fun PaymentMethodCryptoPaymentScreen(
     storageAmount: Int,
-    addCryptoMethodPaymentViewModel: AddCryptoMethodPaymentViewModel = koinViewModel(),
+    paymentMethodCryptoPaymentViewModel: PaymentMethodCryptoPaymentViewModel = koinViewModel(),
 ) {
 
     LaunchedEffect("initialize") {
         AppState.title.value = "Monero payment"
-        addCryptoMethodPaymentViewModel.init(storageAmount)
+        paymentMethodCryptoPaymentViewModel.init(storageAmount)
     }
 
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val cakeWalletPackage = "com.cakewallet.cake_wallet"
 
-    val walletAddress by addCryptoMethodPaymentViewModel.walletAddress.collectAsState()
-    val amount by addCryptoMethodPaymentViewModel.amount.collectAsState()
-    val expiration by addCryptoMethodPaymentViewModel.expiration.collectAsState()
-    val expiresIn by addCryptoMethodPaymentViewModel.expiresIn.collectAsState()
+    val walletAddress by paymentMethodCryptoPaymentViewModel.walletAddress.collectAsState()
+    val amount by paymentMethodCryptoPaymentViewModel.amount.collectAsState()
+    val expiration by paymentMethodCryptoPaymentViewModel.expiration.collectAsState()
+    val expiresIn by paymentMethodCryptoPaymentViewModel.expiresIn.collectAsState()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 24.dp),

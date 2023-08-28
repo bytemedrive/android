@@ -1,4 +1,4 @@
-package com.bytemedrive.wallet.credit
+package com.bytemedrive.wallet.payment.crypto
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,14 +23,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
-import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddCryptoMethodAmountScreen(
-    addCryptoMethodViewModel: AddCryptoMethodAmountViewModel = koinViewModel(),
+fun PaymentMethodCryptoAmountScreen(
+    paymentMethodCryptoAmountViewModel: PaymentMethodCryptoAmountViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject(),
 ) {
 
@@ -38,8 +37,8 @@ fun AddCryptoMethodAmountScreen(
         AppState.title.value = "Monero payment"
     }
 
-    val amount by addCryptoMethodViewModel.amount.collectAsState()
-    val prices by addCryptoMethodViewModel.prices.collectAsState()
+    val amount by paymentMethodCryptoAmountViewModel.amount.collectAsState()
+    val prices by paymentMethodCryptoAmountViewModel.prices.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 36.dp)) {
         Row(
@@ -51,7 +50,7 @@ fun AddCryptoMethodAmountScreen(
                 value = if (amount == null) "" else amount.toString(),
                 onValueChange = {
                     if (it.matches(Regex("\\d*"))) {
-                        addCryptoMethodViewModel.amount.value = it.toIntOrNull()
+                        paymentMethodCryptoAmountViewModel.amount.value = it.toIntOrNull()
                     }
                 },
                 label = { Text(text = "Storage amount (GBM)") },
@@ -67,7 +66,7 @@ fun AddCryptoMethodAmountScreen(
             verticalAlignment = Alignment.Bottom
         ) {
             Button(
-                onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.ADD_CRYPTO_METHOD_PAYMENT, mapOf("storageAmount" to amount.toString())) },
+                onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.PAYMENT_METHOD_CRYPTO_PAYMENT, mapOf("storageAmount" to amount.toString())) },
                 enabled = amount != null
             ) {
                 Text(text = "Next")

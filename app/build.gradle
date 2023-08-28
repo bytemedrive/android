@@ -62,6 +62,7 @@ dependencies {
     // Accompanist version must equal to version of material-ui, see https://google.github.io/accompanist/#compose-versions
     implementation "com.google.accompanist:accompanist-placeholder-material:$accompaniest_version"
     implementation "com.google.accompanist:accompanist-navigation-material:$accompaniest_version"
+    implementation "com.google.accompanist:accompanist-permissions:$accompaniest_version"
 
     implementation "androidx.compose.material:material:$compose_material_version"
     implementation "androidx.compose.material:material-icons-core:$compose_material_version"
@@ -93,6 +94,8 @@ dependencies {
 
     implementation 'androidx.media3:media3-common:1.0.0'
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
+
+    implementation "com.stripe:stripeterminal:2.23.0"
 
     testImplementation 'junit:junit:4.13.2'
 

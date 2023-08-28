@@ -18,11 +18,13 @@ class AppNavigator {
 
     enum class NavTarget(val label: String) {
 
-        ADD_CREDIT_CODE("addCreditCode"),
+        PAYMENT_METHOD_CREDIT_CARD("addCreditCard"),
 
-        ADD_CRYPTO_METHOD_AMOUNT("addCryptoMethodAmount"),
+        PAYMENT_METHOD_CREDIT_CODE("addCreditCode"),
 
-        ADD_CRYPTO_METHOD_PAYMENT("addCryptoMethodPayment?storageAmount={storageAmount}"),
+        PAYMENT_METHOD_CRYPTO_AMOUNT("addCryptoMethodAmount"),
+
+        PAYMENT_METHOD_CRYPTO_PAYMENT("addCryptoMethodPayment?storageAmount={storageAmount}"),
 
         ADD_CREDIT_METHOD("addCreditMethod"),
 

@@ -1,4 +1,4 @@
-package com.bytemedrive.wallet.credit
+package com.bytemedrive.wallet.payment.creditcode
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-class AddCreditCodeViewModel(private val walletRepository: WalletRepository, private val eventPublisher: EventPublisher) : ViewModel() {
+class PaymentMethodCreditCodeViewModel(private val walletRepository: WalletRepository, private val eventPublisher: EventPublisher) : ViewModel() {
 
     var code = MutableStateFlow("")
 

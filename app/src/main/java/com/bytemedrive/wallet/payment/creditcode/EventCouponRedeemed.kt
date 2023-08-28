@@ -1,8 +1,7 @@
-package com.bytemedrive.wallet.credit
+package com.bytemedrive.wallet.payment.creditcode
 
 import com.bytemedrive.store.Convertable
 import com.bytemedrive.store.CustomerAggregate
-import java.time.ZonedDateTime
 import java.util.UUID
 
 data class EventCouponRedeemed(

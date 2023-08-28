@@ -1,4 +1,4 @@
-package com.bytemedrive.wallet.credit
+package com.bytemedrive.wallet.payment
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,8 +51,9 @@ fun AddCreditMethodScreen(
             Button(
                 onClick = {
                     when(method) {
-                        AddCreditMethodViewModel.methodOptions[1].value -> appNavigator.navigateTo(AppNavigator.NavTarget.ADD_CRYPTO_METHOD_AMOUNT)
-                        AddCreditMethodViewModel.methodOptions[2].value -> appNavigator.navigateTo(AppNavigator.NavTarget.ADD_CREDIT_CODE)
+                        AddCreditMethodViewModel.methodOptions[0].value -> appNavigator.navigateTo(AppNavigator.NavTarget.PAYMENT_METHOD_CREDIT_CARD)
+                        AddCreditMethodViewModel.methodOptions[1].value -> appNavigator.navigateTo(AppNavigator.NavTarget.PAYMENT_METHOD_CRYPTO_AMOUNT)
+                        AddCreditMethodViewModel.methodOptions[2].value -> appNavigator.navigateTo(AppNavigator.NavTarget.PAYMENT_METHOD_CREDIT_CODE)
                     }
                 }
             ) {

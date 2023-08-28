@@ -9,7 +9,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.file.root.FileScreen
 import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFile
 import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFolder
@@ -17,10 +16,11 @@ import com.bytemedrive.file.shared.bottomsheet.FileBottomSheetCreate
 import com.bytemedrive.file.starred.StarredScreen
 import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFile
 import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFolder
-import com.bytemedrive.wallet.credit.AddCreditCodeScreen
-import com.bytemedrive.wallet.credit.AddCreditMethodScreen
-import com.bytemedrive.wallet.credit.AddCryptoMethodAmountScreen
-import com.bytemedrive.wallet.credit.AddCryptoMethodPaymentScreen
+import com.bytemedrive.wallet.payment.creditcard.PaymentMethodCreditCardScreen
+import com.bytemedrive.wallet.payment.AddCreditMethodScreen
+import com.bytemedrive.wallet.payment.creditcode.PaymentMethodCreditCodeScreen
+import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoAmountScreen
+import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoPaymentScreen
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.bottomSheet
 import kotlinx.coroutines.flow.launchIn
@@ -58,13 +58,14 @@ fun AppNavHost(
         }
 
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_METHOD.label) { AddCreditMethodScreen() }
-        composable(route = AppNavigator.NavTarget.ADD_CREDIT_CODE.label) { AddCreditCodeScreen() }
-        composable(route = AppNavigator.NavTarget.ADD_CRYPTO_METHOD_AMOUNT.label) { AddCryptoMethodAmountScreen() }
+        composable(route = AppNavigator.NavTarget.PAYMENT_METHOD_CREDIT_CARD.label) { PaymentMethodCreditCardScreen() }
+        composable(route = AppNavigator.NavTarget.PAYMENT_METHOD_CREDIT_CODE.label) { PaymentMethodCreditCodeScreen() }
+        composable(route = AppNavigator.NavTarget.PAYMENT_METHOD_CRYPTO_AMOUNT.label) { PaymentMethodCryptoAmountScreen() }
         composable(
-            route = AppNavigator.NavTarget.ADD_CRYPTO_METHOD_PAYMENT.label,
+            route = AppNavigator.NavTarget.PAYMENT_METHOD_CRYPTO_PAYMENT.label,
             arguments = listOf(navArgument("storageAmount") {})
         ) {
-                backstackEntry -> AddCryptoMethodPaymentScreen(backstackEntry.arguments?.getString("storageAmount")?.toInt() ?: 0)
+                backstackEntry -> PaymentMethodCryptoPaymentScreen(backstackEntry.arguments?.getString("storageAmount")?.toInt() ?: 0)
         }
         composable(route = AppNavigator.NavTarget.STARRED.label) { StarredScreen() }
 
