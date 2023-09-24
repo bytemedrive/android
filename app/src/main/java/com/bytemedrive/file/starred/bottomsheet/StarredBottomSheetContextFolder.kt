@@ -42,13 +42,10 @@ fun StarredBottomSheetContextFolder(
 
         Column(
             Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ListItem(
-                modifier = Modifier.height(32.dp),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.Folder,
@@ -63,7 +60,6 @@ fun StarredBottomSheetContextFolder(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { toggleStarred() }),
                 leadingContent = {
                     Icon(
@@ -77,7 +73,6 @@ fun StarredBottomSheetContextFolder(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { remove() }),
                 leadingContent = {
                     Icon(
