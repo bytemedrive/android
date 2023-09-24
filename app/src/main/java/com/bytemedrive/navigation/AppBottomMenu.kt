@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.bytemedrive.R
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 fun getMenuItems(context: Context, appNavigator: AppNavigator): List<MenuItem.Navigation> =
     listOf(
@@ -34,7 +35,7 @@ fun getMenuItems(context: Context, appNavigator: AppNavigator): List<MenuItem.Na
     )
 
 @Composable
-fun AppBottomMenu(navHostController: NavHostController, appNavigator: AppNavigator = get()) {
+fun AppBottomMenu(navHostController: NavHostController, appNavigator: AppNavigator = koinInject()) {
     val context = LocalContext.current
     val navItems = getMenuItems(context, appNavigator)
     val selectedItemDefault = remember { navItems.find { it.route?.label == navHostController.currentDestination?.route } }

@@ -1,11 +1,13 @@
 package com.bytemedrive.koin
 
-import com.bytemedrive.file.shared.preview.FilePreviewViewModel
+import com.bytemedrive.database.DatabaseManager
 import com.bytemedrive.file.root.FileRepository
+import com.bytemedrive.file.root.FileUploadQueueRepository
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.file.shared.preview.FilePreviewViewModel
 import com.bytemedrive.file.shared.selection.FileSelectionViewModel
 import com.bytemedrive.file.starred.StarredViewModel
 import com.bytemedrive.folder.FolderManager
@@ -31,19 +33,23 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelsModule = module {
-    single { FileViewModel(get(), get(), get(), get(), get(), androidContext()) }
+    single { FileViewModel(get(), get(), get(), get(), get(), get(), androidContext()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
     single { TopBarViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
     viewModel { FilePreviewViewModel(get()) }
     viewModel { FileSelectionViewModel(get(), get()) }
     viewModel { SignInViewModel(get()) }
-    viewModel { UploadViewModel(get(), get(), get()) }
+    viewModel { UploadViewModel(get()) }
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
     viewModel { AddCreditCodeViewModel(get(), get()) }
     viewModel { AddCryptoMethodAmountViewModel(get()) }
     viewModel { AddCryptoMethodPaymentViewModel(get()) }
+}
+
+val databaseModule = module {
+    single { DatabaseManager(androidContext()) }
 }
 
 val networkModule = module {
@@ -52,12 +58,13 @@ val networkModule = module {
 
 val accountModule = module {
     single { AppNavigator() }
-    single { FileManager(get()) }
+    single { FileManager(get(), get()) }
     single { FolderManager() }
     single { SignUpRepository() }
     single { SignInManager(get(), get()) }
     single { SignInRepository() }
     single { FileRepository() }
+    single { FileUploadQueueRepository(get()) }
     single { StoreRepository() }
     single { WalletRepository() }
     single { PricesRepository() }

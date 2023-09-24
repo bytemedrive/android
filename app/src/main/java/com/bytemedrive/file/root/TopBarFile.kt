@@ -19,12 +19,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBarFile(
-    fileViewModel: FileViewModel = get(),
+    fileViewModel: FileViewModel = koinInject(),
 ) {
     val context = LocalContext.current
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()

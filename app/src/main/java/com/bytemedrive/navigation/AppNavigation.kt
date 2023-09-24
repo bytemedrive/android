@@ -38,6 +38,7 @@ import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialNavigationApi::class)
@@ -45,8 +46,8 @@ import java.text.DecimalFormat
 fun AppNavigation(
     navHostController: NavHostController,
     bottomSheetNavigator: BottomSheetNavigator,
-    signInManager: SignInManager = get(),
-    appNavigator: AppNavigator = get(),
+    signInManager: SignInManager = koinInject(),
+    appNavigator: AppNavigator = koinInject(),
 ) {
     val startDestination = AppNavigator.NavTarget.FILE
     val context = LocalContext.current

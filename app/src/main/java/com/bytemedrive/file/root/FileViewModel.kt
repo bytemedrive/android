@@ -25,6 +25,9 @@ import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -34,6 +37,7 @@ class FileViewModel(
     private val appNavigator: AppNavigator,
     private val folderManager: FolderManager,
     private val fileManager: FileManager,
+    private val fileUploadQueueRepository: FileUploadQueueRepository,
     context: Context,
 ) : ViewModel() {
 
@@ -45,7 +49,7 @@ class FileViewModel(
 
     val itemsSelected = MutableStateFlow(emptyList<Item>())
 
-    val itemsUploading = MutableStateFlow(emptyList<Item>())
+    var itemsUploading: Flow<List<Item>> = emptyFlow()
 
     val fileSelectionDialogOpened = MutableStateFlow(false)
 
@@ -54,9 +58,8 @@ class FileViewModel(
     val dataFilePreview = MutableStateFlow<DataFile?>(null)
 
     init {
-        viewModelScope.launch {
-            getThumbnails(context)
-        }
+        getThumbnails(context)
+        watchFilesToUpload()
     }
 
     fun clickFileAndFolder(item: Item) {
@@ -79,14 +82,6 @@ class FileViewModel(
                 }
             }
         }
-    }
-
-    fun addItemToUploadQueue(id: UUID, name: String) {
-        itemsUploading.value = itemsUploading.value + Item(id, name, ItemType.File, starred = false, uploading = true)
-    }
-
-    fun removeItemFromUploadQueue(id: UUID) {
-        itemsUploading.value = itemsUploading.value.filter { it.id != id }
     }
 
     fun longClickFileAndFolder(item: Item) {
@@ -253,7 +248,15 @@ class FileViewModel(
             }
         }
 
-    private suspend fun getThumbnails(context: Context) {
+    private fun watchFilesToUpload() = viewModelScope.launch {
+        itemsUploading = fileUploadQueueRepository.watchFiles().map { files ->
+            files.map {
+                Item(UUID.fromString(it.id), it.name, ItemType.File, starred = false, uploading = true)
+            }
+        }
+    }
+
+    private fun getThumbnails(context: Context) = viewModelScope.launch {
         thumbnails.value = dataFileLinks.value.associate { dataFileLink ->
             dataFileLink.id to findThumbnailForDataFileLink(dataFileLink, context)
         }

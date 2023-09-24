@@ -1,18 +1,65 @@
 package com.bytemedrive.file.shared
 
+import android.webkit.MimeTypeMap
+import androidx.documentfile.provider.DocumentFile
+import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.DataFileLink
+import com.bytemedrive.file.root.EventFileUploaded
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.folder.Folder
+import com.bytemedrive.privacy.AesService
+import com.bytemedrive.privacy.ShaService
+import com.bytemedrive.store.AppState
+import com.bytemedrive.store.EventPublisher
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.jvm.javaio.toInputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileInputStream
+import java.util.Base64
+import java.util.Locale
 import java.util.UUID
 import kotlin.math.ceil
 import java.io.File as JavaFile
 
 class FileManager(
     private val fileRepository: FileRepository,
+    private val eventPublisher: EventPublisher,
 ) {
+
+    suspend fun uploadFile(fileUpload: FileUpload, tmpFolder: File, file: File) = withContext(Dispatchers.IO) {
+        val dataFileId = UUID.fromString(fileUpload.id)
+
+        val tmpOriginalFile = File(file.path)
+
+        val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", null, tmpFolder)
+
+        val secretKey = AesService.generateNewFileSecretKey()
+        AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
+
+        val chunks = getChunks(tmpEncryptedFile, tmpFolder)
+        val contentType = getContentTypeFromFile(file) ?: "unknown"
+
+        AppState.customer.value?.wallet?.let { wallet ->
+            fileRepository.upload(wallet, chunks)
+            eventPublisher.publishEvent(
+                EventFileUploaded(
+                    dataFileId,
+                    chunks.map { it.id },
+                    chunks.map { it.viewId },
+                    fileUpload.name,
+                    tmpEncryptedFile.length(),
+                    ShaService.checksum(tmpOriginalFile.inputStream()),
+                    contentType,
+                    Base64.getEncoder().encodeToString(secretKey.encoded),
+                    UUID.randomUUID(),
+                    fileUpload.folderId?.let { UUID.fromString(fileUpload.folderId) }
+                )
+            )
+        }
+    }
 
     fun findAllFilesRecursively(folderId: UUID, allFolders: List<Folder>, allFiles: List<DataFileLink>): List<DataFileLink> {
         val filesToRemove = allFiles.filter { it.folderId == folderId }
@@ -108,6 +155,13 @@ class FileManager(
         }
 
         return Chunk(id, viewId, file)
+    }
+
+    private fun getContentTypeFromFile(file: File): String? {
+        val extension = file.extension.lowercase(Locale.getDefault())
+        val mimeTypeMap = MimeTypeMap.getSingleton()
+
+        return mimeTypeMap.getMimeTypeFromExtension(extension)
     }
 
     companion object {

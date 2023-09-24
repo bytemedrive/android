@@ -69,6 +69,8 @@ dependencies {
 
     implementation 'androidx.compose.material3:material3:1.0.1'
 
+    // Couchbase
+    implementation 'com.couchbase.lite:couchbase-lite-android-ee-ktx:3.1.1'
 
     implementation 'androidx.documentfile:documentfile:1.0.1'
 
@@ -80,14 +82,17 @@ dependencies {
 
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
 
+    // Koin
     implementation "io.insert-koin:koin-android:$koin_version"
-    implementation "io.insert-koin:koin-androidx-compose:3.4.2"
+    implementation "io.insert-koin:koin-androidx-workmanager:$koin_version"
+    implementation "io.insert-koin:koin-androidx-compose:3.4.6"
 
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
 
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2'
 
     implementation 'androidx.media3:media3-common:1.0.0'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
 
     testImplementation 'junit:junit:4.13.2'
 

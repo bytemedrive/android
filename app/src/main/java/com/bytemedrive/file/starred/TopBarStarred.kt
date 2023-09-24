@@ -18,11 +18,12 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TopBarStarred(
-    starredViewModel: StarredViewModel = get(),
+    starredViewModel: StarredViewModel = koinInject(),
 ) {
     val context = LocalContext.current
     val itemsSelected by starredViewModel.itemsSelected.collectAsState()

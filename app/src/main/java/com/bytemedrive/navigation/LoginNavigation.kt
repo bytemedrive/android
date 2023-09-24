@@ -15,13 +15,14 @@ import com.bytemedrive.signup.TermsAndConditionsScreen
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @Composable
 fun LoginNavigation(
     navHostController: NavHostController,
     innerPadding: PaddingValues,
     snackbarHostState: SnackbarHostState,
-    appNavigator: AppNavigator = get(),
+    appNavigator: AppNavigator = koinInject(),
 ) {
     LaunchedEffect("navigation") {
         appNavigator.sharedFlow.onEach {

@@ -28,13 +28,14 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileBottomSheetContextFile(
     id: String,
-    fileViewModel: FileViewModel = get(),
-    appNavigator: AppNavigator = get()
+    fileViewModel: FileViewModel = koinInject(),
+    appNavigator: AppNavigator = koinInject()
 ) =
     fileViewModel.singleFile(id)?.let { file ->
         val context = LocalContext.current

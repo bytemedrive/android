@@ -10,6 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+
+        maven {
+            url "https://mobile.maven.couchbase.com/maven2/dev/"
+        }
     }
 }
 rootProject.name = "ByteMe"
