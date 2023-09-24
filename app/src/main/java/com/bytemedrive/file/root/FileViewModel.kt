@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -44,6 +43,8 @@ class FileViewModel(
     var dataFileLinks = MutableStateFlow(AppState.customer.value!!.dataFilesLinks)
     var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
+
+    var selectedFolderId = MutableStateFlow<UUID?>(null)
 
     var items = MutableStateFlow(listOf<Item>())
 
@@ -105,7 +106,7 @@ class FileViewModel(
         itemsSelected.value = emptyList()
     }
 
-    fun updateItems(folderId: String?, context: Context) = viewModelScope.launch {
+    fun updateItems(folderId: String?) = viewModelScope.launch {
         AppState.customer.collectLatest { customer ->
             val tempFolders = customer?.folders
                 ?.filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
@@ -113,11 +114,12 @@ class FileViewModel(
 
             val tempFiles = customer?.dataFilesLinks
                 ?.filter { file -> file.folderId == folderId?.let { UUID.fromString(it) } }
-                ?.map { Item(it.id, it.name, ItemType.File, it.starred, false) }.orEmpty()
+                ?.map { Item(it.id, it.name, ItemType.File, it.starred, false, it.folderId) }.orEmpty()
 
             dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
             items.value = tempFolders + tempFiles
+            selectedFolderId.value = folderId?.let { UUID.fromString(folderId) }
 //            getThumbnails(context) // TODO: Look at loading thumbnails after new files are added
         }
     }
@@ -249,9 +251,12 @@ class FileViewModel(
         }
 
     private fun watchFilesToUpload() = viewModelScope.launch {
-        itemsUploading = fileUploadQueueRepository.watchFiles().map { files ->
-            files.map {
-                Item(UUID.fromString(it.id), it.name, ItemType.File, starred = false, uploading = true)
+        selectedFolderId.collectLatest { selectedFolderId_ ->
+            itemsUploading = fileUploadQueueRepository.watchFiles().map { files ->
+                files.map {
+                    val folderId = it.folderId?.let { folderId_ -> UUID.fromString(folderId_) }
+                    Item(UUID.fromString(it.id), it.name, ItemType.File, starred = false, uploading = true, folderId = folderId)
+                }.filter { it.folderId?.equals(selectedFolderId_) ?: false }
             }
         }
     }
