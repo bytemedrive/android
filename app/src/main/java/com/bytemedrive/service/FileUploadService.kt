@@ -57,7 +57,7 @@ class FileUploadService : Service() {
 
                     notificationManager.cancel(NOTIFICATION_ID)
 
-                    TimeUnit.SECONDS.sleep(60)
+                    TimeUnit.SECONDS.sleep(10)
                 }
             }
         }
