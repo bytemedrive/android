@@ -44,8 +44,6 @@ class FileViewModel(
     var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
     var folders = MutableStateFlow(AppState.customer.value!!.folders)
 
-    var selectedFolderId = MutableStateFlow<UUID?>(null)
-
     var items = MutableStateFlow(listOf<Item>())
 
     val itemsSelected = MutableStateFlow(emptyList<Item>())
@@ -119,7 +117,6 @@ class FileViewModel(
             dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
             items.value = tempFolders + tempFiles
-            selectedFolderId.value = folderId?.let { UUID.fromString(folderId) }
 //            getThumbnails(context) // TODO: Look at loading thumbnails after new files are added
         }
     }
@@ -251,14 +248,13 @@ class FileViewModel(
         }
 
     private fun watchFilesToUpload() = viewModelScope.launch {
-        selectedFolderId.collectLatest { selectedFolderId_ ->
-            itemsUploading = fileUploadQueueRepository.watchFiles().map { files ->
-                files.map {
-                    val folderId = it.folderId?.let { folderId_ -> UUID.fromString(folderId_) }
-                    Item(UUID.fromString(it.id), it.name, ItemType.File, starred = false, uploading = true, folderId = folderId)
-                }.filter { it.folderId?.equals(selectedFolderId_) ?: false }
+        itemsUploading = fileUploadQueueRepository.watchFiles().map { files ->
+            files.map {
+                val folderId = it.folderId?.let { folderId_ -> UUID.fromString(folderId_) }
+                Item(UUID.fromString(it.id), it.name, ItemType.File, starred = false, uploading = true, folderId = folderId)
             }
         }
+
     }
 
     private fun getThumbnails(context: Context) = viewModelScope.launch {

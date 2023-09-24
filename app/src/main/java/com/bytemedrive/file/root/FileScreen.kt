@@ -67,7 +67,8 @@ fun FileScreen(
     val context = LocalContext.current
     val items by fileViewModel.items.collectAsState()
     val itemsUploading by fileViewModel.itemsUploading.collectAsState(emptyList())
-    val itemsPaged = fileViewModel.getItemsPages(itemsUploading + items).collectAsLazyPagingItems()
+    val itemsUploadingByFolderId = itemsUploading.filter { it.folderId?.equals(folderId) ?: true }
+    val itemsPaged = fileViewModel.getItemsPages(itemsUploadingByFolderId + items).collectAsLazyPagingItems()
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
     val thumbnails by fileViewModel.thumbnails.collectAsState()
     val dataFilePreview by fileViewModel.dataFilePreview.collectAsState()
