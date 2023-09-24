@@ -1,5 +1,6 @@
 package com.bytemedrive.service
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -34,13 +35,13 @@ class FileUploadService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        createChannel()
+
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
-
         val notification = notificationBuilder(pendingIntent)
 
         startForeground(NOTIFICATION_ID, notification.build())
-
 
         serviceScope.launch {
             withContext(Dispatchers.IO) {
@@ -74,6 +75,10 @@ class FileUploadService : Service() {
         Log.i(TAG, "Finished uploading ${fileUpload.id}")
     }
 
+    private fun createChannel() {
+        notificationManager.createNotificationChannel(NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT))
+    }
+
     private fun updateNotification(builder: NotificationCompat.Builder, updatedText: String) {
         val updatedNotification = builder.setContentText(updatedText).build()
 
@@ -101,5 +106,6 @@ class FileUploadService : Service() {
 
         const val NOTIFICATION_ID = 1
         const val CHANNEL_ID = "bytemedrive.notification.channel"
+        const val CHANNEL_NAME = "BytemeDriveChannel"
     }
 }

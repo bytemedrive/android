@@ -51,14 +51,12 @@ fun UploadFile(
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 
         uries.forEach { uri ->
-            context.contentResolver.openInputStream(uri).use { inputStream ->
-                inputStream?.let { inputStream_ ->
-                    DocumentFile.fromSingleUri(context, uri)?.let { documentFile ->
-                        uploadViewModel.uploadFile(inputStream_, documentFile, context.cacheDir, folderId) {
-                            folderId?.let {
-                                appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
-                            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
-                        }
+            context.contentResolver.openInputStream(uri)?.let { inputStream ->
+                DocumentFile.fromSingleUri(context, uri)?.let { documentFile ->
+                    uploadViewModel.uploadFile(inputStream, documentFile, context.cacheDir, folderId) {
+                        folderId?.let {
+                            appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
+                        } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
                     }
                 }
             }

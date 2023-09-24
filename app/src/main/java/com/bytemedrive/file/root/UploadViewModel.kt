@@ -22,7 +22,9 @@ class UploadViewModel(
             File.createTempFile(dataFileId.toString(), null, cacheDir)
         }
 
-        inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE)
+        inputStream.use {
+            inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE)
+        }
 
         fileUploadQueueRepository.addFile(
             FileUpload(
