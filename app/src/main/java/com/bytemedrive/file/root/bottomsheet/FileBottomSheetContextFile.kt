@@ -1,5 +1,6 @@
 package com.bytemedrive.file.root.bottomsheet
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,14 +53,10 @@ fun FileBottomSheetContextFile(
         val toggleStarred = { fileViewModel.toggleStarredFile(file.id, file.starred) { navigateBack() } }
 
         Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
+            Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ListItem(
-                modifier = Modifier.height(32.dp),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Description,
@@ -73,7 +71,7 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
+                    .background(MaterialTheme.colorScheme.background)
                     .clickable(onClick = { toggleStarred() }),
                 leadingContent = {
                     Icon(
@@ -87,7 +85,6 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { fileViewModel.downloadFile(file.id, context) }),
                 leadingContent = {
                     Icon(
@@ -101,7 +98,6 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItems(file.id) }),
                 leadingContent = {
                     Icon(
@@ -115,7 +111,6 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(file.id) }),
                 leadingContent = {
                     Icon(
@@ -129,7 +124,6 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { remove() }),
                 leadingContent = {
                     Icon(

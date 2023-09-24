@@ -49,10 +49,8 @@ fun StarredBottomSheetContextFile(
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ListItem(
-                modifier = Modifier.height(32.dp),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.Description,
@@ -67,7 +65,6 @@ fun StarredBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { toggleStarred() }),
                 leadingContent = {
                     Icon(
@@ -81,7 +78,6 @@ fun StarredBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { fileViewModel.downloadFile(file.id, context) }),
                 leadingContent = {
                     Icon(
@@ -95,7 +91,6 @@ fun StarredBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .height(32.dp)
                     .clickable(onClick = { remove() }),
                 leadingContent = {
                     Icon(
