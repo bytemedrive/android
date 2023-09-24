@@ -16,7 +16,7 @@ class UploadViewModel(
     private val fileUploadQueueRepository: FileUploadQueueRepository,
 ) : ViewModel() {
 
-    fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: String?, onComplete: () -> Unit) = viewModelScope.launch {
+    fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: String?) = viewModelScope.launch {
         val dataFileId = UUID.randomUUID()
         val tmpOriginalFile = withContext(Dispatchers.IO) {
             File.createTempFile(dataFileId.toString(), null, cacheDir)
@@ -34,7 +34,5 @@ class UploadViewModel(
                 folderId
             )
         )
-
-        onComplete()
     }
 }

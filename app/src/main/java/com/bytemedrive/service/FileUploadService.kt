@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class FileUploadService : Service() {
 
@@ -44,15 +45,20 @@ class FileUploadService : Service() {
         startForeground(NOTIFICATION_ID, notification.build())
 
         serviceScope.launch {
-            withContext(Dispatchers.IO) {
-                val filesToUpload = fileUploadQueueRepository.getFiles()
+            // TODO: Temporary solution - should be improved
+            while (true) {
+                withContext(Dispatchers.IO) {
+                    val filesToUpload = fileUploadQueueRepository.getFiles()
 
-                filesToUpload.forEachIndexed { index, fileUpload ->
-                    uploadFile(fileUpload)
-                    updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
+                    filesToUpload.forEachIndexed { index, fileUpload ->
+                        uploadFile(fileUpload)
+                        updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
+                    }
+
+                    notificationManager.cancel(NOTIFICATION_ID)
+
+                    TimeUnit.SECONDS.sleep(60)
                 }
-
-                stopSelf()
             }
         }
 
