@@ -16,11 +16,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.ui.component.AlertDialogRemove
 import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
 
@@ -33,15 +38,22 @@ fun FileBottomSheetContextFolder(
 ) =
     fileViewModel.singleFolder(id)?.let { folder ->
 
+        var alertDialogDeleteOpened by remember { mutableStateOf(false) }
+
         val navigateBack = {
             folder.parent?.let {
                 appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folder.parent.toString()))
             } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
         }
 
-        val remove = { fileViewModel.removeFolder(folder.id) { navigateBack() } }
-
         val toggleStarred = { fileViewModel.toggleStarredFolder(folder.id, folder.starred) { navigateBack() } }
+
+        if (alertDialogDeleteOpened) {
+            AlertDialogRemove(
+                "Delete folder?",
+                "Are you sure you want to permanently delete folder \"${folder.name}\"?",
+                { fileViewModel.removeFolder(folder.id) { navigateBack() } }) { alertDialogDeleteOpened = false }
+        }
 
         Column(
             Modifier
@@ -102,7 +114,7 @@ fun FileBottomSheetContextFolder(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { remove() }),
+                    .clickable(onClick = { alertDialogDeleteOpened = true }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.Delete,

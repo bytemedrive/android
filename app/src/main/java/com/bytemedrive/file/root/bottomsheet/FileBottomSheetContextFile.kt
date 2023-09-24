@@ -22,6 +22,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.ui.component.AlertDialogRemove
 import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
 
@@ -42,15 +47,22 @@ fun FileBottomSheetContextFile(
     fileViewModel.singleFile(id)?.let { file ->
         val context = LocalContext.current
 
+        var alertDialogDeleteOpened by remember { mutableStateOf(false) }
+
         val navigateBack = {
             file.folderId?.let {
                 appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to file.folderId.toString()))
             } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
         }
 
-        val remove = { fileViewModel.removeFile(file.id) { navigateBack() } }
-
         val toggleStarred = { fileViewModel.toggleStarredFile(file.id, file.starred) { navigateBack() } }
+
+        if (alertDialogDeleteOpened) {
+            AlertDialogRemove(
+                "Delete file?",
+                "Are you sure you want to permanently delete file \"${file.name}\"?",
+                { fileViewModel.removeFile(file.id) { navigateBack() } }) { alertDialogDeleteOpened = false }
+        }
 
         Column(
             Modifier.fillMaxWidth(),
@@ -124,7 +136,7 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { remove() }),
+                    .clickable(onClick = { alertDialogDeleteOpened = true }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
