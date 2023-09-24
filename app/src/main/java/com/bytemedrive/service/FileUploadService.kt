@@ -89,7 +89,7 @@ class FileUploadService : Service() {
         .setContentTitle("File uploading progress")
         .setSmallIcon(R.drawable.baseline_file_upload_24)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setCategory(NotificationCompat.CATEGORY_SERVICE)
+        .setCategory(NotificationCompat.CATEGORY_PROGRESS)
         .setContentIntent(pendingIntent)
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -105,7 +105,7 @@ class FileUploadService : Service() {
     companion object {
 
         const val NOTIFICATION_ID = 1
-        const val CHANNEL_ID = "bytemedrive.notification.channel"
-        const val CHANNEL_NAME = "BytemeDriveChannel"
+        const val CHANNEL_ID = "bytemedrive.fileupload"
+        const val CHANNEL_NAME = "File Upload"
     }
 }
