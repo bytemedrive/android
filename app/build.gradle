@@ -18,6 +18,8 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        buildConfigField "String", "STRIPE_PUBLISHABLE_KEY", "\"pk_test_51N7wTaL2hkomI7ZgL9WwjYWPcJV5UIUpCyRsBgsj1kzzeaOKBuwZzDO5V6Ejwdgln7udEGIFK4sT8l3dt09zIHJ900HOjKJ74S\""
     }
 
     buildTypes {
@@ -95,7 +97,9 @@ dependencies {
     implementation 'androidx.media3:media3-common:1.0.0'
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
 
-    implementation "com.stripe:stripeterminal:2.23.0"
+    implementation('com.stripe:stripe-android:20.31.0') {
+        exclude group: 'org.bouncycastle'
+    }
 
     testImplementation 'junit:junit:4.13.2'
 

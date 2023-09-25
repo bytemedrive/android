@@ -21,4 +21,7 @@ class WalletRepository {
 
     suspend fun createMoneroPayment(walletId: UUID, request: MoneroPaymentRequest): MoneroPaymentResponse =
         httpClient.post("wallets/$walletId/monero-payments") { setBody(request) }.body()
+
+    suspend fun stripePayment(walletId: UUID, request: StripePaymentRequest): StripePaymentResponse =
+        httpClient.post("wallets/$walletId/stripe-payments") { setBody(request) }.body()
 }

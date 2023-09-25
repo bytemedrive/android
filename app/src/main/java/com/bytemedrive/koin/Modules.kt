@@ -44,7 +44,7 @@ val viewModelsModule = module {
     viewModel { UploadViewModel(get()) }
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
-    viewModel { PaymentMethodCreditCardViewModel(androidContext()) }
+    viewModel { PaymentMethodCreditCardViewModel(get()) }
     viewModel { PaymentMethodCreditCodeViewModel(get(), get()) }
     viewModel { PaymentMethodCryptoAmountViewModel(get()) }
     viewModel { PaymentMethodCryptoPaymentViewModel(get()) }
