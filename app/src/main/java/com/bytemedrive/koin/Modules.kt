@@ -23,10 +23,11 @@ import com.bytemedrive.signup.SignUpViewModel
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.StoreRepository
-import com.bytemedrive.wallet.credit.AddCreditCodeViewModel
-import com.bytemedrive.wallet.credit.AddCreditMethodViewModel
-import com.bytemedrive.wallet.credit.AddCryptoMethodAmountViewModel
-import com.bytemedrive.wallet.credit.AddCryptoMethodPaymentViewModel
+import com.bytemedrive.wallet.payment.creditcode.PaymentMethodCreditCodeViewModel
+import com.bytemedrive.wallet.payment.AddCreditMethodViewModel
+import com.bytemedrive.wallet.payment.creditcard.PaymentMethodCreditCardViewModel
+import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoAmountViewModel
+import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoPaymentViewModel
 import com.bytemedrive.wallet.root.WalletRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -43,9 +44,10 @@ val viewModelsModule = module {
     viewModel { UploadViewModel(get()) }
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
-    viewModel { AddCreditCodeViewModel(get(), get()) }
-    viewModel { AddCryptoMethodAmountViewModel(get()) }
-    viewModel { AddCryptoMethodPaymentViewModel(get()) }
+    viewModel { PaymentMethodCreditCardViewModel(get()) }
+    viewModel { PaymentMethodCreditCodeViewModel(get(), get()) }
+    viewModel { PaymentMethodCryptoAmountViewModel(get()) }
+    viewModel { PaymentMethodCryptoPaymentViewModel(get()) }
 }
 
 val databaseModule = module {

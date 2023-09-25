@@ -1,4 +1,4 @@
-package com.bytemedrive.wallet.credit
+package com.bytemedrive.wallet.payment.creditcode
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,24 +34,23 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
-import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddCreditCodeScreen(
-    addCreditCodeViewModel: AddCreditCodeViewModel = koinViewModel(),
+fun PaymentMethodCreditCodeScreen(
+    paymentMethodCreditCodeViewModel: PaymentMethodCreditCodeViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject(),
 ) {
     LaunchedEffect("initialize") {
-        AppState.title.value = "Add credit"
+        AppState.title.value = "Add credit - credit code"
     }
 
-    val code by addCreditCodeViewModel.code.collectAsState()
+    val code by paymentMethodCreditCodeViewModel.code.collectAsState()
 
     val onSubmit = {
-        addCreditCodeViewModel.redeemCoupon(AppState.customer.value?.wallet!!, code)
+        paymentMethodCreditCodeViewModel.redeemCoupon(AppState.customer.value?.wallet!!, code)
         appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
     }
 
@@ -76,7 +75,7 @@ fun AddCreditCodeScreen(
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = code,
-                onValueChange = { addCreditCodeViewModel.code.value = it },
+                onValueChange = { paymentMethodCreditCodeViewModel.code.value = it },
                 label = { Text(text = "Code") },
                 supportingText = { Text(text = "Paste your code or scan QR code") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),

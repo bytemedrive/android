@@ -1,4 +1,4 @@
-package com.bytemedrive.wallet.credit
+package com.bytemedrive.wallet.payment.crypto
 
 import android.os.CountDownTimer
 import androidx.lifecycle.ViewModel
@@ -12,7 +12,7 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.ZonedDateTime
 
-class AddCryptoMethodPaymentViewModel(private val walletRepository: WalletRepository) : ViewModel() {
+class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRepository) : ViewModel() {
 
     val walletAddress = MutableStateFlow<String?>(null)
 
