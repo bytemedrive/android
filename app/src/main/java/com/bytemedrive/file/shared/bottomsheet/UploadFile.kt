@@ -51,9 +51,7 @@ fun UploadFile(
             }
         }
 
-        folderId?.let {
-            appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
-        } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
+        appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
     Column(
