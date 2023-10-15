@@ -19,6 +19,7 @@ import com.bytemedrive.navigation.AppNavigation
 import com.bytemedrive.network.NoInternetException
 import com.bytemedrive.network.RequestFailedException
 import com.bytemedrive.service.FileUploadService
+import com.bytemedrive.service.ThumbnailCreateService
 import com.bytemedrive.store.AppState
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
@@ -40,6 +41,7 @@ fun MainScreen() {
     LaunchedEffect("initialize") {
         coroutineScope.launch {
             context.startService(serviceIntent)
+            context.startService(Intent(context, ThumbnailCreateService::class.java))
         }
     }
 

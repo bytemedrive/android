@@ -3,7 +3,6 @@ package com.bytemedrive.file.shared.preview
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.provider.ContactsContract.Data
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
@@ -26,7 +25,6 @@ class FilePreviewViewModel(
 
     val thumbnailIndex = MutableStateFlow<Int?>(null)
 
-
     fun getThumbnails(initialDataFileId: UUID, dataFileIds: List<UUID>, context: Context) = viewModelScope.launch {
         loading.value = true
 
@@ -39,16 +37,12 @@ class FilePreviewViewModel(
                     thumbnailIndex.value = index
                 }
 
-                thumbnailDataFile?.let { thumbnail_ ->
-                    val dataFileThumbnail = AppState.customer.value?.dataFiles?.find { it.id == thumbnail_.thumbnailDataFileId }
+                thumbnailDataFile?.let {
+                    val encryptedFile = fileManager.rebuildFile(it.chunksViewIds, "${dataFile_.id}-thumbnail-${it.resolution}-encrypted", it.contentType, context.cacheDir)
+                    val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), it.secretKey)
+                    val bitmap = BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
 
-                    dataFileThumbnail?.let {
-                        val encryptedFile = fileManager.rebuildFile(it.chunksViewIds, "${it.id}-encrypted", context.cacheDir)
-                        val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), it.secretKey)
-                        val bitmap = BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
-
-                        Thumbnail(bitmap, dataFile_)
-                    }
+                    Thumbnail(bitmap, dataFile_)
                 }
             }
             ?.filterNotNull()

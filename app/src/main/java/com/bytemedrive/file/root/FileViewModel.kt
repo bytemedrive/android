@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,9 +18,9 @@ import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
-import com.bytemedrive.folder.EventFoldersDeleted
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.network.RequestFailedException
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
@@ -40,6 +41,8 @@ class FileViewModel(
     private val fileUploadQueueRepository: FileUploadQueueRepository,
     context: Context,
 ) : ViewModel() {
+
+    private val TAG = FileViewModel::class.qualifiedName
 
     var dataFileLinks = MutableStateFlow(AppState.customer.value!!.dataFilesLinks)
     var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
@@ -105,7 +108,7 @@ class FileViewModel(
         itemsSelected.value = emptyList()
     }
 
-    fun updateItems(folderId: String?) = viewModelScope.launch {
+    fun updateItems(folderId: String?, context: Context) = viewModelScope.launch {
         AppState.customer.collectLatest { customer ->
             val tempFolders = customer?.folders
                 ?.filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
@@ -118,7 +121,7 @@ class FileViewModel(
             dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
             folders.value = customer?.folders.orEmpty().toMutableList()
             items.value = tempFolders + tempFiles
-//            getThumbnails(context) // TODO: Look at loading thumbnails after new files are added
+            getThumbnails(context)
         }
     }
 
@@ -136,21 +139,22 @@ class FileViewModel(
                 }
 
                 file.id
-            }.let { filesToRemove -> eventPublisher.publishEvent(EventFilesDeleted(filesToRemove)) }
+            }.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
 
             folders.value.filter { ids.contains(it.id) }.map { folder ->
                 fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).map { file ->
-                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                    val physicalFileRemovable =
+                        dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
                     if (physicalFileRemovable) {
                         fileRepository.remove(walletId, file.id)
                     }
 
                     file.id
-                }.let { filesToRemove -> eventPublisher.publishEvent(EventFilesDeleted(filesToRemove)) }
+                }.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
 
                 (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).map { it.id }
-            }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFoldersDeleted(foldersToRemove)) }
+            }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFolderDeleted(foldersToRemove)) }
         }
     }
 
@@ -159,7 +163,7 @@ class FileViewModel(
             val file = dataFileLinks.value.find { it.id == id }
             val physicalFileRemovable = dataFileLinks.value.none { it.id == file?.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
-            eventPublisher.publishEvent(EventFileDeleted(id))
+            eventPublisher.publishEvent(EventFileDeleted(listOf(id)))
 
             if (physicalFileRemovable) {
                 fileRepository.remove(walletId, id)
@@ -176,14 +180,14 @@ class FileViewModel(
                     val physicalFileRemovable =
                         dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
-                    eventPublisher.publishEvent(EventFileDeleted(file.id))
+                    eventPublisher.publishEvent(EventFileDeleted(listOf(file.id)))
 
                     if (physicalFileRemovable) {
                         fileRepository.remove(walletId, file.id)
                     }
                 }
                 (folderManager.findAllFoldersRecursively(id, folders.value) + folder).forEach {
-                    eventPublisher.publishEvent(EventFolderDeleted(it.id))
+                    eventPublisher.publishEvent(EventFolderDeleted(listOf(it.id)))
                 }
             }
 
@@ -240,7 +244,7 @@ class FileViewModel(
                         put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
                     }
                     val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-                    val encryptedFile = fileManager.rebuildFile(dataFile.chunksViewIds, "${dataFileLink.id}-encrypted", context.cacheDir)
+                    val encryptedFile = fileManager.rebuildFile(dataFile.chunksViewIds, "${dataFileLink.id}-encrypted", dataFile.contentType, context.cacheDir)
 
                     AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey)
                 }
@@ -269,15 +273,19 @@ class FileViewModel(
             val dataFile = dataFiles.find { it.id == dataFileLink.dataFileId }
             val thumbnail = dataFile?.thumbnails?.find { thumbnail -> thumbnail.resolution == Resolution.P360 }
 
-            return thumbnail?.let { thumbnail ->
-                val dataFileThumbnail = dataFiles.find { it.id == thumbnail.thumbnailDataFileId }
-                dataFileThumbnail?.let {
-                    val encryptedFile = fileManager.rebuildFile(it.chunksViewIds, "${it.id}-encrypted", context.cacheDir)
+            return thumbnail?.let {
+                try {
+                    val encryptedFile = fileManager.rebuildFile(it.chunksViewIds, "${dataFile.id}-thumbnail-${it.resolution}-encrypted", it.contentType, context.cacheDir)
                     val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), it.secretKey)
-                    BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
+                    return BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
+                } catch (exception: RequestFailedException) {
+                    Log.i(TAG, "Thumbnail ${it.resolution} for data file ${dataFile.id} is not ready yet")
+
+                    return null
                 }
             }
         }
+
         return null
     }
 }

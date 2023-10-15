@@ -10,14 +10,12 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.bytemedrive.file.root.DataFile
 import com.bytemedrive.file.root.EventFileDeleted
-import com.bytemedrive.file.root.EventFilesDeleted
 import com.bytemedrive.file.root.FilePagingSource
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Item
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.folder.EventFolderDeleted
-import com.bytemedrive.folder.EventFoldersDeleted
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
@@ -101,7 +99,7 @@ class StarredViewModel(
                 }
 
                 file.id
-            }.let { filesToRemove -> eventPublisher.publishEvent(EventFilesDeleted(filesToRemove)) }
+            }.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
 
             folders.value.filter { ids.contains(it.id) }.map { folder ->
                 fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).map { file ->
@@ -112,10 +110,10 @@ class StarredViewModel(
                     }
 
                     file.id
-                }.let { filesToRemove -> eventPublisher.publishEvent(EventFilesDeleted(filesToRemove)) }
+                }.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
 
                 (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).map { it.id }
-            }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFoldersDeleted(foldersToRemove)) }
+            }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFolderDeleted(foldersToRemove)) }
         }
     }
 
