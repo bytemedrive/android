@@ -40,11 +40,7 @@ fun FileBottomSheetContextFolder(
 
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
-        val navigateBack = {
-            folder.parent?.let {
-                appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folder.parent.toString()))
-            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
-        }
+        val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) }
 
         val toggleStarred = { fileViewModel.toggleStarredFolder(folder.id, folder.starred) { navigateBack() } }
 

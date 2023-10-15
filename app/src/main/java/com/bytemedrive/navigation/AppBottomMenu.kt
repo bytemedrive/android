@@ -24,9 +24,9 @@ fun getMenuItems(context: Context, appNavigator: AppNavigator): List<MenuItem.Na
     listOf(
         MenuItem.Navigation(
             context.getString(R.string.bottom_menu_my_files),
-            AppNavigator.NavTarget.FILE,
+            AppNavigator.NavTarget.CLEAR,
             Icons.Filled.Folder
-        ) { appNavigator.navigateTo(AppNavigator.NavTarget.FILE) },
+        ) { appNavigator.navigateTo(AppNavigator.NavTarget.CLEAR) },
         MenuItem.Navigation(
             context.getString(R.string.bottom_menu_starred),
             AppNavigator.NavTarget.STARRED,

@@ -32,6 +32,8 @@ class AppNavigator {
 
         BIN("bin"),
 
+        CLEAR("clear"),
+
         FILE("file?folderId={folderId}"),
 
         FILE_BOTTOM_SHEET_CONTEXT_FILE("fileBottomSheetContextFile/{id}"),
