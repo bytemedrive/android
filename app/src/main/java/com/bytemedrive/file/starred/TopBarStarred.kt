@@ -20,7 +20,7 @@ import com.bytemedrive.R
 import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBarStarred(
     starredViewModel: StarredViewModel = koinInject(),

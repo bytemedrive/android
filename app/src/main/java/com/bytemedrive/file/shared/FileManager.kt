@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.media.ThumbnailUtils
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.webkit.MimeTypeMap
 import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.root.Chunk
@@ -37,6 +38,8 @@ class FileManager(
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
 ) {
+    private val TAG = FileManager::class.qualifiedName
+
     suspend fun downloadFile(dataFileLinkId: UUID) =
         AppState.customer.value?.dataFilesLinks?.find { it.id == dataFileLinkId }?.let { dataFileLink ->
             AppState.customer.value?.dataFiles?.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
@@ -72,6 +75,8 @@ class FileManager(
 
             val chunks = getChunks(tmpEncryptedFile, tmpFolder)
             val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
+
+            Log.i(TAG, "File ${file.name} split into ${chunks.size} chunks")
 
             AppState.customer.value?.wallet?.let { wallet ->
                 fileRepository.upload(wallet, chunks)

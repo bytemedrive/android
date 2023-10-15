@@ -1,7 +1,6 @@
 package com.bytemedrive.file.root
 
 import android.webkit.MimeTypeMap
-import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,7 +14,7 @@ import java.io.InputStream
 import java.util.UUID
 
 class UploadViewModel(
-    private val fileUploadQueueRepository: FileUploadQueueRepository,
+    private val queueFileUploadRepository: QueueFileUploadRepository,
 ) : ViewModel() {
 
     fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: String?) = viewModelScope.launch {
@@ -28,7 +27,7 @@ class UploadViewModel(
             inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE)
         }
 
-        fileUploadQueueRepository.addFile(
+        queueFileUploadRepository.addFile(
             FileUpload(
                 dataFileId.toString(),
                 documentFile.name.orEmpty(),

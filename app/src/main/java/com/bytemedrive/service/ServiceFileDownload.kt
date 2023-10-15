@@ -11,7 +11,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.bytemedrive.MainActivity
 import com.bytemedrive.R
-import com.bytemedrive.file.root.FileDownloadQueueRepository
+import com.bytemedrive.file.root.QueueFileDownloadRepository
 import com.bytemedrive.file.shared.FileManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +26,7 @@ class ServiceFileDownload : Service() {
 
     private val TAG = ServiceFileDownload::class.qualifiedName
 
-    private val fileDownloadQueueRepository: FileDownloadQueueRepository by inject()
+    private val queueFileDownloadRepository: QueueFileDownloadRepository by inject()
     private val fileManager: FileManager by inject()
     private val serviceScope = CoroutineScope(Dispatchers.Default)
 
@@ -45,7 +45,7 @@ class ServiceFileDownload : Service() {
             while (true) {
                 withContext(Dispatchers.IO) {
                     Log.i(TAG, "Checking whether there are any files to download")
-                    val filesToDownload = fileDownloadQueueRepository.getFiles()
+                    val filesToDownload = queueFileDownloadRepository.getFiles()
 
                     if (filesToDownload.isNotEmpty()) {
                         startForeground(NOTIFICATION_ID, notification.build())
@@ -70,7 +70,7 @@ class ServiceFileDownload : Service() {
         Log.i(TAG, "Started downloading $dataFileLinkId")
 
         fileManager.downloadFile(dataFileLinkId)
-        fileDownloadQueueRepository.deleteFile(dataFileLinkId.toString())
+        queueFileDownloadRepository.deleteFile(dataFileLinkId.toString())
 
         Log.i(TAG, "Finished downloading $dataFileLinkId")
     }

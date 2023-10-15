@@ -12,7 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.bytemedrive.MainActivity
 import com.bytemedrive.R
 import com.bytemedrive.database.FileUpload
-import com.bytemedrive.file.root.FileUploadQueueRepository
+import com.bytemedrive.file.root.QueueFileUploadRepository
 import com.bytemedrive.file.shared.FileManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +27,7 @@ class ServiceFileUpload : Service() {
 
     private val TAG = ServiceFileUpload::class.qualifiedName
 
-    private val fileUploadQueueRepository: FileUploadQueueRepository by inject()
+    private val queueFileUploadRepository: QueueFileUploadRepository by inject()
     private val fileManager: FileManager by inject()
     private val serviceScope = CoroutineScope(Dispatchers.Default)
 
@@ -46,7 +46,7 @@ class ServiceFileUpload : Service() {
             // TODO: Temporary solution - should be improved
             while (true) {
                 withContext(Dispatchers.IO) {
-                    val filesToUpload = fileUploadQueueRepository.getFiles()
+                    val filesToUpload = queueFileUploadRepository.getFiles()
 
                     if (filesToUpload.isNotEmpty()) {
                         startForeground(NOTIFICATION_ID, notification.build())
@@ -78,7 +78,7 @@ class ServiceFileUpload : Service() {
             Log.w(TAG, "File upload canceled. File ${file.path} could not be found.")
         }
 
-        fileUploadQueueRepository.deleteFile(fileUpload.id)
+        queueFileUploadRepository.deleteFile(fileUpload.id)
 
         Log.i(TAG, "Finished uploading ${fileUpload.id}")
     }
