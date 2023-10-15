@@ -49,15 +49,13 @@ fun FileBottomSheetContextFile(
 
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
-        val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) }
-
-        val toggleStarred = { fileViewModel.toggleStarredFile(file.id, file.starred) { navigateBack() } }
+        val toggleStarred = { fileViewModel.toggleStarredFile(file.id, file.starred) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }
 
         if (alertDialogDeleteOpened) {
             AlertDialogRemove(
                 "Delete file?",
                 "Are you sure you want to permanently delete file \"${file.name}\"?",
-                { fileViewModel.removeFile(file.id) { navigateBack() } }) { alertDialogDeleteOpened = false }
+                { fileViewModel.removeFile(file.id) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }) { alertDialogDeleteOpened = false }
         }
 
         Column(
