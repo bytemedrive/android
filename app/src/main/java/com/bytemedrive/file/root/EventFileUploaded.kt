@@ -22,7 +22,7 @@ data class EventFileUploaded(
     override fun convert(customer: CustomerAggregate) {
         val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
         val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
-        val dataFile = DataFile(dataFileId, chunksIds, chunksViewIds, name, sizeBytes, contentType, secretKey)
+        val dataFile = DataFile(dataFileId, chunksIds, chunksViewIds, name, sizeBytes, contentType, secretKey, mutableListOf(), checksum)
 
         customer.dataFiles.add(dataFile)
         dataFileLinkId.let { customer.dataFilesLinks.add(DataFileLink(it, dataFileId, name, folderId)) }
