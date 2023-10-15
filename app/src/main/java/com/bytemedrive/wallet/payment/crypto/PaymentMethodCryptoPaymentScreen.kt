@@ -47,7 +47,7 @@ fun PaymentMethodCryptoPaymentScreen(
 
     val walletAddress by paymentMethodCryptoPaymentViewModel.walletAddress.collectAsState()
     val amount by paymentMethodCryptoPaymentViewModel.amount.collectAsState()
-    val expiration by paymentMethodCryptoPaymentViewModel.expiration.collectAsState()
+    val expirationAt by paymentMethodCryptoPaymentViewModel.expirationAt.collectAsState()
     val expiresIn by paymentMethodCryptoPaymentViewModel.expiresIn.collectAsState()
 
     Column(
@@ -109,7 +109,7 @@ fun PaymentMethodCryptoPaymentScreen(
             color = Color.Gray
         )
         Text(
-            text = "${expiration?.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG))} (expires in $expiresIn)"
+            text = "${expirationAt?.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG))} (expires in $expiresIn)"
         )
 
         Row(

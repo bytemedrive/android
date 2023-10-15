@@ -18,7 +18,7 @@ class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRe
 
     val amount = MutableStateFlow<BigDecimal?>(null)
 
-    val expiration = MutableStateFlow<ZonedDateTime?>(null)
+    val expirationAt = MutableStateFlow<ZonedDateTime?>(null)
 
     val expiresIn = MutableStateFlow("")
 
@@ -28,9 +28,9 @@ class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRe
 
             walletAddress.value = payment.walletAddress
             amount.value = payment.amount
-            expiration.value = payment.expiration
+            expirationAt.value = payment.expirationAt
 
-            val timer = object: CountDownTimer(Duration.between(ZonedDateTime.now(), expiration.value).toMillis(), 1000) {
+            val timer = object: CountDownTimer(Duration.between(ZonedDateTime.now(), expirationAt.value).toMillis(), 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     val hours = millisUntilFinished / (1_000 * 60 * 60)
                     val hoursString = if (hours < 10) "0$hours" else hours
