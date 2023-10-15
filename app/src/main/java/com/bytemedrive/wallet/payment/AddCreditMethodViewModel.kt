@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class AddCreditMethodViewModel : ViewModel() {
 
-    var method = MutableStateFlow(methodOptions[2].value)
+    var method = MutableStateFlow(methodOptions[0].value)
 
     companion object {
 
