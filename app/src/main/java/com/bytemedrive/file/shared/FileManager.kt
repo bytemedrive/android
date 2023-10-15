@@ -6,6 +6,7 @@ import android.webkit.MimeTypeMap
 import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.DataFileLink
+import com.bytemedrive.file.root.EventFileCopied
 import com.bytemedrive.file.root.EventFileUploaded
 import com.bytemedrive.file.root.EventThumbnailUploaded
 import com.bytemedrive.file.root.FileRepository
@@ -34,33 +35,41 @@ class FileManager(
 
     suspend fun uploadFile(fileUpload: FileUpload, tmpFolder: File, file: File) = withContext(Dispatchers.IO) {
         val dataFileId = UUID.fromString(fileUpload.id)
+        val folder = fileUpload.folderId?.let { UUID.fromString(fileUpload.folderId) }
 
         val tmpOriginalFile = File(file.path)
 
-        val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
+        val checksum = ShaService.checksum(tmpOriginalFile.inputStream())
+        val sameDataFile = AppState.customer.value?.dataFiles?.find { it.checksum == checksum }
 
-        val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
+        if (sameDataFile != null) {
+            eventPublisher.publishEvent(EventFileCopied(sameDataFile.id, UUID.randomUUID(), folder, "Copy of ${sameDataFile.name}"))
+        } else {
+            val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
 
-        val chunks = getChunks(tmpEncryptedFile, tmpFolder)
-        val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
+            val secretKey = AesService.generateNewFileSecretKey()
+            AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
 
-        AppState.customer.value?.wallet?.let { wallet ->
-            fileRepository.upload(wallet, chunks)
-            eventPublisher.publishEvent(
-                EventFileUploaded(
-                    dataFileId,
-                    chunks.map { it.id },
-                    chunks.map { it.viewId },
-                    fileUpload.name,
-                    tmpEncryptedFile.length(),
-                    ShaService.checksum(tmpOriginalFile.inputStream()),
-                    contentType,
-                    Base64.getEncoder().encodeToString(secretKey.encoded),
-                    UUID.randomUUID(),
-                    fileUpload.folderId?.let { UUID.fromString(fileUpload.folderId) }
+            val chunks = getChunks(tmpEncryptedFile, tmpFolder)
+            val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
+
+            AppState.customer.value?.wallet?.let { wallet ->
+                fileRepository.upload(wallet, chunks)
+                eventPublisher.publishEvent(
+                    EventFileUploaded(
+                        dataFileId,
+                        chunks.map { it.id },
+                        chunks.map { it.viewId },
+                        fileUpload.name,
+                        tmpEncryptedFile.length(),
+                        checksum,
+                        contentType,
+                        Base64.getEncoder().encodeToString(secretKey.encoded),
+                        UUID.randomUUID(),
+                        folder
+                    )
                 )
-            )
+            }
         }
     }
 

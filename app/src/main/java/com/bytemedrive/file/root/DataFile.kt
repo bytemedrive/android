@@ -13,6 +13,7 @@ data class DataFile(
     val contentType: String,
     val secretKey: SecretKey,
     val thumbnails: MutableList<Thumbnail> = mutableListOf(),
+    val checksum: String,
 ) {
 
     data class Thumbnail(
