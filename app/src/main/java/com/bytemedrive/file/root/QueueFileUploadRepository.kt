@@ -12,33 +12,28 @@ import com.couchbase.lite.Result
 import com.couchbase.lite.SelectResult
 import com.couchbase.lite.queryChangeFlow
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
 
-class FileUploadQueueRepository(private val databaseManager: DatabaseManager) {
+class QueueFileUploadRepository(databaseManager: DatabaseManager) {
 
-    private val TAG = FileUploadQueueRepository::class.qualifiedName
+    private val TAG = QueueFileUploadRepository::class.qualifiedName
 
     private val collection = databaseManager.database.createCollection(COLLECTION_NAME)
 
-    suspend fun watchFiles() = withContext(Dispatchers.IO) {
-        queryFileUpload(collection).queryChangeFlow().mapNotNull { change ->
-            val err = change.error
+    fun watchFiles() = queryFileUpload(collection).queryChangeFlow().mapNotNull { change ->
+        val err = change.error
 
-            if (err != null) {
-                throw err
-            }
-
-            change.results?.allResults()?.map(::mapFileUpload).orEmpty()
+        if (err != null) {
+            throw err
         }
+
+        change.results?.allResults()?.map(::mapFileUpload).orEmpty()
     }
 
-    suspend fun getFiles() = withContext(Dispatchers.IO) {
-        queryFileUpload(collection).execute().allResults().map(::mapFileUpload)
-    }
+    fun getFiles() = queryFileUpload(collection).execute().allResults().map(::mapFileUpload)
 
-    suspend fun addFile(document: FileUpload) = withContext(Dispatchers.IO) {
+    fun addFile(document: FileUpload) {
         val json = JsonConfig.mapper.writeValueAsString(document)
         val doc = MutableDocument()
         doc.setJSON(json)
@@ -46,7 +41,7 @@ class FileUploadQueueRepository(private val databaseManager: DatabaseManager) {
         collection.save(doc)
     }
 
-    suspend fun deleteFile(documentId: String) = withContext(Dispatchers.IO) {
+    fun deleteFile(documentId: String) {
         collection.getDocument(documentId)?.let { document ->
             collection.delete(document)
         }

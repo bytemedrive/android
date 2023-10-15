@@ -12,28 +12,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
-class FileDownloadQueueRepository(private val databaseManager: DatabaseManager) {
+class QueueFileDownloadRepository(databaseManager: DatabaseManager) {
 
-    private val TAG = FileDownloadQueueRepository::class.qualifiedName
+    private val TAG = QueueFileDownloadRepository::class.qualifiedName
 
     private var collection: Collection = databaseManager.database.createCollection(COLLECTION_NAME)
 
-    suspend fun getFiles() = withContext(Dispatchers.IO) {
-        databaseManager.database.getCollection(COLLECTION_NAME)?.let { collection ->
-            queryFileUpload(collection).execute().allResults().map(::mapFileDownload)
-        }.orEmpty()
-    }
+    fun getFiles() = queryFileUpload(collection).execute().allResults().map(::mapFileDownload)
 
-    suspend fun addFile(dataFileLinkId: UUID) = withContext(Dispatchers.IO) {
+    fun addFile(dataFileLinkId: UUID) {
         val doc = MutableDocument(dataFileLinkId.toString())
 
         collection.save(doc)
     }
 
-    suspend fun deleteFile(documentId: String) = withContext(Dispatchers.IO) {
-        collection.getDocument(documentId)?.let { document ->
-            collection.delete(document)
-        }
+    fun deleteFile(documentId: String) = collection.getDocument(documentId)?.let { document ->
+        collection.delete(document)
     }
 
     private fun queryFileUpload(collection: Collection) =

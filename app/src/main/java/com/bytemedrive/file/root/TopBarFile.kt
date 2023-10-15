@@ -1,5 +1,6 @@
 package com.bytemedrive.file.root
 
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -29,6 +30,13 @@ fun TopBarFile(
 ) {
     val context = LocalContext.current
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
+
+    val downloadFile = {
+        fileViewModel.downloadFiles(itemsSelected.map { it.id })
+        fileViewModel.clearSelectedItems()
+
+        Toast.makeText(context, "${itemsSelected.size} items will be downloaded. See notification for details", Toast.LENGTH_SHORT).show()
+    }
 
     TopAppBar(
         title = {
@@ -74,10 +82,7 @@ fun TopBarFile(
                     contentDescription = "Item delete"
                 )
             }
-            IconButton(onClick = {
-                fileViewModel.downloadFiles(itemsSelected.map { it.id })
-                fileViewModel.clearSelectedItems()
-            }) {
+            IconButton(onClick = downloadFile) {
                 Icon(
                     imageVector = Icons.Filled.FileDownload,
                     contentDescription = "Item download"

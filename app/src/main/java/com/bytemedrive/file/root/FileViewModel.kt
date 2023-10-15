@@ -36,8 +36,8 @@ class FileViewModel(
     private val appNavigator: AppNavigator,
     private val folderManager: FolderManager,
     private val fileManager: FileManager,
-    private val fileUploadQueueRepository: FileUploadQueueRepository,
-    private val fileDownloadQueueRepository: FileDownloadQueueRepository,
+    private val queueFileUploadRepository: QueueFileUploadRepository,
+    private val queueFileDownloadRepository: QueueFileDownloadRepository,
 ) : ViewModel() {
 
     private val TAG = FileViewModel::class.qualifiedName
@@ -232,17 +232,17 @@ class FileViewModel(
     }
 
     fun downloadFiles(ids: List<UUID>) = viewModelScope.launch {
-        ids.forEach { fileDownloadQueueRepository.addFile(it) }
+        ids.forEach { queueFileDownloadRepository.addFile(it) }
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
     fun downloadFile(id: UUID) = viewModelScope.launch {
-        fileDownloadQueueRepository.addFile(id)
+        queueFileDownloadRepository.addFile(id)
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
     private fun watchFilesToUpload() = viewModelScope.launch {
-        itemsUploading = fileUploadQueueRepository.watchFiles().map { files ->
+        itemsUploading = queueFileUploadRepository.watchFiles().map { files ->
             files.map {
                 val folderId = it.folderId?.let { folderId_ -> UUID.fromString(folderId_) }
                 Item(UUID.fromString(it.id), it.name, ItemType.File, starred = false, uploading = true, folderId = folderId)

@@ -1,9 +1,9 @@
 package com.bytemedrive.koin
 
 import com.bytemedrive.database.DatabaseManager
-import com.bytemedrive.file.root.FileDownloadQueueRepository
+import com.bytemedrive.file.root.QueueFileDownloadRepository
 import com.bytemedrive.file.root.FileRepository
-import com.bytemedrive.file.root.FileUploadQueueRepository
+import com.bytemedrive.file.root.QueueFileUploadRepository
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
@@ -62,10 +62,10 @@ val networkModule = module {
 
 val accountModule = module {
     single { AppNavigator() }
-    single { FileDownloadQueueRepository(get()) }
+    single { QueueFileDownloadRepository(get()) }
     single { FileManager(androidApplication(), get(), get()) }
     single { FileRepository() }
-    single { FileUploadQueueRepository(get()) }
+    single { QueueFileUploadRepository(get()) }
     single { FolderManager() }
     single { PricesRepository() }
     single { SignUpRepository() }

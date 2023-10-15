@@ -1,5 +1,6 @@
 package com.bytemedrive.file.root.bottomsheet
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ fun FileBottomSheetContextFile(
     appNavigator: AppNavigator = koinInject()
 ) =
     fileViewModel.singleDataFileLink(id)?.let { dataFileLink ->
+        val context = LocalContext.current
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
         val toggleStarred = { fileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }
@@ -49,6 +51,12 @@ fun FileBottomSheetContextFile(
                 "Delete file?",
                 "Are you sure you want to permanently delete file \"${dataFileLink.name}\"?",
                 { fileViewModel.removeFile(dataFileLink.id) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }) { alertDialogDeleteOpened = false }
+        }
+
+        val downloadFile = {
+            fileViewModel.downloadFile(dataFileLink.id)
+
+            Toast.makeText(context, "1 item will be downloaded. See notification for details", Toast.LENGTH_SHORT).show()
         }
 
         Column(
@@ -83,7 +91,7 @@ fun FileBottomSheetContextFile(
             )
 
             ListItem(
-                modifier = Modifier.clickable(onClick = { fileViewModel.downloadFile(dataFileLink.id) }),
+                modifier = Modifier.clickable(onClick = downloadFile),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Download,

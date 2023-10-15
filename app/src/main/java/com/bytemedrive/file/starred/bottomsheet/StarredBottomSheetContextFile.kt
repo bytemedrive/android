@@ -1,5 +1,6 @@
 package com.bytemedrive.file.starred.bottomsheet
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,20 +38,26 @@ fun StarredBottomSheetContextFile(
     fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) =
-    fileViewModel.singleDataFileLink(id)?.let { file ->
+    fileViewModel.singleDataFileLink(id)?.let { dataFileLink ->
         val context = LocalContext.current
 
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
         val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.STARRED) }
 
-        val toggleStarred = { fileViewModel.toggleStarredFile(file.id, file.starred) { navigateBack() } }
+        val toggleStarred = { fileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred) { navigateBack() } }
 
         if (alertDialogDeleteOpened) {
             AlertDialogRemove(
                 "Delete file?",
-                "Are you sure you want to permanently delete file \"${file.name}\"?",
-                { fileViewModel.removeFile(file.id) { navigateBack() } }) { alertDialogDeleteOpened = false }
+                "Are you sure you want to permanently delete file \"${dataFileLink.name}\"?",
+                { fileViewModel.removeFile(dataFileLink.id) { navigateBack() } }) { alertDialogDeleteOpened = false }
+        }
+
+        val downloadFile = {
+            fileViewModel.downloadFile(dataFileLink.id)
+
+            Toast.makeText(context, "1 item will be downloaded. See notification for details", Toast.LENGTH_SHORT).show()
         }
 
         Column(
@@ -67,7 +74,7 @@ fun StarredBottomSheetContextFile(
                         tint = Color.Black,
                     )
                 },
-                headlineText = { Text(file.name) },
+                headlineText = { Text(dataFileLink.name) },
             )
 
             Divider()
@@ -77,16 +84,16 @@ fun StarredBottomSheetContextFile(
                     .clickable(onClick = { toggleStarred() }),
                 leadingContent = {
                     Icon(
-                        imageVector = if (file.starred) Icons.Default.Star else Icons.Default.StarOutline,
-                        contentDescription = if (file.starred) "Remove from starred" else "Add to starred",
+                        imageVector = if (dataFileLink.starred) Icons.Default.Star else Icons.Default.StarOutline,
+                        contentDescription = if (dataFileLink.starred) "Remove from starred" else "Add to starred",
                         tint = Color.Black,
                     )
                 },
-                headlineText = { Text(text = if (file.starred) "Remove from starred" else "Add to starred") },
+                headlineText = { Text(text = if (dataFileLink.starred) "Remove from starred" else "Add to starred") },
             )
 
             ListItem(
-                modifier = Modifier.clickable(onClick = { fileViewModel.downloadFile(file.id) }),
+                modifier = Modifier.clickable(onClick = downloadFile),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.Download,

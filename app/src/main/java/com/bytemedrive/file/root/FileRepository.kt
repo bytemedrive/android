@@ -1,6 +1,7 @@
 package com.bytemedrive.file.root
 
 import android.util.Log
+import androidx.media3.common.MimeTypes
 import com.bytemedrive.application.httpClient
 import com.bytemedrive.network.RequestFailedException
 import io.ktor.client.request.delete
@@ -10,6 +11,7 @@ import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -21,22 +23,24 @@ class FileRepository {
     private val TAG = FileRepository::class.qualifiedName
 
     suspend fun upload(walletId: UUID, chunks: List<Chunk>) {
-        chunks.forEach {
+        chunks.forEachIndexed { index, chunk ->
+            Log.i(TAG, "Uploading chunk id=${chunk.viewId} num=$index")
             httpClient.submitFormWithBinaryData(
                 url = "wallets/$walletId/files",
                 formData = formData {
                     append(
                         "data",
-                        InputProvider(it.file.length()) { it.file.inputStream().asInput() },
+                        InputProvider(chunk.file.length()) { chunk.file.inputStream().asInput() },
                         Headers.build {
                             append(HttpHeaders.ContentType, "multipart/form-data")
-                            append(HttpHeaders.ContentDisposition, "filename=${it.file.name}")
+                            append(HttpHeaders.ContentDisposition, "filename=${chunk.file.name}")
                         }
                     )
-                    append("viewId", it.viewId.toString())
-                    append("id", it.id.toString())
+                    append("viewId", chunk.viewId.toString())
+                    append("id", chunk.id.toString())
                 }
             )
+            Log.i(TAG, "Chunk id=${chunk.viewId} was uploaded")
         }
     }
 
