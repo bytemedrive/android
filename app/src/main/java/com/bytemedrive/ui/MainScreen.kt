@@ -18,8 +18,9 @@ import com.bytemedrive.application.RequestFailed
 import com.bytemedrive.navigation.AppNavigation
 import com.bytemedrive.network.NoInternetException
 import com.bytemedrive.network.RequestFailedException
-import com.bytemedrive.service.FileUploadService
-import com.bytemedrive.service.ThumbnailCreateService
+import com.bytemedrive.service.ServiceFileDownload
+import com.bytemedrive.service.ServiceFileUpload
+import com.bytemedrive.service.ServiceThumbnailCreate
 import com.bytemedrive.store.AppState
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
@@ -31,7 +32,9 @@ import java.net.UnknownHostException
 fun MainScreen() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val serviceIntent = remember { Intent(context, FileUploadService::class.java) }
+    val intentServiceFileUpload = remember { Intent(context, ServiceFileUpload::class.java) }
+    val intentServiceFileDownload = remember { Intent(context, ServiceFileDownload::class.java) }
+    val intentServiceThumbnailCreate = remember { Intent(context, ServiceThumbnailCreate::class.java) }
     val bottomSheetNavigator = rememberBottomSheetNavigator()
     val navHostController: NavHostController = rememberNavController(bottomSheetNavigator)
 
@@ -40,8 +43,9 @@ fun MainScreen() {
 
     LaunchedEffect("initialize") {
         coroutineScope.launch {
-            context.startService(serviceIntent)
-            context.startService(Intent(context, ThumbnailCreateService::class.java))
+            context.startService(intentServiceFileUpload)
+            context.startService(intentServiceFileDownload)
+            context.startService(intentServiceThumbnailCreate)
         }
     }
 

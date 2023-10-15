@@ -1,10 +1,8 @@
 package com.bytemedrive.file.starred.bottomsheet
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -30,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.ui.component.AlertDialogRemove
-import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +37,7 @@ fun StarredBottomSheetContextFile(
     fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) =
-    fileViewModel.singleFile(id)?.let { file ->
+    fileViewModel.singleDataFileLink(id)?.let { file ->
         val context = LocalContext.current
 
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
@@ -89,8 +86,7 @@ fun StarredBottomSheetContextFile(
             )
 
             ListItem(
-                modifier = Modifier
-                    .clickable(onClick = { fileViewModel.downloadFile(file.id, context) }),
+                modifier = Modifier.clickable(onClick = { fileViewModel.downloadFile(file.id) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.Download,

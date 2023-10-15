@@ -1,11 +1,8 @@
 package com.bytemedrive.file.root
 
-import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Environment
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -33,13 +30,14 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class FileViewModel(
+    context: Context,
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
     private val appNavigator: AppNavigator,
     private val folderManager: FolderManager,
     private val fileManager: FileManager,
     private val fileUploadQueueRepository: FileUploadQueueRepository,
-    context: Context,
+    private val fileDownloadQueueRepository: FileDownloadQueueRepository,
 ) : ViewModel() {
 
     private val TAG = FileViewModel::class.qualifiedName
@@ -125,7 +123,7 @@ class FileViewModel(
         }
     }
 
-    fun singleFile(id: String) = dataFileLinks.value.find { it.id == UUID.fromString(id) }
+    fun singleDataFileLink(id: String) = dataFileLinks.value.find { it.id == UUID.fromString(id) }
 
     fun singleFolder(id: String) = folders.value.find { it.id == UUID.fromString(id) }
 
@@ -233,23 +231,15 @@ class FileViewModel(
         fileSelectionDialogOpened.value = true
     }
 
-    fun downloadFile(id: UUID, context: Context) =
-        dataFileLinks.value.find { it.id == id }?.let { dataFileLink ->
-            AppState.customer.value?.dataFiles?.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
-                viewModelScope.launch {
-                    val contentResolver = context.contentResolver
-                    val contentValues = ContentValues().apply {
-                        put(MediaStore.Downloads.DISPLAY_NAME, dataFileLink.name)
-                        put(MediaStore.Downloads.MIME_TYPE, dataFile.contentType)
-                        put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-                    }
-                    val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-                    val encryptedFile = fileManager.rebuildFile(dataFile.chunksViewIds, "${dataFileLink.id}-encrypted", dataFile.contentType, context.cacheDir)
+    fun downloadFiles(ids: List<UUID>) = viewModelScope.launch {
+        ids.forEach { fileDownloadQueueRepository.addFile(it) }
+        appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
+    }
 
-                    AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey)
-                }
-            }
-        }
+    fun downloadFile(id: UUID) = viewModelScope.launch {
+        fileDownloadQueueRepository.addFile(id)
+        appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
+    }
 
     private fun watchFilesToUpload() = viewModelScope.launch {
         itemsUploading = fileUploadQueueRepository.watchFiles().map { files ->

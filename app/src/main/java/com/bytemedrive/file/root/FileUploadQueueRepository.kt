@@ -20,28 +20,25 @@ class FileUploadQueueRepository(private val databaseManager: DatabaseManager) {
 
     private val TAG = FileUploadQueueRepository::class.qualifiedName
 
+    private val collection = databaseManager.database.createCollection(COLLECTION_NAME)
+
     suspend fun watchFiles() = withContext(Dispatchers.IO) {
-        databaseManager.database.getCollection(COLLECTION_NAME)?.let { collection ->
-            queryFileUpload(collection).queryChangeFlow().mapNotNull { change ->
-                val err = change.error
+        queryFileUpload(collection).queryChangeFlow().mapNotNull { change ->
+            val err = change.error
 
-                if (err != null) {
-                    throw err
-                }
-
-                change.results?.allResults()?.map(::mapFileUpload).orEmpty()
+            if (err != null) {
+                throw err
             }
-        } ?: emptyFlow()
+
+            change.results?.allResults()?.map(::mapFileUpload).orEmpty()
+        }
     }
 
     suspend fun getFiles() = withContext(Dispatchers.IO) {
-        databaseManager.database.getCollection(COLLECTION_NAME)?.let { collection ->
-            queryFileUpload(collection).execute().allResults().map(::mapFileUpload)
-        }.orEmpty()
+        queryFileUpload(collection).execute().allResults().map(::mapFileUpload)
     }
 
     suspend fun addFile(document: FileUpload) = withContext(Dispatchers.IO) {
-        val collection = databaseManager.database.createCollection(COLLECTION_NAME)
         val json = JsonConfig.mapper.writeValueAsString(document)
         val doc = MutableDocument()
         doc.setJSON(json)
@@ -50,10 +47,8 @@ class FileUploadQueueRepository(private val databaseManager: DatabaseManager) {
     }
 
     suspend fun deleteFile(documentId: String) = withContext(Dispatchers.IO) {
-        databaseManager.database.getCollection(COLLECTION_NAME)?.let { collection ->
-            collection.getDocument(documentId)?.let { document ->
-                collection.delete(document)
-            }
+        collection.getDocument(documentId)?.let { document ->
+            collection.delete(document)
         }
     }
 

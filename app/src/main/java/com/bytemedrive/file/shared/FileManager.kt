@@ -1,7 +1,11 @@
 package com.bytemedrive.file.shared
 
+import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
 import android.media.ThumbnailUtils
+import android.os.Environment
+import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.root.Chunk
@@ -29,9 +33,25 @@ import kotlin.math.roundToInt
 import java.io.File as JavaFile
 
 class FileManager(
+    private val context: Context,
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
 ) {
+    suspend fun downloadFile(dataFileLinkId: UUID) =
+        AppState.customer.value?.dataFilesLinks?.find { it.id == dataFileLinkId }?.let { dataFileLink ->
+            AppState.customer.value?.dataFiles?.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
+                val contentResolver = context.contentResolver
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, dataFileLink.name)
+                    put(MediaStore.Downloads.MIME_TYPE, dataFile.contentType)
+                    put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+                val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                val encryptedFile = rebuildFile(dataFile.chunksViewIds, "${dataFileLink.id}-encrypted", dataFile.contentType, context.cacheDir)
+
+                AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey)
+            }
+        }
 
     suspend fun uploadFile(fileUpload: FileUpload, tmpFolder: File, file: File) = withContext(Dispatchers.IO) {
         val dataFileId = UUID.fromString(fileUpload.id)

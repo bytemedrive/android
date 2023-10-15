@@ -2,11 +2,8 @@ package com.bytemedrive.file.root.bottomsheet
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -30,11 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.ui.component.AlertDialogRemove
-import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,18 +39,16 @@ fun FileBottomSheetContextFile(
     fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) =
-    fileViewModel.singleFile(id)?.let { file ->
-        val context = LocalContext.current
-
+    fileViewModel.singleDataFileLink(id)?.let { dataFileLink ->
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
-        val toggleStarred = { fileViewModel.toggleStarredFile(file.id, file.starred) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }
+        val toggleStarred = { fileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }
 
         if (alertDialogDeleteOpened) {
             AlertDialogRemove(
                 "Delete file?",
-                "Are you sure you want to permanently delete file \"${file.name}\"?",
-                { fileViewModel.removeFile(file.id) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }) { alertDialogDeleteOpened = false }
+                "Are you sure you want to permanently delete file \"${dataFileLink.name}\"?",
+                { fileViewModel.removeFile(dataFileLink.id) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }) { alertDialogDeleteOpened = false }
         }
 
         Column(
@@ -70,7 +63,7 @@ fun FileBottomSheetContextFile(
                         tint = Color.Black,
                     )
                 },
-                headlineText = { Text(file.name) },
+                headlineText = { Text(dataFileLink.name) },
             )
 
             Divider()
@@ -81,17 +74,16 @@ fun FileBottomSheetContextFile(
                     .clickable(onClick = { toggleStarred() }),
                 leadingContent = {
                     Icon(
-                        imageVector = if (file.starred) Icons.Default.Star else Icons.Default.StarOutline,
-                        contentDescription = if (file.starred) "Remove from starred" else "Add to starred",
+                        imageVector = if (dataFileLink.starred) Icons.Default.Star else Icons.Default.StarOutline,
+                        contentDescription = if (dataFileLink.starred) "Remove from starred" else "Add to starred",
                         tint = Color.Black,
                     )
                 },
-                headlineText = { Text(text = if (file.starred) "Remove from starred" else "Add to starred") },
+                headlineText = { Text(text = if (dataFileLink.starred) "Remove from starred" else "Add to starred") },
             )
 
             ListItem(
-                modifier = Modifier
-                    .clickable(onClick = { fileViewModel.downloadFile(file.id, context) }),
+                modifier = Modifier.clickable(onClick = { fileViewModel.downloadFile(dataFileLink.id) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Download,
@@ -104,7 +96,7 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItems(file.id) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItems(dataFileLink.id) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.FileCopy,
@@ -117,7 +109,7 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(file.id) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(dataFileLink.id) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.DriveFileMove,
