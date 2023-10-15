@@ -39,6 +39,10 @@ fun UploadFile(
     val folder = folderId?.let { folderId_ -> customer?.folders?.find { it.id == UUID.fromString(folderId_) } }
 
     val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uries: List<Uri> ->
+        if (uries.isEmpty()) {
+            return@rememberLauncherForActivityResult
+        }
+
         val message = folder?.let { "Your ${uries.size} files are being uploaded to: ${folder.name}" } ?: "Your ${uries.size} files are being uploaded"
 
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()

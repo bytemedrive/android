@@ -4,7 +4,6 @@ import android.app.Service
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import androidx.media3.common.MimeTypes
@@ -21,9 +20,9 @@ import org.koin.android.ext.android.inject
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 
-class ThumbnailCreateService : Service() {
+class ServiceThumbnailCreate : Service() {
 
-    private val TAG = ThumbnailCreateService::class.qualifiedName
+    private val TAG = ServiceThumbnailCreate::class.qualifiedName
 
     private val serviceScope = CoroutineScope(Dispatchers.Default)
 

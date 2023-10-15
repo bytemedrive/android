@@ -21,8 +21,9 @@
         android:theme="@style/Theme.ByteMe"
         tools:targetApi="31"
         android:usesCleartextTraffic="true">
-        <service android:name=".service.FileUploadService" />
-        <service android:name=".service.ThumbnailCreateService" />
+        <service android:name=".service.ServiceFileDownload" />
+        <service android:name=".service.ServiceFileUpload" />
+        <service android:name=".service.ServiceThumbnailCreate" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

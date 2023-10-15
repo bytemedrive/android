@@ -1,6 +1,7 @@
 package com.bytemedrive.koin
 
 import com.bytemedrive.database.DatabaseManager
+import com.bytemedrive.file.root.FileDownloadQueueRepository
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.FileUploadQueueRepository
 import com.bytemedrive.file.root.FileViewModel
@@ -29,12 +30,13 @@ import com.bytemedrive.wallet.payment.creditcard.PaymentMethodCreditCardViewMode
 import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoAmountViewModel
 import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoPaymentViewModel
 import com.bytemedrive.wallet.root.WalletRepository
+import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelsModule = module {
-    single { FileViewModel(get(), get(), get(), get(), get(), get(), androidContext()) }
+    single { FileViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
     single { TopBarViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
@@ -60,16 +62,17 @@ val networkModule = module {
 
 val accountModule = module {
     single { AppNavigator() }
-    single { FileManager(get(), get()) }
+    single { FileDownloadQueueRepository(get()) }
+    single { FileManager(androidApplication(), get(), get()) }
+    single { FileRepository() }
+    single { FileUploadQueueRepository(get()) }
     single { FolderManager() }
+    single { PricesRepository() }
     single { SignUpRepository() }
     single { SignInManager(get(), get()) }
     single { SignInRepository() }
-    single { FileRepository() }
-    single { FileUploadQueueRepository(get()) }
     single { StoreRepository() }
     single { WalletRepository() }
-    single { PricesRepository() }
 }
 
 val storeModule = module {

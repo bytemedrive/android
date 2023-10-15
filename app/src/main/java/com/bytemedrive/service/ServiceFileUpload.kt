@@ -23,9 +23,9 @@ import org.koin.android.ext.android.inject
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class FileUploadService : Service() {
+class ServiceFileUpload : Service() {
 
-    private val TAG = FileUploadService::class.qualifiedName
+    private val TAG = ServiceFileUpload::class.qualifiedName
 
     private val fileUploadQueueRepository: FileUploadQueueRepository by inject()
     private val fileManager: FileManager by inject()
