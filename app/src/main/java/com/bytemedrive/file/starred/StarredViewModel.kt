@@ -10,12 +10,14 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.bytemedrive.file.root.DataFile
 import com.bytemedrive.file.root.EventFileDeleted
+import com.bytemedrive.file.root.EventFilesDeleted
 import com.bytemedrive.file.root.FilePagingSource
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Item
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.folder.EventFolderDeleted
+import com.bytemedrive.folder.EventFoldersDeleted
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
@@ -91,30 +93,29 @@ class StarredViewModel(
 
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
-            dataFileLinks.value.filter { ids.contains(it.id) }.forEach { file ->
+            dataFileLinks.value.filter { ids.contains(it.id) }.map { file ->
                 val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
-
-                eventPublisher.publishEvent(EventFileDeleted(file.id))
 
                 if (physicalFileRemovable) {
                     fileRepository.remove(walletId, file.id)
                 }
-            }
-            folders.value.filter { ids.contains(it.id) }.forEach { folder ->
-                fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).forEach { file ->
-                    val physicalFileRemovable =
-                        dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
-                    eventPublisher.publishEvent(EventFileDeleted(file.id))
+                file.id
+            }.let { filesToRemove -> eventPublisher.publishEvent(EventFilesDeleted(filesToRemove)) }
+
+            folders.value.filter { ids.contains(it.id) }.map { folder ->
+                fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).map { file ->
+                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
 
                     if (physicalFileRemovable) {
                         fileRepository.remove(walletId, file.id)
                     }
-                }
-                (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).forEach {
-                    eventPublisher.publishEvent(EventFolderDeleted(it.id))
-                }
-            }
+
+                    file.id
+                }.let { filesToRemove -> eventPublisher.publishEvent(EventFilesDeleted(filesToRemove)) }
+
+                (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).map { it.id }
+            }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFoldersDeleted(foldersToRemove)) }
         }
     }
 
