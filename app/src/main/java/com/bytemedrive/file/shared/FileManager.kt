@@ -40,7 +40,7 @@ class FileManager(
         AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
 
         val chunks = getChunks(tmpEncryptedFile, tmpFolder)
-        val contentType = getContentTypeFromFile(file) ?: "unknown"
+        val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
 
         AppState.customer.value?.wallet?.let { wallet ->
             fileRepository.upload(wallet, chunks)
@@ -157,16 +157,12 @@ class FileManager(
         return Chunk(id, viewId, file)
     }
 
-    private fun getContentTypeFromFile(file: File): String? {
-        val extension = file.extension.lowercase(Locale.getDefault())
-        val mimeTypeMap = MimeTypeMap.getSingleton()
-
-        return mimeTypeMap.getMimeTypeFromExtension(extension)
-    }
+    private fun getContentTypeFromFile(file: File): String? = file.toURI().toURL().openConnection().contentType
 
     companion object {
 
         const val CHUNK_SIZE_BYTES = 16 * 1024 * 1024
         const val BUFFER_SIZE = 1024
+        const val UNKNOWN_MIME_TYPE = "unknown"
     }
 }
