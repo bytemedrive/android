@@ -1,12 +1,15 @@
 package com.bytemedrive.file.shared
 
+import android.graphics.Bitmap
+import android.media.ThumbnailUtils
 import android.webkit.MimeTypeMap
-import androidx.documentfile.provider.DocumentFile
 import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.DataFileLink
 import com.bytemedrive.file.root.EventFileUploaded
+import com.bytemedrive.file.root.EventThumbnailUploaded
 import com.bytemedrive.file.root.FileRepository
+import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.folder.Folder
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
@@ -17,11 +20,11 @@ import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileInputStream
 import java.util.Base64
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 import java.io.File as JavaFile
 
 class FileManager(
@@ -34,7 +37,7 @@ class FileManager(
 
         val tmpOriginalFile = File(file.path)
 
-        val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", null, tmpFolder)
+        val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
 
         val secretKey = AesService.generateNewFileSecretKey()
         AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
@@ -83,8 +86,8 @@ class FileManager(
         return splitLargeFile(original, chunksFolder)
     }
 
-    suspend fun rebuildFile(viewIds: List<UUID>, fileName: String, outputDirectory: JavaFile): JavaFile {
-        val resultFile = JavaFile.createTempFile(fileName, null, outputDirectory)
+    suspend fun rebuildFile(viewIds: List<UUID>, fileName: String, contentType: String, outputDirectory: JavaFile): JavaFile {
+        val resultFile = JavaFile.createTempFile(fileName, ".${MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType)}", outputDirectory)
 
         resultFile.outputStream().use { outputStream ->
             viewIds.forEach { chunkViewId ->
@@ -93,6 +96,39 @@ class FileManager(
         }
 
         return resultFile
+    }
+
+    suspend fun uploadThumbnail(bytes: ByteArray, directory: File, sourceDataFileId: UUID, contentType: String, resolution: Resolution) {
+        val thumbnailDataFileId = UUID.randomUUID()
+        val tmpEncryptedFile = File.createTempFile("$thumbnailDataFileId-encrypted", ".${MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType)}", directory)
+
+        val secretKey = AesService.generateNewFileSecretKey()
+        AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
+
+        val chunks = getChunks(tmpEncryptedFile, directory)
+
+        AppState.customer.value?.wallet?.let { wallet ->
+            eventPublisher.publishEvent(
+                EventThumbnailUploaded(
+                    sourceDataFileId,
+                    chunks.map { it.id },
+                    chunks.map { it.viewId },
+                    tmpEncryptedFile.length(),
+                    ShaService.checksum(bytes.inputStream()),
+                    contentType,
+                    Base64.getEncoder().encodeToString(secretKey.encoded),
+                    resolution,
+                )
+            )
+
+            fileRepository.upload(wallet, chunks)
+        }
+    }
+
+    fun getThumbnail(original: Bitmap, resolution: Resolution): Bitmap {
+        val ratio = resolution.value.toDouble() / original.height
+
+        return ThumbnailUtils.extractThumbnail(original, (original.width * ratio).roundToInt(), (original.height * ratio).roundToInt())
     }
 
     private fun splitSmallFile(original: JavaFile, chunksFolder: JavaFile): List<Chunk> {
@@ -132,7 +168,7 @@ class FileManager(
     private fun createChunk(original: JavaFile, outputFolder: JavaFile, start: Long, length: Long): Chunk {
         val id = UUID.randomUUID()
         val viewId = UUID.randomUUID()
-        val file = JavaFile.createTempFile(id.toString(), null, outputFolder)
+        val file = JavaFile.createTempFile(id.toString(), ".${original.extension}", outputFolder)
 
         original.inputStream().use { inputStream ->
             file.outputStream().use { outputStream ->
@@ -157,7 +193,12 @@ class FileManager(
         return Chunk(id, viewId, file)
     }
 
-    private fun getContentTypeFromFile(file: File): String? = file.toURI().toURL().openConnection().contentType
+    private fun getContentTypeFromFile(file: File): String? {
+        val extension = file.extension.lowercase(Locale.getDefault())
+        val mimeTypeMap = MimeTypeMap.getSingleton()
+
+        return mimeTypeMap.getMimeTypeFromExtension(extension)
+    }
 
     companion object {
 

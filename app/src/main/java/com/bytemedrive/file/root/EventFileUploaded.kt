@@ -15,7 +15,7 @@ data class EventFileUploaded(
     val checksum: String,
     val contentType: String,
     val secretKeyBase64: String,
-    val dataFileLinkId: UUID?, // nullable because thumbnails does not have DataFileLink only DataFile
+    val dataFileLinkId: UUID,
     val folderId: UUID?,
 ) : Convertable {
 
@@ -25,6 +25,6 @@ data class EventFileUploaded(
         val dataFile = DataFile(dataFileId, chunksIds, chunksViewIds, name, sizeBytes, contentType, secretKey)
 
         customer.dataFiles.add(dataFile)
-        dataFileLinkId?.let { customer.dataFilesLinks.add(DataFileLink(it, dataFileId, name, folderId)) }
+        dataFileLinkId.let { customer.dataFilesLinks.add(DataFileLink(it, dataFileId, name, folderId)) }
     }
 }
