@@ -57,7 +57,7 @@ fun StarredBottomSheetContextFile(
         val downloadFile = {
             fileViewModel.downloadFile(dataFileLink.id)
 
-            Toast.makeText(context, "1 item will be downloaded. See notification for details", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "One item will be downloaded. See notification for details", Toast.LENGTH_SHORT).show()
         }
 
         Column(
