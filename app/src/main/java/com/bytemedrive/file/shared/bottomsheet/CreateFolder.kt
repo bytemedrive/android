@@ -42,11 +42,7 @@ fun CreateFolder(
 
     val confirmName = {
         dialogNewFolderOpened = false
-        createFolderViewModel.createFolder(folderId) {
-            folderId?.let {
-                appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to folderId))
-            } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
-        }
+        createFolderViewModel.createFolder(folderId) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) }
     }
 
     if (dialogNewFolderOpened) {
