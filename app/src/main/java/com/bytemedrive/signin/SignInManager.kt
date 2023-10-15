@@ -9,6 +9,7 @@ import com.bytemedrive.store.CustomerAggregate
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.EventsSecretKey
+import com.bytemedrive.wallet.root.WalletRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,16 +18,19 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.nio.charset.StandardCharsets
 import java.util.Base64
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class SignInManager(
     private val signInRepository: SignInRepository,
+    private val walletRepository: WalletRepository,
     private val eventSyncService: EventSyncService
 ) {
 
     private val TAG = SignInManager::class.qualifiedName
 
     private var jobSync: Job? = null
+    private var jobPolling: Job? = null
 
     fun autoSignIn() {
         val username = encryptedSharedPreferences.username
@@ -87,10 +91,12 @@ class SignInManager(
             AppState.authorized.value = true
         }
         startEventAutoSync()
+        startPollingData()
     }
 
     fun signOut() {
         jobSync?.cancel()
+        jobPolling?.cancel()
         AppState.customer.value = null
         AppState.authorized.value = false
         encryptedSharedPreferences.clean()
@@ -101,6 +107,15 @@ class SignInManager(
             while (isActive) {
                 eventSyncService.syncEvents()
                 delay(32.seconds)
+            }
+        }
+    }
+
+    private fun startPollingData() {
+        jobPolling = CoroutineScope(Dispatchers.Default).launch {
+            while (isActive) {
+                AppState.customer.value?.let { it.balanceGbm = walletRepository.getWallet(it.wallet!!).balanceGbm }
+                delay(1.minutes)
             }
         }
     }

@@ -63,7 +63,7 @@ val accountModule = module {
     single { FileManager(get(), get()) }
     single { FolderManager() }
     single { SignUpRepository() }
-    single { SignInManager(get(), get()) }
+    single { SignInManager(get(), get(), get()) }
     single { SignInRepository() }
     single { FileRepository() }
     single { FileUploadQueueRepository(get()) }
