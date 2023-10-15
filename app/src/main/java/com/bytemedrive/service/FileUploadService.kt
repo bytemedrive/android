@@ -42,20 +42,22 @@ class FileUploadService : Service() {
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
         val notification = notificationBuilder(pendingIntent)
 
-        startForeground(NOTIFICATION_ID, notification.build())
-
         serviceScope.launch {
             // TODO: Temporary solution - should be improved
             while (true) {
                 withContext(Dispatchers.IO) {
                     val filesToUpload = fileUploadQueueRepository.getFiles()
 
-                    filesToUpload.forEachIndexed { index, fileUpload ->
-                        uploadFile(fileUpload)
-                        updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
-                    }
+                    if (filesToUpload.isNotEmpty()) {
+                        startForeground(NOTIFICATION_ID, notification.build())
 
-                    notificationManager.cancel(NOTIFICATION_ID)
+                        filesToUpload.forEachIndexed { index, fileUpload ->
+                            uploadFile(fileUpload)
+                            updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
+                        }
+
+                        stopForeground(STOP_FOREGROUND_DETACH)
+                    }
 
                     TimeUnit.SECONDS.sleep(10)
                 }
