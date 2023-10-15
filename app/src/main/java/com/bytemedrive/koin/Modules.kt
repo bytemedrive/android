@@ -69,7 +69,7 @@ val accountModule = module {
     single { FolderManager() }
     single { PricesRepository() }
     single { SignUpRepository() }
-    single { SignInManager(get(), get()) }
+    single { SignInManager(get(), get(), get()) }
     single { SignInRepository() }
     single { StoreRepository() }
     single { WalletRepository() }
