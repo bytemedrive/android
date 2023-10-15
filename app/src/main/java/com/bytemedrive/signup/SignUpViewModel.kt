@@ -3,6 +3,7 @@ package com.bytemedrive.signup
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bytemedrive.network.NoInternetException
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.signin.SignInManager
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.time.ZonedDateTime
 import java.util.Base64
@@ -57,6 +59,8 @@ class SignUpViewModel(
             val eventSignUp = EventCustomerSignedUp(username, walletId, ZonedDateTime.now())
 
             eventPublisher.publishEvent(eventSignUp)
+        } catch (exception: UnknownHostException) {
+           throw exception
         } catch (exception: Exception) {
             onFailure()
             Log.e(TAG, "Signup failed for username: $username", exception)
