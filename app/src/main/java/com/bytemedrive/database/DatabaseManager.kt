@@ -17,6 +17,29 @@ class DatabaseManager(val context: Context) {
     init {
         CouchbaseLite.init(context)
         initializeDatabase(context)
+        createCollections()
+    }
+
+    fun getCollectionFileDownload() = database.getCollection(COLLECTION_FILE_DOWNLOAD_QUEUE)
+
+    fun getCollectionFileUpload() = database.getCollection(COLLECTION_FILE_UPLOAD_QUEUE)
+
+    fun clearCollections() {
+        Log.i(TAG, "Removing database collections and creating new ones")
+
+        database.getCollection(COLLECTION_FILE_DOWNLOAD_QUEUE)?.let {
+            database.deleteCollection(it.name, it.scope.name)
+            database.createCollection(it.name, it.scope.name)
+        }
+        database.getCollection(COLLECTION_FILE_UPLOAD_QUEUE)?.let {
+            database.deleteCollection(it.name, it.scope.name)
+            database.createCollection(it.name, it.scope.name)
+        }
+    }
+
+    private fun createCollections() {
+        database.createCollection(COLLECTION_FILE_DOWNLOAD_QUEUE)
+        database.createCollection(COLLECTION_FILE_UPLOAD_QUEUE)
     }
 
     private fun initializeDatabase(context: Context) {
@@ -32,5 +55,7 @@ class DatabaseManager(val context: Context) {
     companion object {
 
         const val DATABASE_NAME = "bytemedrive"
+        const val COLLECTION_FILE_DOWNLOAD_QUEUE = "file_download_queue"
+        const val COLLECTION_FILE_UPLOAD_QUEUE = "file_upload_queue"
     }
 }

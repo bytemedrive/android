@@ -19,6 +19,7 @@ import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.network.RequestFailedException
 import com.bytemedrive.privacy.AesService
+import com.bytemedrive.service.ServiceManager
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +32,7 @@ import java.util.UUID
 
 class FileViewModel(
     context: Context,
+    serviceManager: ServiceManager,
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
     private val appNavigator: AppNavigator,
@@ -61,6 +63,7 @@ class FileViewModel(
     init {
         getThumbnails(context)
         watchFilesToUpload()
+        serviceManager.startServices(context)
     }
 
     fun clickFileAndFolder(item: Item) {

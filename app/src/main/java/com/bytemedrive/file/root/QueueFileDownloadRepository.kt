@@ -8,26 +8,26 @@ import com.couchbase.lite.MutableDocument
 import com.couchbase.lite.QueryBuilder
 import com.couchbase.lite.Result
 import com.couchbase.lite.SelectResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.util.UUID
 
-class QueueFileDownloadRepository(databaseManager: DatabaseManager) {
+class QueueFileDownloadRepository(private val databaseManager: DatabaseManager) {
 
     private val TAG = QueueFileDownloadRepository::class.qualifiedName
 
-    private var collection: Collection = databaseManager.database.createCollection(COLLECTION_NAME)
+    fun getFiles(): List<UUID> = databaseManager.getCollectionFileDownload()?.let { collection ->
+        queryFileUpload(collection).execute().use { resultSet -> resultSet.allResults().map(::mapFileDownload) }
+    }.orEmpty()
 
-    fun getFiles() = queryFileUpload(collection).execute().allResults().map(::mapFileDownload)
-
-    fun addFile(dataFileLinkId: UUID) {
+    fun addFile(dataFileLinkId: UUID) = databaseManager.getCollectionFileDownload()?.let { collection ->
         val doc = MutableDocument(dataFileLinkId.toString())
 
         collection.save(doc)
     }
 
-    fun deleteFile(documentId: String) = collection.getDocument(documentId)?.let { document ->
-        collection.delete(document)
+    fun deleteFile(documentId: String) = databaseManager.getCollectionFileDownload()?.let { collection ->
+        collection.getDocument(documentId)?.let { document ->
+            collection.delete(document)
+        }
     }
 
     private fun queryFileUpload(collection: Collection) =
@@ -36,9 +36,4 @@ class QueueFileDownloadRepository(databaseManager: DatabaseManager) {
             .from(DataSource.collection(collection))
 
     private fun mapFileDownload(result: Result) = result.getString("id")!!.let { UUID.fromString(it) }
-
-    companion object {
-
-        const val COLLECTION_NAME = "file_download_queue"
-    }
 }
