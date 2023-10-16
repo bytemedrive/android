@@ -29,6 +29,7 @@ import java.io.File
 import java.util.Base64
 import java.util.Locale
 import java.util.UUID
+import kotlin.io.path.fileSize
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import java.io.File as JavaFile
@@ -52,7 +53,7 @@ class FileManager(
                 val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
                 val encryptedFile = rebuildFile(dataFile.chunksViewIds, "${dataFileLink.id}-encrypted", dataFile.contentType, context.cacheDir)
 
-                AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey)
+                AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey, encryptedFile.length())
             }
         }
 
@@ -71,7 +72,7 @@ class FileManager(
             val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
 
             val secretKey = AesService.generateNewFileSecretKey()
-            AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
+            AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey, tmpOriginalFile.length())
 
             val chunks = getChunks(tmpEncryptedFile, tmpFolder)
             val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
@@ -125,7 +126,7 @@ class FileManager(
 
         resultFile.outputStream().use { outputStream ->
             viewIds.forEach { chunkViewId ->
-                fileRepository.download(chunkViewId)?.bodyAsChannel()?.toInputStream()?.use { it.copyTo(outputStream, BUFFER_SIZE) }
+                fileRepository.download(chunkViewId)?.bodyAsChannel()?.toInputStream()?.use { it.copyTo(outputStream, BUFFER_SIZE_DEFAULT) }
             }
         }
 
@@ -137,7 +138,7 @@ class FileManager(
         val tmpEncryptedFile = File.createTempFile("$thumbnailDataFileId-encrypted", ".${MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType)}", directory)
 
         val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey)
+        AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey, bytes.size.toLong())
 
         val chunks = getChunks(tmpEncryptedFile, directory)
 
@@ -208,7 +209,7 @@ class FileManager(
             file.outputStream().use { outputStream ->
                 inputStream.skip(start)
 
-                val buffer = ByteArray(BUFFER_SIZE)
+                val buffer = ByteArray(BUFFER_SIZE_DEFAULT)
                 var bytesRead: Int
                 var bytesRemaining = length
 
@@ -237,7 +238,17 @@ class FileManager(
     companion object {
 
         const val CHUNK_SIZE_BYTES = 16 * 1024 * 1024
-        const val BUFFER_SIZE = 1024
+        const val BUFFER_SIZE_DEFAULT = 1024
         const val UNKNOWN_MIME_TYPE = "unknown"
+
+        fun computeBufferSize(fileSize: Long): Int {
+            var newSize = BUFFER_SIZE_DEFAULT
+
+            while ((fileSize % newSize) < (newSize / 2.0)) {
+                newSize += 1
+            }
+
+            return newSize
+        }
     }
 }
