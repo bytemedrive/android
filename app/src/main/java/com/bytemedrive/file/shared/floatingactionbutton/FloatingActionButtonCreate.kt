@@ -12,16 +12,17 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
+import java.util.UUID
 
 @Composable
 fun FloatingActionButtonCreate(
-    selectedFolderId: String? = null,
+    selectedFolderId: UUID? = null,
     appNavigator: AppNavigator = koinInject()
 ) {
     FloatingActionButton(
         onClick = {
             selectedFolderId?.let { folderId ->
-                appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE, mapOf("folderId" to folderId))
+                appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE, mapOf("folderId" to folderId.toString()))
             } ?: appNavigator.navigateTo(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE)
         },
         containerColor = MaterialTheme.colorScheme.primary,

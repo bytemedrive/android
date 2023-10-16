@@ -60,7 +60,7 @@ private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FileScreen(
-    folderId: String? = null,
+    folderId: UUID? = null,
     fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject(),
 ) {
@@ -78,7 +78,7 @@ fun FileScreen(
         requestPermissions(context)
         fileViewModel.updateItems(folderId, context)
 
-        AppState.topBarComposable.value = { TopBarFile(it) }
+        AppState.topBarComposable.value = { TopBarFile(folderId, it) }
 
         if (folderId == null) {
             AppState.title.value = "My files"
@@ -100,9 +100,8 @@ fun FileScreen(
     }
 
     dataFilePreview?.let { dataFilePreview_ ->
-        val folderUUID = folderId?.let { UUID.fromString(it) }
         val dataFileIds = AppState.customer.value?.dataFilesLinks
-            ?.filter { dataFileLink -> dataFileLink.folderId == folderUUID }
+            ?.filter { dataFileLink -> dataFileLink.folderId == folderId }
             ?.map { it.dataFileId }.orEmpty()
 
         FilePreviewDialog(dataFilePreview_, dataFileIds, { fileViewModel.dataFilePreview.value = null })

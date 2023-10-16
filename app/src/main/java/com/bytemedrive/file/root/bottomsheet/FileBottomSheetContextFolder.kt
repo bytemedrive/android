@@ -26,17 +26,17 @@ import androidx.compose.ui.graphics.Color
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.ui.component.AlertDialogRemove
-import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileBottomSheetContextFolder(
-    id: String,
+    folderId: UUID,
     fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) =
-    fileViewModel.singleFolder(id)?.let { folder ->
+    fileViewModel.singleFolder(folderId)?.let { folder ->
 
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 

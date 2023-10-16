@@ -10,10 +10,11 @@ import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.navigation.AppNavigator
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import java.util.UUID
 
 @Composable
 fun FileBottomSheetCreate(
-    folderId: String?,
+    folderId: UUID?,
     uploadViewModel: UploadViewModel = koinViewModel(),
     createFolderViewModel: CreateFolderViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject()

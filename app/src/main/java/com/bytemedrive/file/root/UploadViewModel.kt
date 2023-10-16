@@ -17,7 +17,7 @@ class UploadViewModel(
     private val queueFileUploadRepository: QueueFileUploadRepository,
 ) : ViewModel() {
 
-    fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: String?) = viewModelScope.launch {
+    fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: UUID?) = viewModelScope.launch {
         val dataFileId = UUID.randomUUID()
         val tmpOriginalFile = withContext(Dispatchers.IO) {
             File.createTempFile(dataFileId.toString(), ".${MimeTypeMap.getSingleton().getExtensionFromMimeType(documentFile.type)}", cacheDir)
@@ -27,13 +27,6 @@ class UploadViewModel(
             inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE)
         }
 
-        queueFileUploadRepository.addFile(
-            FileUpload(
-                dataFileId.toString(),
-                documentFile.name.orEmpty(),
-                tmpOriginalFile.absolutePath,
-                folderId
-            )
-        )
+        queueFileUploadRepository.addFile(FileUpload(dataFileId, documentFile.name.orEmpty(), tmpOriginalFile.absolutePath, folderId))
     }
 }

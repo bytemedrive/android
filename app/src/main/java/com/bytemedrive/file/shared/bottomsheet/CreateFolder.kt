@@ -28,10 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.navigation.AppNavigator
+import java.util.UUID
 
 @Composable
 fun CreateFolder(
-    folderId: String?,
+    folderId: UUID?,
     createFolderViewModel: CreateFolderViewModel,
     appNavigator: AppNavigator
 ) {
