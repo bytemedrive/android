@@ -1,11 +1,8 @@
 package com.bytemedrive.file.starred.bottomsheet
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -24,21 +21,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.ui.component.AlertDialogRemove
-import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StarredBottomSheetContextFolder(
-    id: String,
+    folderId: UUID,
     fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) =
-    fileViewModel.singleFolder(id)?.let { folder ->
+    fileViewModel.singleFolder(folderId)?.let { folder ->
 
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 

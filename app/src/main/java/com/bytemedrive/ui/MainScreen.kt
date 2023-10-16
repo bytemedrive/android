@@ -31,6 +31,7 @@ import com.bytemedrive.store.AppState
 import com.bytemedrive.ui.theme.ByteMeTheme
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
+import java.net.SocketException
 import java.net.UnknownHostException
 
 @OptIn(ExperimentalMaterialNavigationApi::class)
@@ -47,7 +48,7 @@ fun MainScreen() {
         Log.e("Main Screen", it.message, it)
 
         when (it) {
-            is UnknownHostException, is NoInternetException -> null
+            is UnknownHostException, is NoInternetException, is SocketException -> null
             is RequestFailedException -> RequestFailed()
             else -> GeneralError(it.message)
         }

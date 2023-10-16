@@ -38,12 +38,10 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.file.root.ItemType
-import com.bytemedrive.file.root.TopBarFile
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
 import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
-import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)

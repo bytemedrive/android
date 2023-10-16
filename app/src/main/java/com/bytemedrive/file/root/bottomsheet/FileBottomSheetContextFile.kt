@@ -32,15 +32,16 @@ import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.ui.component.AlertDialogRemove
 import org.koin.compose.koinInject
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileBottomSheetContextFile(
-    id: String,
+    dataFileLinkId: UUID,
     fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) =
-    fileViewModel.singleDataFileLink(id)?.let { dataFileLink ->
+    fileViewModel.singleDataFileLink(dataFileLinkId)?.let { dataFileLink ->
         val context = LocalContext.current
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 

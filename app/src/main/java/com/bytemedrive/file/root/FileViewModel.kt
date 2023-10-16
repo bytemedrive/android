@@ -109,14 +109,14 @@ class FileViewModel(
         itemsSelected.value = emptyList()
     }
 
-    fun updateItems(folderId: String?, context: Context) = viewModelScope.launch {
+    fun updateItems(folderId: UUID?, context: Context) = viewModelScope.launch {
         AppState.customer.collectLatest { customer ->
             val tempFolders = customer?.folders
-                ?.filter { folder -> folder.parent == folderId?.let { UUID.fromString(it) } }
+                ?.filter { folder -> folder.parent == folderId }
                 ?.map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }.orEmpty()
 
             val tempFiles = customer?.dataFilesLinks
-                ?.filter { file -> file.folderId == folderId?.let { UUID.fromString(it) } }
+                ?.filter { file -> file.folderId == folderId }
                 ?.map { Item(it.id, it.name, ItemType.File, it.starred, false, it.folderId) }.orEmpty()
 
             dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
@@ -126,9 +126,9 @@ class FileViewModel(
         }
     }
 
-    fun singleDataFileLink(id: String) = dataFileLinks.value.find { it.id == UUID.fromString(id) }
+    fun singleDataFileLink(id: UUID) = dataFileLinks.value.find { it.id == id }
 
-    fun singleFolder(id: String) = folders.value.find { it.id == UUID.fromString(id) }
+    fun singleFolder(id: UUID) = folders.value.find { it.id == id }
 
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
         AppState.customer.value?.wallet?.let { walletId ->
@@ -246,10 +246,7 @@ class FileViewModel(
 
     private fun watchFilesToUpload() = viewModelScope.launch {
         itemsUploading = queueFileUploadRepository.watchFiles().map { files ->
-            files.map {
-                val folderId = it.folderId?.let { folderId_ -> UUID.fromString(folderId_) }
-                Item(UUID.fromString(it.id), it.name, ItemType.File, starred = false, uploading = true, folderId = folderId)
-            }
+            files.map { Item(it.id, it.name, ItemType.File, starred = false, uploading = true, folderId = it.folderId) }
         }
 
     }

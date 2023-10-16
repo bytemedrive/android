@@ -30,13 +30,13 @@ import java.util.UUID
 
 @Composable
 fun UploadFile(
-    folderId: String?,
+    folderId: UUID?,
     uploadViewModel: UploadViewModel,
     appNavigator: AppNavigator,
 ) {
     val context = LocalContext.current
     val customer by AppState.customer.collectAsState()
-    val folder = folderId?.let { folderId_ -> customer?.folders?.find { it.id == UUID.fromString(folderId_) } }
+    val folder = folderId?.let { folderId_ -> customer?.folders?.find { it.id == folderId_ } }
 
     val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uries: List<Uri> ->
         if (uries.isEmpty()) {

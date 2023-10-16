@@ -2,7 +2,6 @@ package com.bytemedrive.file.root
 
 import com.bytemedrive.database.DatabaseManager
 import com.bytemedrive.database.FileUpload
-import com.bytemedrive.network.JsonConfig
 import com.couchbase.lite.Collection
 import com.couchbase.lite.DataSource
 import com.couchbase.lite.Meta
@@ -13,6 +12,7 @@ import com.couchbase.lite.SelectResult
 import com.couchbase.lite.queryChangeFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.mapNotNull
+import java.util.UUID
 
 class QueueFileUploadRepository(private val databaseManager: DatabaseManager) {
 
@@ -34,12 +34,14 @@ class QueueFileUploadRepository(private val databaseManager: DatabaseManager) {
         queryFileUpload(collection).execute().use { resultSet -> resultSet.allResults().map(::mapFileUpload) }
     }.orEmpty()
 
-    fun addFile(document: FileUpload) = databaseManager.getCollectionFileUpload()?.let { collection ->
-        val json = JsonConfig.mapper.writeValueAsString(document)
-        val doc = MutableDocument()
-        doc.setJSON(json)
+    fun addFile(fileUpload: FileUpload) = databaseManager.getCollectionFileUpload()?.let { collection ->
+        val document = MutableDocument(fileUpload.id.toString()).let {
+            it.setString("name", fileUpload.name)
+            it.setString("path", fileUpload.path)
+            it.setString("folderId", fileUpload.folderId.toString())
+        }
 
-        collection.save(doc)
+        collection.save(document)
     }
 
     fun deleteFile(documentId: String) = databaseManager.getCollectionFileUpload()?.let { collection ->
@@ -58,10 +60,10 @@ class QueueFileUploadRepository(private val databaseManager: DatabaseManager) {
         .from(DataSource.collection(collection))
 
     private fun mapFileUpload(result: Result): FileUpload {
-        val id = result.getString("id")!!
+        val id = result.getString("id")!!.let { UUID.fromString(it) }
         val name = result.getString("name")!!
         val path = result.getString("path")!!
-        val folderId = result.getString("folderId")
+        val folderId = result.getString("folderId").let { UUID.fromString(it) }
 
         return FileUpload(id, name, path, folderId)
     }

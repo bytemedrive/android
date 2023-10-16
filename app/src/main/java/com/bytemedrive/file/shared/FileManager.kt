@@ -57,8 +57,8 @@ class FileManager(
         }
 
     suspend fun uploadFile(fileUpload: FileUpload, tmpFolder: File, file: File) = withContext(Dispatchers.IO) {
-        val dataFileId = UUID.fromString(fileUpload.id)
-        val folder = fileUpload.folderId?.let { UUID.fromString(fileUpload.folderId) }
+        val dataFileId = fileUpload.id
+        val folder = fileUpload.folderId
 
         val tmpOriginalFile = File(file.path)
 

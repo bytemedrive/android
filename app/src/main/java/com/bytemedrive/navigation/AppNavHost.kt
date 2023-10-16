@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
+import java.util.UUID
 
 @OptIn(ExperimentalMaterialNavigationApi::class)
 @Composable
@@ -59,7 +60,9 @@ fun AppNavHost(
             route = AppNavigator.NavTarget.FILE.label,
             arguments = listOf(navArgument("folderId") { nullable = true })
         ) { backstackEntry ->
-            FileScreen(backstackEntry.arguments?.getString("folderId"))
+            val folderId = backstackEntry.arguments?.getString("folderId")?.let { UUID.fromString(it) }
+
+            FileScreen(folderId)
         }
 
         composable(route = AppNavigator.NavTarget.ADD_CREDIT_METHOD.label) { AddCreditMethodScreen() }
@@ -75,34 +78,36 @@ fun AppNavHost(
         composable(route = AppNavigator.NavTarget.STARRED.label) { StarredScreen() }
 
         bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE.label) { backstackEntry ->
-            FileBottomSheetContextFile(
-                backstackEntry.arguments?.getString("id")!!,
-            )
+            val dataFileLinkId = backstackEntry.arguments?.getString("id")!!.let { UUID.fromString(it) }
+
+            FileBottomSheetContextFile(dataFileLinkId)
         }
 
         bottomSheet(AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FOLDER.label) { backstackEntry ->
-            FileBottomSheetContextFolder(
-                backstackEntry.arguments?.getString("id")!!,
-            )
+            val folderId = backstackEntry.arguments?.getString("id")!!.let { UUID.fromString(it) }
+
+            FileBottomSheetContextFolder(folderId)
         }
 
         bottomSheet(AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FILE.label) { backstackEntry ->
-            StarredBottomSheetContextFile(
-                backstackEntry.arguments?.getString("id")!!,
-            )
+            val dataFileLinkId = backstackEntry.arguments?.getString("id")!!.let { UUID.fromString(it) }
+
+            StarredBottomSheetContextFile(dataFileLinkId)
         }
 
         bottomSheet(AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FOLDER.label) { backstackEntry ->
-            StarredBottomSheetContextFolder(
-                backstackEntry.arguments?.getString("id")!!,
-            )
+            val folderId = backstackEntry.arguments?.getString("id")!!.let { UUID.fromString(it) }
+
+            StarredBottomSheetContextFolder(folderId)
         }
 
         bottomSheet(
             route = AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CREATE.label,
             arguments = listOf(navArgument("folderId") { nullable = true })
         ) { backstackEntry ->
-            FileBottomSheetCreate(backstackEntry.arguments?.getString("folderId"))
+            val folderId = backstackEntry.arguments?.getString("folderId")?.let { UUID.fromString(it) }
+
+            FileBottomSheetCreate(folderId)
         }
     }
 }

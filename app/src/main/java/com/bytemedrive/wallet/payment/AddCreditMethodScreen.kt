@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.R
-import com.bytemedrive.file.root.TopBarFile
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
