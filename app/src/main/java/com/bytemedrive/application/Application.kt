@@ -7,6 +7,7 @@ import com.bytemedrive.koin.databaseModule
 import com.bytemedrive.koin.networkModule
 import com.bytemedrive.koin.storeModule
 import com.bytemedrive.koin.viewModelsModule
+import com.bytemedrive.network.NetworkStatus
 import com.bytemedrive.store.EncryptedPrefs
 import com.stripe.android.PaymentConfiguration
 import io.ktor.client.HttpClient
@@ -22,6 +23,10 @@ val httpClient: HttpClient by lazy {
     Application.httpClient!!
 }
 
+val networkStatus: NetworkStatus by lazy {
+    Application.networkStatus!!
+}
+
 class Application : android.app.Application() {
 
     private var isKoinStarted = false
@@ -31,6 +36,8 @@ class Application : android.app.Application() {
         var encryptedSharedPreferences: EncryptedPrefs? = null
 
         var httpClient: HttpClient? = null
+
+        var networkStatus: NetworkStatus? = null
     }
 
     override fun onCreate() {
@@ -46,6 +53,7 @@ class Application : android.app.Application() {
             isKoinStarted = true
         }
 
+        networkStatus = NetworkStatus.init(this)
         httpClient = com.bytemedrive.network.HttpClient().client
         encryptedSharedPreferences = EncryptedPrefs(applicationContext, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC))
 
