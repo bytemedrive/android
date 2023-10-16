@@ -13,7 +13,6 @@ import com.bytemedrive.file.shared.selection.FileSelectionViewModel
 import com.bytemedrive.file.starred.StarredViewModel
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
-import com.bytemedrive.navigation.TopBarViewModel
 import com.bytemedrive.network.HttpClient
 import com.bytemedrive.price.PricesRepository
 import com.bytemedrive.signin.SignInManager
@@ -38,7 +37,6 @@ import org.koin.dsl.module
 val viewModelsModule = module {
     single { FileViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
-    single { TopBarViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
     viewModel { FilePreviewViewModel(get()) }
     viewModel { FileSelectionViewModel(get(), get()) }

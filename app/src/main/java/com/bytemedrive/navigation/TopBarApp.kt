@@ -1,6 +1,7 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
+package com.bytemedrive.navigation
+
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -12,34 +13,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.style.TextOverflow
-import com.bytemedrive.file.root.TopBarFile
-import com.bytemedrive.file.starred.TopBarStarred
-import com.bytemedrive.navigation.BarType
-import com.bytemedrive.navigation.TopBarViewModel
 import com.bytemedrive.store.AppState
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
-
-@Composable
-fun TopBarApp(
-    toggleNav: suspend () -> Unit,
-    topBarViewModel: TopBarViewModel = koinInject(),
-) {
-    val barType by topBarViewModel.barType.collectAsState()
-
-    AnimatedVisibility(visible = barType == BarType.SELECTION_FILE, enter = slideInVertically()) {
-        TopBarFile()
-    }
-
-    AnimatedVisibility(visible = barType == BarType.SELECTION_STARRED, enter = slideInVertically()) {
-        TopBarStarred()
-    }
-
-    AnimatedVisibility(visible = barType == BarType.SCREEN, enter = slideInVertically()) {
-        TopBarAppContent(toggleNav)
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +38,30 @@ fun TopBarAppContent(toggleNav: suspend () -> Unit) {
                 Icon(
                     imageVector = Icons.Filled.Menu,
                     contentDescription = "Localized description"
+                )
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBarAppContentBack(appNavigator: AppNavigator = koinInject()) {
+    val title by AppState.title.collectAsState()
+
+    TopAppBar(
+        title = {
+            Text(
+                title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = "Go back"
                 )
             }
         },

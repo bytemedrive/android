@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.koinViewModel
 import java.time.format.DateTimeFormatter
@@ -38,6 +39,7 @@ fun PaymentMethodCryptoPaymentScreen(
 
     LaunchedEffect("initialize") {
         AppState.title.value = "Monero payment"
+        AppState.topBarComposable.value = { TopBarAppContentBack() }
         paymentMethodCryptoPaymentViewModel.init(storageAmount)
     }
 

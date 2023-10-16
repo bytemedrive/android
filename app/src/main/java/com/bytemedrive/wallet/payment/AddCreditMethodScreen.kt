@@ -18,10 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.R
+import com.bytemedrive.file.root.TopBarFile
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import com.bytemedrive.ui.component.FieldRadioGroup
-import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -32,24 +33,30 @@ fun AddCreditMethodScreen(
 ) {
     LaunchedEffect("initialize") {
         AppState.title.value = "Add credit"
+        AppState.topBarComposable.value = { TopBarAppContentBack() }
     }
 
     val scrollState = rememberScrollState()
 
     val method by addCreditMethodViewModel.method.collectAsState()
+
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         FieldRadioGroup(
-            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 40.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 40.dp),
             items = AddCreditMethodViewModel.methodOptions,
             value = method,
             onChangeValue = { addCreditMethodViewModel.method.value = it }
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp, end = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp, end = 24.dp),
             horizontalArrangement = Arrangement.End
         ) {
             Button(
