@@ -5,6 +5,7 @@ import com.bytemedrive.config.ConfigProperty
 import com.bytemedrive.network.JsonConfig.mapper
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.HttpTimeout
@@ -19,6 +20,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
+import java.net.UnknownHostException
 
 class HttpClient {
 
@@ -40,6 +42,11 @@ class HttpClient {
 
             install(ContentNegotiation) {
                 register(ContentType.Application.Json, JacksonConverter(mapper))
+            }
+
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 5)
+                exponentialDelay()
             }
 
             HttpResponseValidator {
