@@ -11,8 +11,8 @@ android {
         applicationId "com.bytemedrive"
         minSdk 29
         targetSdk 33
-        versionCode 13
-        versionName "0.7.1"
+        versionCode 14
+        versionName "0.8.0-SNAPSHOT"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
