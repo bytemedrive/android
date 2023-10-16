@@ -31,7 +31,7 @@ object ShaService {
 
     fun checksum(inputStream: InputStream): String {
         val digest = MessageDigest.getInstance("SHA-256")
-        val buffer = ByteArray(FileManager.BUFFER_SIZE)
+        val buffer = ByteArray(FileManager.BUFFER_SIZE_DEFAULT)
 
         inputStream.use { fis ->
             var bytesRead = fis.read(buffer)

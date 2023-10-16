@@ -57,7 +57,7 @@ object AesService {
             .array()
     }
 
-    fun encryptWithKey(inputStream: InputStream, outputStream: FileOutputStream, key: SecretKey) {
+    fun encryptWithKey(inputStream: InputStream, outputStream: FileOutputStream, key: SecretKey, fileSizeBytes: Long) {
         inputStream.use {
             outputStream.use {
                 val iv = getRandomBytes(IV_LENGTH_BYTE)
@@ -65,7 +65,7 @@ object AesService {
                 val cipher = Cipher.getInstance(ENCRYPT_ALGO, ENCRYPT_ALGO_PROVIDER)
 
                 cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-                val buffer = ByteArray(FileManager.BUFFER_SIZE)
+                val buffer = ByteArray(FileManager.computeBufferSize(fileSizeBytes))
                 var bytesRead: Int
                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                     cipher.update(buffer, 0, bytesRead).let { outputStream.write(it) }
@@ -83,13 +83,11 @@ object AesService {
         val cipherText = ByteArray(bb.remaining())
         bb[cipherText]
         val cipher = Cipher.getInstance(ENCRYPT_ALGO, ENCRYPT_ALGO_PROVIDER)
-        cipher.init(
-            Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv)
-        )
+        cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
         return cipher.doFinal(cipherText)
     }
 
-    fun decryptWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey) {
+    fun decryptWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey, fileSizeBytes: Long) {
         inputStream.use {
             outputStream.use {
                 val iv = ByteArray(IV_LENGTH_BYTE)
@@ -97,7 +95,7 @@ object AesService {
                 val cipher = Cipher.getInstance(ENCRYPT_ALGO, ENCRYPT_ALGO_PROVIDER)
 
                 cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-                val buffer = ByteArray(FileManager.BUFFER_SIZE)
+                val buffer = ByteArray(FileManager.computeBufferSize(fileSizeBytes))
                 var bytesRead: Int
                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
                     cipher.update(buffer, 0, bytesRead).let { outputStream.write(it) }

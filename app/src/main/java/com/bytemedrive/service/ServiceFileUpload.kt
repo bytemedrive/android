@@ -79,7 +79,7 @@ class ServiceFileUpload : Service() {
                 Log.e(TAG, "File upload failed! File path=${file.path}.")
                 queueFileUploadRepository.deleteFile(fileUpload.id.toString())
 
-                throw IllegalStateException("${file.name} upload failed! Please try again.", exception.cause)
+                throw IllegalStateException("${file.name} upload failed! Please try again.", exception)
             }
         } else {
             Log.w(TAG, "File upload canceled. File ${file.path} could not be found.")
