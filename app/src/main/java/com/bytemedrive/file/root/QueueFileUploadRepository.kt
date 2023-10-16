@@ -38,7 +38,7 @@ class QueueFileUploadRepository(private val databaseManager: DatabaseManager) {
         val document = MutableDocument(fileUpload.id.toString()).let {
             it.setString("name", fileUpload.name)
             it.setString("path", fileUpload.path)
-            it.setString("folderId", fileUpload.folderId.toString())
+            it.setString("folderId", fileUpload.folderId?.toString())
         }
 
         collection.save(document)
@@ -63,7 +63,7 @@ class QueueFileUploadRepository(private val databaseManager: DatabaseManager) {
         val id = result.getString("id")!!.let { UUID.fromString(it) }
         val name = result.getString("name")!!
         val path = result.getString("path")!!
-        val folderId = result.getString("folderId").let { UUID.fromString(it) }
+        val folderId = result.getValue("folderId")?.let { UUID.fromString(it.toString()) }
 
         return FileUpload(id, name, path, folderId)
     }

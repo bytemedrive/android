@@ -36,7 +36,7 @@ fun UploadFile(
 ) {
     val context = LocalContext.current
     val customer by AppState.customer.collectAsState()
-    val folder = folderId?.let { folderId_ -> customer?.folders?.find { it.id == folderId_ } }
+    val folder = customer?.folders?.find { it.id == folderId }
 
     val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uries: List<Uri> ->
         if (uries.isEmpty()) {
