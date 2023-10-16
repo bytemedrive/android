@@ -15,6 +15,7 @@ import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.network.HttpClient
 import com.bytemedrive.price.PricesRepository
+import com.bytemedrive.service.ServiceManager
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.signin.SignInRepository
 import com.bytemedrive.signin.SignInViewModel
@@ -35,7 +36,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelsModule = module {
-    single { FileViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get()) }
+    single { FileViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
     viewModel { FilePreviewViewModel(get()) }
@@ -66,8 +67,9 @@ val accountModule = module {
     single { QueueFileUploadRepository(get()) }
     single { FolderManager() }
     single { PricesRepository() }
+    single { ServiceManager() }
     single { SignUpRepository() }
-    single { SignInManager(get(), get(), get()) }
+    single { SignInManager(get(), get(), get(), get()) }
     single { SignInRepository() }
     single { StoreRepository() }
     single { WalletRepository() }

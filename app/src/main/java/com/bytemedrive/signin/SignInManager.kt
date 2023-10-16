@@ -2,6 +2,7 @@ package com.bytemedrive.signin
 
 import android.util.Log
 import com.bytemedrive.application.encryptedSharedPreferences
+import com.bytemedrive.database.DatabaseManager
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.AppState
@@ -24,7 +25,8 @@ import kotlin.time.Duration.Companion.seconds
 class SignInManager(
     private val signInRepository: SignInRepository,
     private val walletRepository: WalletRepository,
-    private val eventSyncService: EventSyncService
+    private val eventSyncService: EventSyncService,
+    private val databaseManager: DatabaseManager
 ) {
 
     private val TAG = SignInManager::class.qualifiedName
@@ -100,6 +102,7 @@ class SignInManager(
         AppState.customer.value = null
         AppState.authorized.value = false
         encryptedSharedPreferences.clean()
+        databaseManager.clearCollections()
     }
 
     private fun startEventAutoSync() {

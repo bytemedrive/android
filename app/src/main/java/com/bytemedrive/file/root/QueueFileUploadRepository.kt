@@ -11,29 +11,30 @@ import com.couchbase.lite.QueryBuilder
 import com.couchbase.lite.Result
 import com.couchbase.lite.SelectResult
 import com.couchbase.lite.queryChangeFlow
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.withContext
 
-class QueueFileUploadRepository(databaseManager: DatabaseManager) {
+class QueueFileUploadRepository(private val databaseManager: DatabaseManager) {
 
     private val TAG = QueueFileUploadRepository::class.qualifiedName
 
-    private val collection = databaseManager.database.createCollection(COLLECTION_NAME)
+    fun watchFiles() = databaseManager.getCollectionFileUpload()?.let { collection ->
+        queryFileUpload(collection).queryChangeFlow().mapNotNull { change ->
+            val err = change.error
 
-    fun watchFiles() = queryFileUpload(collection).queryChangeFlow().mapNotNull { change ->
-        val err = change.error
+            if (err != null) {
+                throw err
+            }
 
-        if (err != null) {
-            throw err
+            change.results?.allResults()?.map(::mapFileUpload).orEmpty()
         }
+    } ?: emptyFlow()
 
-        change.results?.allResults()?.map(::mapFileUpload).orEmpty()
-    }
+    fun getFiles(): List<FileUpload> = databaseManager.getCollectionFileUpload()?.let { collection ->
+        queryFileUpload(collection).execute().use { resultSet -> resultSet.allResults().map(::mapFileUpload) }
+    }.orEmpty()
 
-    fun getFiles() = queryFileUpload(collection).execute().allResults().map(::mapFileUpload)
-
-    fun addFile(document: FileUpload) {
+    fun addFile(document: FileUpload) = databaseManager.getCollectionFileUpload()?.let { collection ->
         val json = JsonConfig.mapper.writeValueAsString(document)
         val doc = MutableDocument()
         doc.setJSON(json)
@@ -41,7 +42,7 @@ class QueueFileUploadRepository(databaseManager: DatabaseManager) {
         collection.save(doc)
     }
 
-    fun deleteFile(documentId: String) {
+    fun deleteFile(documentId: String) = databaseManager.getCollectionFileUpload()?.let { collection ->
         collection.getDocument(documentId)?.let { document ->
             collection.delete(document)
         }
@@ -63,10 +64,5 @@ class QueueFileUploadRepository(databaseManager: DatabaseManager) {
         val folderId = result.getString("folderId")
 
         return FileUpload(id, name, path, folderId)
-    }
-
-    companion object {
-
-        const val COLLECTION_NAME = "file_upload_queue"
     }
 }
