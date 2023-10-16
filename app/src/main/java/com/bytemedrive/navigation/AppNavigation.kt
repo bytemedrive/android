@@ -1,13 +1,17 @@
 package com.bytemedrive.navigation
 
 import android.content.Context
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCard
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
@@ -23,14 +27,19 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.bytemedrive.BuildConfig
 import com.bytemedrive.R
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.store.AppState
@@ -53,6 +62,7 @@ fun AppNavigation(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val navItems = getMenuItems(context, signInManager, appNavigator)
+    val scrollState = rememberScrollState()
 
     val selectedItemDefault = remember { navItems.find { it is MenuItem.Navigation && it.route == startDestination } as MenuItem.Navigation? }
     val selectedItem = remember { mutableStateOf(selectedItemDefault) }
@@ -62,16 +72,12 @@ fun AppNavigation(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
                     Column(
                         modifier = Modifier
+                            .fillMaxSize()
                             .padding(bottom = 16.dp)
-                            .align(Alignment.TopStart),
+                            .weight(1f)
+                            .verticalScroll(scrollState),
                     ) {
                         navItems.forEach {
                             when (it) {
@@ -95,7 +101,20 @@ fun AppNavigation(
                             }
                         }
                     }
-                }
+                    Column(
+                        modifier = Modifier.padding(start = 16.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            text = stringResource(R.string.menu_app_username_label, getUsername()),
+                            fontSize = 12.sp
+                        )
+                        Text(
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            text = stringResource(R.string.common_app_version, BuildConfig.VERSION_NAME),
+                            fontSize = 12.sp
+                        )
+                    }
 
             }
         },
@@ -110,12 +129,14 @@ fun AppNavigation(
     )
 }
 
+private fun getUsername() = AppState.customer.value?.username?.value.orEmpty()
+
 private fun getMenuItems(context: Context, signInManager: SignInManager, appNavigator: AppNavigator): List<MenuItem> = listOf(
     MenuItem.Navigation(
-        AppState.customer.value?.username?.value.orEmpty(),
-        null,
-        Icons.Default.Person,
-    ),
+        "Dashboard",
+        AppNavigator.NavTarget.FILE,
+        Icons.Default.Home
+    ) { appNavigator.navigateTo(AppNavigator.NavTarget.FILE) },
     MenuItem.Divider,
     MenuItem.Label(context.getString(R.string.menu_app_my_data)),
     MenuItem.Navigation(
@@ -135,16 +156,6 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
     ) { appNavigator.navigateTo(AppNavigator.NavTarget.ADD_CREDIT_METHOD) },
     MenuItem.Divider,
     MenuItem.Label(context.getString(R.string.menu_app_my_account)),
-    MenuItem.Navigation(
-        context.getString(R.string.menu_app_settings),
-        AppNavigator.NavTarget.SETTINGS,
-        Icons.Default.Settings
-    ),
-    MenuItem.Navigation(
-        context.getString(R.string.menu_app_bin),
-        AppNavigator.NavTarget.BIN,
-        Icons.Default.Delete
-    ),
     MenuItem.Navigation(
         context.getString(R.string.common_sign_out),
         AppNavigator.NavTarget.SIGN_IN,

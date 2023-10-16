@@ -2,14 +2,17 @@ package com.bytemedrive.signin
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -23,20 +26,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.bytemedrive.BuildConfig
 import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.SnackbarVisualsWithError
 import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -45,12 +50,14 @@ import org.koin.compose.koinInject
 fun SignInScreen(
     snackbarHostState: SnackbarHostState,
     signInViewModel: SignInViewModel = koinViewModel(),
-    appNavigator: AppNavigator = koinInject()
+    appNavigator: AppNavigator = koinInject(),
 ) {
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val username by signInViewModel.username.collectAsState()
     val password by signInViewModel.password.collectAsState()
+
+    val scrollState = rememberScrollState()
 
     val signIn = {
         val validation = signInViewModel.validateForm()
@@ -65,62 +72,72 @@ fun SignInScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    Box(
+        modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(bottom = 16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Image(modifier = Modifier.size(100.dp), imageVector = ImageVector.vectorResource(id = R.drawable.byteme_logo_symbol_color), contentDescription = "Logo")
-        Text(
-            text = "ByteMe Drive",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp),
-            fontSize = 28.sp,
-            fontWeight = FontWeight(500)
-        )
-        Text(
-            text = "Sign in",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp),
-            fontSize = 22.sp,
-            fontWeight = FontWeight(500)
-        )
-        OutlinedTextField(
-            value = username,
-            onValueChange = { signInViewModel.username.value = it },
-            label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.Email
-            ),
-        )
-        FieldPassword(
-            value = password,
-            onValueChange = { signInViewModel.password.value = it },
-            label = "Password",
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.clearFocus()
-                signIn()
-            })
-        )
-        Button(
-            onClick = { signIn() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "Sign in")
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Don't have an account?", fontSize = 16.sp)
-            TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.SIGN_UP) }) {
-                Text(text = "Sign up now", fontSize = 16.sp)
+            Image(modifier = Modifier.size(100.dp), imageVector = ImageVector.vectorResource(id = R.drawable.byteme_logo_symbol_color), contentDescription = "Logo")
+            Text(
+                text = "ByteMe Drive",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+                fontSize = 28.sp,
+                fontWeight = FontWeight(500)
+            )
+            Text(
+                text = "Sign in",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+                fontSize = 22.sp,
+                fontWeight = FontWeight(500)
+            )
+            OutlinedTextField(
+                value = username,
+                onValueChange = { signInViewModel.username.value = it },
+                label = { Text("Username") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Email
+                ),
+            )
+            FieldPassword(
+                value = password,
+                onValueChange = { signInViewModel.password.value = it },
+                label = "Password",
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                    signIn()
+                })
+            )
+            Button(
+                onClick = { signIn() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Text(text = "Sign in")
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Don't have an account?", fontSize = 16.sp)
+                TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.SIGN_UP) }) {
+                    Text(text = "Sign up now", fontSize = 16.sp)
+                }
             }
         }
+
+        Text(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            text = stringResource(R.string.common_app_version, BuildConfig.VERSION_NAME),
+            color = Color.LightGray,
+            fontSize = 12.sp
+        )
     }
 }
