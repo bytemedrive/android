@@ -38,6 +38,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.file.root.ItemType
+import com.bytemedrive.file.root.TopBarFile
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
 import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.navigation.AppNavigator
@@ -57,6 +58,7 @@ fun StarredScreen(
 
     LaunchedEffect("initialize") {
         AppState.title.value = "Starred files"
+        AppState.topBarComposable.value = { TopBarStarred(it) }
     }
 
     DisposableEffect("unmount") {

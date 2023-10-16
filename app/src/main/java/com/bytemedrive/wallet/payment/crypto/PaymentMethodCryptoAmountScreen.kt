@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -35,6 +36,7 @@ fun PaymentMethodCryptoAmountScreen(
 
     LaunchedEffect("initialize") {
         AppState.title.value = "Monero payment"
+        AppState.topBarComposable.value = { TopBarAppContentBack() }
     }
 
     val amount by paymentMethodCryptoAmountViewModel.amount.collectAsState()

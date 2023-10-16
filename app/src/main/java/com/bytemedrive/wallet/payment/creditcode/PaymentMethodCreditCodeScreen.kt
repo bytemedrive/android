@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -45,6 +46,7 @@ fun PaymentMethodCreditCodeScreen(
 ) {
     LaunchedEffect("initialize") {
         AppState.title.value = "Add credit - credit code"
+        AppState.topBarComposable.value = { TopBarAppContentBack() }
     }
 
     val code by paymentMethodCreditCodeViewModel.code.collectAsState()

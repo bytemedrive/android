@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.AppNavigator
+import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import com.stripe.android.paymentsheet.PaymentSheetContract
 import org.koin.androidx.compose.get
@@ -65,6 +66,7 @@ fun PaymentMethodCreditCardScreen(
 
     LaunchedEffect("initialize") {
         AppState.title.value = "Add credit - credit card"
+        AppState.topBarComposable.value = { TopBarAppContentBack() }
     }
 
     Column(

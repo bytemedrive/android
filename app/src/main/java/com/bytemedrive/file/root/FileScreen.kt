@@ -78,6 +78,8 @@ fun FileScreen(
         requestPermissions(context)
         fileViewModel.updateItems(folderId, context)
 
+        AppState.topBarComposable.value = { TopBarFile(it) }
+
         if (folderId == null) {
             AppState.title.value = "My files"
         } else {
