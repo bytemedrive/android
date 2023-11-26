@@ -37,7 +37,7 @@ class ServiceThumbnailDownload : Service() {
 
                     AppState.customer.value?.dataFiles?.forEach { dataFile ->
                         resolutions.forEach { resolution ->
-                            val thumbnailName = getThumbnailNameWithExtension(dataFile.name, resolution)
+                            val thumbnailName = FileManager.getThumbnailNameWithExtension(dataFile.name, resolution)
 
                             if (dataFile.contentType == MimeTypes.IMAGE_JPEG && !fileList.contains(thumbnailName)) {
                                 Log.i(TAG, "Downloading thumbnail ${resolution.value} for ${dataFile.name}")
@@ -47,7 +47,7 @@ class ServiceThumbnailDownload : Service() {
                                     ?.let { thumbnail ->
                                         val encryptedFile = fileManager.rebuildFile(
                                             thumbnail.chunksViewIds,
-                                            getThumbnailName(dataFile.name, resolution),
+                                            FileManager.getThumbnailName(dataFile.name, resolution),
                                             thumbnail.contentType,
                                             applicationContext.cacheDir
                                         )
@@ -76,17 +76,5 @@ class ServiceThumbnailDownload : Service() {
         super.onDestroy()
 
         serviceScope.cancel()
-    }
-
-    private fun getThumbnailNameWithExtension(fileName: String, resolution: Resolution): String {
-        val split = fileName.split(".");
-
-        return "${getThumbnailName(fileName, resolution)}.${split.last()}"
-    }
-
-    private fun getThumbnailName(fileName: String, resolution: Resolution): String {
-        val split = fileName.split(".");
-
-        return "${split.first()}_${resolution.value}"
     }
 }

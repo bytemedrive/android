@@ -2,6 +2,7 @@ package com.bytemedrive.signin
 
 import android.util.Log
 import com.bytemedrive.application.encryptedSharedPreferences
+import com.bytemedrive.application.networkStatus
 import com.bytemedrive.database.DatabaseManager
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
@@ -108,6 +109,10 @@ class SignInManager(
     private fun startEventAutoSync() {
         jobSync = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
+                if (!networkStatus.connected.value) {
+                    continue
+                }
+
                 eventSyncService.syncEvents()
                 delay(32.seconds)
             }
@@ -117,6 +122,10 @@ class SignInManager(
     private fun startPollingData() {
         jobPolling = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
+                if (!networkStatus.connected.value) {
+                    continue
+                }
+
                 AppState.customer.value?.let { it.balanceGbm = walletRepository.getWallet(it.wallet!!).balanceGbm }
                 delay(1.minutes)
             }

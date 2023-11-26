@@ -1,6 +1,7 @@
 package com.bytemedrive.network
 
 import android.util.Log
+import com.bytemedrive.application.networkStatus
 import com.bytemedrive.config.ConfigProperty
 import com.bytemedrive.network.JsonConfig.mapper
 import io.ktor.client.HttpClient
@@ -68,6 +69,10 @@ class HttpClient {
         client.plugin(HttpSend).intercept { request ->
             Log.i(TAG, "Sending request ${request.method.value} ${request.url}")
             val start = System.currentTimeMillis()
+
+            if (!networkStatus.connected.value) {
+                throw NoInternetException()
+            }
 
             val originalCall = execute(request)
 

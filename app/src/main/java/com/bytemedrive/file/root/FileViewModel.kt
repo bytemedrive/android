@@ -3,7 +3,6 @@ package com.bytemedrive.file.root
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,8 +16,6 @@ import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
-import com.bytemedrive.network.RequestFailedException
-import com.bytemedrive.privacy.AesService
 import com.bytemedrive.service.ServiceManager
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
@@ -28,6 +25,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.UUID
 
 class FileViewModel(
@@ -257,22 +255,18 @@ class FileViewModel(
         }
     }
 
-    private suspend fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, context: Context): Bitmap? {
+    private fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, context: Context): Bitmap? {
         val dataFiles = AppState.customer.value?.dataFiles
         if (dataFiles != null) {
             val dataFile = dataFiles.find { it.id == dataFileLink.dataFileId }
             val thumbnail = dataFile?.thumbnails?.find { thumbnail -> thumbnail.resolution == Resolution.P360 }
 
             return thumbnail?.let {
-                try {
-                    val encryptedFile = fileManager.rebuildFile(it.chunksViewIds, "${dataFile.id}-thumbnail-${it.resolution}-encrypted", it.contentType, context.cacheDir)
-                    val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), it.secretKey)
-                    return BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
-                } catch (exception: RequestFailedException) {
-                    Log.i(TAG, "Thumbnail ${it.resolution} for data file ${dataFile.id} is not ready yet")
+                val thumbnailName = FileManager.getThumbnailNameWithExtension(dataFile.name, thumbnail.resolution)
+                val filePath = "${context.filesDir}/$thumbnailName"
+                val file = File(filePath)
 
-                    return null
-                }
+                if (file.exists()) BitmapFactory.decodeFile("${context.filesDir}/$thumbnailName") else null
             }
         }
 
