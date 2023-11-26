@@ -22,8 +22,12 @@ class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRe
 
     val expiresIn = MutableStateFlow("")
 
+    val loading = MutableStateFlow(true)
+
     fun init(storageAmount: Int) {
         viewModelScope.launch {
+            loading.value = true
+
             val payment = walletRepository.createMoneroPayment(AppState.customer.value?.wallet!!, MoneroPaymentRequest(storageAmount))
 
             walletAddress.value = payment.walletAddress
@@ -47,6 +51,8 @@ class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRe
                 }
             }
             timer.start()
+
+            loading.value = false
         }
     }
 
