@@ -1,0 +1,20 @@
+name: Release Minor/Patch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'Github Actions'
+          git config --global user.email 'github.actions@users.noreply.github.com'
+      - name: Release
+        run: |
+          ./.github/workflows/release.sh ${{ github.ref == 'refs/heads/dev' && 'minor' || 'patch' }} ${GITHUB_REF#refs/heads/}

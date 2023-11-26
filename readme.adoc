@@ -3,3 +3,15 @@
 image:https://img.shields.io/github/license/bytemedrive/android[GitHub]
 
 Discover Android's foremost privacy-centric storage solution.
+
+== Build
+
+=== Requirements
+To build signed APK or bundle locally put keystore (ask project admin) into `app/keystore/bytemedrive-keystore.jks` and set env variables with proper values (ask project admin)
+`KEY_STORE_PASSWORD`, `ALIAS` and `KEY_PASSWORD`.
+
+=== Generate APK
+In root folder run `./gradlew assembleRelease`. Path to generated bundle `app/build/outputs/apk/release/*.apk`.
+
+=== Generate AAB
+In root folder run `./gradlew bundleRelease`. Path to generated bundle `app/build/outputs/renamedBundle/*.aab`.
