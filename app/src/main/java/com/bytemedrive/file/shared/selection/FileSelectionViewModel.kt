@@ -104,6 +104,18 @@ class FileSelectionViewModel(
             eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}"))
         }
 
+        clearFileSelection()
+        closeDialog()
+    }
+
+    fun moveItems(action: Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
+        val selectedFolders = folders.value.filter { folder -> action.ids.contains(folder.id) }
+        val selectedFiles = dataFileLinks.value.filter { file -> action.ids.contains(file.id) }
+
+        selectedFolders.forEach { eventPublisher.publishEvent(EventFolderMoved(it.id, folderId)) }
+        selectedFiles.forEach { eventPublisher.publishEvent(EventFileMoved(it.id, folderId)) }
+
+        clearFileSelection()
         closeDialog()
     }
 
@@ -121,13 +133,7 @@ class FileSelectionViewModel(
         }
     }
 
-    fun moveItems(action: Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
-        val selectedFolders = folders.value.filter { folder -> action.ids.contains(folder.id) }
-        val selectedFiles = dataFileLinks.value.filter { file -> action.ids.contains(file.id) }
-
-        selectedFolders.forEach { eventPublisher.publishEvent(EventFolderMoved(it.id, folderId)) }
-        selectedFiles.forEach { eventPublisher.publishEvent(EventFileMoved(it.id, folderId)) }
-
-        closeDialog()
+    private fun clearFileSelection() {
+        selectedFolderId.value = null
     }
 }
