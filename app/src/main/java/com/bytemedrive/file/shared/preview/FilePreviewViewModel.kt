@@ -36,7 +36,7 @@ class FilePreviewViewModel : ViewModel() {
                 }
 
                 thumbnailDataFile?.let {
-                    val thumbnailName = FileManager.getThumbnailNameWithExtension(dataFile_.name, thumbnailDataFile.resolution)
+                    val thumbnailName = FileManager.getThumbnailName(dataFile_.id, thumbnailDataFile.resolution)
                     val filePath = "${context.filesDir}/$thumbnailName"
                     val file = File(filePath)
 

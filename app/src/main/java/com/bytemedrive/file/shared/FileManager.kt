@@ -251,16 +251,8 @@ class FileManager(
             return newSize
         }
 
-        fun getThumbnailNameWithExtension(fileName: String, resolution: Resolution): String {
-            val split = fileName.split(".");
-
-            return "${getThumbnailName(fileName, resolution)}.${split.last()}"
-        }
-
-        fun getThumbnailName(fileName: String, resolution: Resolution): String {
-            val split = fileName.split(".");
-
-            return "${split.first()}_${resolution.value}"
+        fun getThumbnailName(fileId: UUID, resolution: Resolution): String {
+            return "${fileId}_${resolution.value}"
         }
     }
 }
