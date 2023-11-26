@@ -39,7 +39,7 @@ val viewModelsModule = module {
     single { FileViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
-    viewModel { FilePreviewViewModel(get()) }
+    viewModel { FilePreviewViewModel() }
     viewModel { FileSelectionViewModel(get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get()) }

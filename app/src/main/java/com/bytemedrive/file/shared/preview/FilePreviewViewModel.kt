@@ -9,15 +9,13 @@ import androidx.media3.common.MimeTypes
 import com.bytemedrive.file.root.DataFile
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.shared.FileManager
-import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.UUID
 
-class FilePreviewViewModel(
-    private val fileManager: FileManager,
-) : ViewModel() {
+class FilePreviewViewModel : ViewModel() {
 
     val loading = MutableStateFlow(true)
 
@@ -38,11 +36,11 @@ class FilePreviewViewModel(
                 }
 
                 thumbnailDataFile?.let {
-                    val encryptedFile = fileManager.rebuildFile(it.chunksViewIds, "${dataFile_.id}-thumbnail-${it.resolution}-encrypted", it.contentType, context.cacheDir)
-                    val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), it.secretKey)
-                    val bitmap = BitmapFactory.decodeByteArray(fileDecrypted, 0, fileDecrypted.size)
+                    val thumbnailName = FileManager.getThumbnailNameWithExtension(dataFile_.name, thumbnailDataFile.resolution)
+                    val filePath = "${context.filesDir}/$thumbnailName"
+                    val file = File(filePath)
 
-                    Thumbnail(bitmap, dataFile_)
+                    if (file.exists()) Thumbnail(BitmapFactory.decodeFile("${context.filesDir}/$thumbnailName"), dataFile_) else null
                 }
             }
             ?.filterNotNull()
