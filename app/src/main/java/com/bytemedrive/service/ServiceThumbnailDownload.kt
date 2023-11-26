@@ -53,15 +53,15 @@ class ServiceThumbnailDownload : Service() {
                                             applicationContext.cacheDir
                                         )
 
-                                        val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), thumbnail.secretKey)
+                                        if (encryptedFile.readBytes().isNotEmpty()) {
+                                            val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), thumbnail.secretKey)
 
-                                        applicationContext.openFileOutput(thumbnailName, Context.MODE_PRIVATE).use { it.write(fileDecrypted) }
+                                            applicationContext.openFileOutput(thumbnailName, Context.MODE_PRIVATE).use { it.write(fileDecrypted) }
+                                        }
                                     }
                             }
                         }
                     }
-
-                    AppState.customer.update { it }
 
                     TimeUnit.SECONDS.sleep(10)
                 }

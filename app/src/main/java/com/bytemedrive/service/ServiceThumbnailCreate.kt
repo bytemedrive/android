@@ -37,25 +37,26 @@ class ServiceThumbnailCreate : Service() {
                 withContext(Dispatchers.IO) {
                     Log.i(TAG, "Checking whether there are missing thumbnails to be created.")
                     AppState.customer.value?.dataFiles?.forEach { dataFile ->
-                        Log.i(TAG, "File id=${dataFile.id} has ${dataFile.thumbnails.size} thumbnails.")
+                        Log.i(TAG, "File chunk view ids=${dataFile.chunksViewIds} has ${dataFile.thumbnails.size} thumbnails.")
 
                         resolutions.forEach { resolution ->
                             if (dataFile.contentType == MimeTypes.IMAGE_JPEG && dataFile.thumbnails.find { it.resolution == resolution } == null) {
-                                Log.i(TAG, "Missing thumbnail with resolution $resolution for file id=${dataFile.id}.")
+                                Log.i(TAG, "Missing thumbnail with resolution $resolution for file chunk view ids=${dataFile.chunksViewIds}.")
                                 val encryptedFile = fileManager.rebuildFile(dataFile.chunksViewIds, "${dataFile.id}-encrypted", dataFile.contentType, applicationContext.cacheDir)
-                                val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), dataFile.secretKey)
-                                val thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
 
-                                val stream = ByteArrayOutputStream()
-                                thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                                if (encryptedFile.readBytes().isNotEmpty()) {
+                                    val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), dataFile.secretKey)
+                                    val thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
 
-                                Log.i(TAG, "Uploading thumbnail with resolution $resolution for file id=${dataFile.id}.")
-                                fileManager.uploadThumbnail(stream.toByteArray(), applicationContext.cacheDir, dataFile.id, dataFile.contentType, resolution)
+                                    val stream = ByteArrayOutputStream()
+                                    thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+
+                                    Log.i(TAG, "Uploading thumbnail with resolution $resolution for file id=${dataFile.id}.")
+                                    fileManager.uploadThumbnail(stream.toByteArray(), applicationContext.cacheDir, dataFile.id, dataFile.contentType, resolution)
+                                }
                             }
                         }
                     }
-
-                    AppState.customer.update { it }
 
                     TimeUnit.SECONDS.sleep(10)
                 }
