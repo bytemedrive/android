@@ -24,7 +24,7 @@ class FileRepository {
 
     suspend fun upload(walletId: UUID, chunks: List<Chunk>) {
         chunks.forEachIndexed { index, chunk ->
-            Log.i(TAG, "Uploading chunk id=${chunk.viewId} num=$index")
+            Log.i(TAG, "Uploading chunk view id=${chunk.viewId} num=$index")
             httpClient.submitFormWithBinaryData(
                 url = "wallets/$walletId/files",
                 formData = formData {
@@ -40,7 +40,7 @@ class FileRepository {
                     append("id", chunk.id.toString())
                 }
             )
-            Log.i(TAG, "Chunk id=${chunk.viewId} was uploaded")
+            Log.i(TAG, "Chunk view id=${chunk.viewId} was uploaded")
         }
     }
 
