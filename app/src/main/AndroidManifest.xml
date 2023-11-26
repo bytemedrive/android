@@ -25,6 +25,7 @@
         <service android:name=".service.ServiceFileDownload" />
         <service android:name=".service.ServiceFileUpload" />
         <service android:name=".service.ServiceThumbnailCreate" />
+        <service android:name=".service.ServiceThumbnailDownload" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
