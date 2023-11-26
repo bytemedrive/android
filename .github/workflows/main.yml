@@ -71,7 +71,9 @@ jobs:
         run: s3cmd put app/build/outputs/renamedBundle/*.aab s3://com-bytemedrive-builds/aab/
 
       - name: Generate app APK.
+        if: github.ref_name != 'dev'
         run: ./gradlew assembleRelease --stacktrace -P BACKEND_URL=https://api.bytemedrive.com/
 
       - name: Upload APK
+        if: github.ref_name != 'dev'
         run: s3cmd put app/build/outputs/apk/release/*.apk s3://com-bytemedrive-builds/apk/
