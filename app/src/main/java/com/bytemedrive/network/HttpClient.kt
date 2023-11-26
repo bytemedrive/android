@@ -1,8 +1,8 @@
 package com.bytemedrive.network
 
 import android.util.Log
+import com.bytemedrive.application.sharedPreferences
 import com.bytemedrive.application.networkStatus
-import com.bytemedrive.config.ConfigProperty
 import com.bytemedrive.network.JsonConfig.mapper
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -21,7 +21,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.JacksonConverter
-import java.net.UnknownHostException
 
 class HttpClient {
 
@@ -61,7 +60,7 @@ class HttpClient {
             }
 
             defaultRequest {
-                url(ConfigProperty.backendUrl)
+                url(sharedPreferences.backendUrl)
                 contentType(ContentType.Application.Json)
             }
         }

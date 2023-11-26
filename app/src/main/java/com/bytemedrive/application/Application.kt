@@ -15,6 +15,10 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
 
+val sharedPreferences: ByteMeSharedPreferences by lazy {
+    Application.sharedPreferences!!
+}
+
 val encryptedSharedPreferences: EncryptedPrefs by lazy {
     Application.encryptedSharedPreferences!!
 }
@@ -32,6 +36,8 @@ class Application : android.app.Application() {
     private var isKoinStarted = false
 
     companion object {
+
+        var sharedPreferences: ByteMeSharedPreferences? = null
 
         var encryptedSharedPreferences: EncryptedPrefs? = null
 
@@ -55,6 +61,7 @@ class Application : android.app.Application() {
 
         networkStatus = NetworkStatus.init(this)
         httpClient = com.bytemedrive.network.HttpClient().client
+        sharedPreferences = ByteMeSharedPreferences(applicationContext)
         encryptedSharedPreferences = EncryptedPrefs(applicationContext, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC))
 
         PaymentConfiguration.init(applicationContext, BuildConfig.STRIPE_PUBLISHABLE_KEY)
