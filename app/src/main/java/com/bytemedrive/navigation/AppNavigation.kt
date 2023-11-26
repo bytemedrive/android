@@ -157,6 +157,11 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
     MenuItem.Divider,
     MenuItem.Label(context.getString(R.string.menu_app_my_account)),
     MenuItem.Navigation(
+        context.getString(R.string.menu_app_settings),
+        AppNavigator.NavTarget.SETTINGS,
+        Icons.Default.Settings
+    ) { appNavigator.navigateTo(AppNavigator.NavTarget.SETTINGS) },
+    MenuItem.Navigation(
         context.getString(R.string.common_sign_out),
         AppNavigator.NavTarget.SIGN_IN,
         Icons.Default.Logout

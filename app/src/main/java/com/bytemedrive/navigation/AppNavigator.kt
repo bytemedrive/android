@@ -55,5 +55,7 @@ class AppNavigator {
         STARRED_BOTTOM_SHEET_CONTEXT_FOLDER("starredBottomSheetContextFolder/{id}"),
 
         TERMS_AND_CONDITIONS("termsAndConditions"),
+
+        TERMINATE_ACCOUNT("terminateAccount"),
     }
 }
