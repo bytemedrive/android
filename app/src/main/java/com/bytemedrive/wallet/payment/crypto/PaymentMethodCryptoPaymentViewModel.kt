@@ -7,6 +7,7 @@ import com.bytemedrive.store.AppState
 import com.bytemedrive.wallet.root.MoneroPaymentRequest
 import com.bytemedrive.wallet.root.WalletRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.Duration
@@ -22,8 +23,12 @@ class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRe
 
     val expiresIn = MutableStateFlow("")
 
+    val loading = MutableStateFlow(true)
+
     fun init(storageAmount: Int) {
         viewModelScope.launch {
+            loading.update { true }
+
             val payment = walletRepository.createMoneroPayment(AppState.customer.value?.wallet!!, MoneroPaymentRequest(storageAmount))
 
             walletAddress.value = payment.walletAddress
@@ -47,7 +52,8 @@ class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRe
                 }
             }
             timer.start()
+
+            loading.update { false }
         }
     }
-
 }
