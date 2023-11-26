@@ -4,11 +4,13 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -144,30 +147,7 @@ fun FileScreen(
                                     ),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                if (itemSelected) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.CheckCircle,
-                                        contentDescription = "Checked",
-                                        tint = Color.Black,
-                                    )
-                                } else {
-                                    if (item.uploading) {
-                                        CircularProgressIndicator()
-                                    } else if (item.type == ItemType.File) {
-                                        thumbnails[item.id]?.let { Image(bitmap = it.asImageBitmap(), contentDescription = "Thumbnail") }
-                                            ?: Icon(
-                                                imageVector = Icons.Outlined.Description,
-                                                contentDescription = "File",
-                                                tint = Color.Black,
-                                            )
-                                    } else {
-                                        Icon(
-                                            imageVector = Icons.Default.Folder,
-                                            contentDescription = "Folder",
-                                            tint = Color.Black,
-                                        )
-                                    }
-                                }
+                                FileImage(itemSelected, item, thumbnails[item.id])
                                 Column(
                                     modifier = Modifier
                                         .padding(start = 18.dp)
@@ -208,6 +188,41 @@ fun FileScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
+    Box(
+        modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center
+    ) {
+        when {
+            itemSelected -> {
+                Icon(
+                    imageVector = Icons.Outlined.CheckCircle,
+                    contentDescription = "Checked",
+                    tint = Color.Black,
+                )
+            }
+            item.uploading -> {
+                CircularProgressIndicator()
+            }
+            item.type == ItemType.File -> {
+                image?.let { Image(bitmap = it.asImageBitmap(), contentDescription = "Thumbnail ${item.name}", contentScale = ContentScale.Crop) } ?: Icon(
+                    imageVector = Icons.Outlined.Description,
+                    contentDescription = "File",
+                    tint = Color.Black,
+                )
+            }
+            else -> {
+                Icon(
+                    imageVector = Icons.Default.Folder,
+                    contentDescription = "Folder",
+                    tint = Color.Black,
+                )
             }
         }
     }
