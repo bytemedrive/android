@@ -13,6 +13,7 @@ import com.bytemedrive.store.AppState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
@@ -59,6 +60,8 @@ class ServiceThumbnailDownload : Service() {
                             }
                         }
                     }
+
+                    AppState.customer.update { it }
 
                     TimeUnit.SECONDS.sleep(10)
                 }
