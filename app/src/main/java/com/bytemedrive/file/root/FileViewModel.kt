@@ -262,7 +262,7 @@ class FileViewModel(
             val thumbnail = dataFile?.thumbnails?.find { thumbnail -> thumbnail.resolution == Resolution.P360 }
 
             return thumbnail?.let {
-                val thumbnailName = FileManager.getThumbnailNameWithExtension(dataFile.name, thumbnail.resolution)
+                val thumbnailName = FileManager.getThumbnailName(dataFile.id, thumbnail.resolution)
                 val filePath = "${context.filesDir}/$thumbnailName"
                 val file = File(filePath)
 
