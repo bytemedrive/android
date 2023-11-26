@@ -1,3 +1,13 @@
+buildscript {
+    ext {
+        compose_version = '1.2.0'
+        compose_material_version = '1.4.3'
+        ktor_version = '2.2.3'
+        koin_version = '3.4.3'
+        accompaniest_version = '0.30.1'
+    }
+}
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -11,8 +21,8 @@ android {
         applicationId "com.bytemedrive"
         minSdk 29
         targetSdk 33
-        versionCode 14
-        versionName "0.8.0-SNAPSHOT"
+        versionCode Integer.parseInt(VERSION_CODE)
+        versionName VERSION_NAME
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -23,10 +33,27 @@ android {
 //        buildConfigField "String", "STRIPE_PUBLISHABLE_KEY", "\"pk_live_51N7wTaL2hkomI7ZgfknhTcLD5Wm8vwznCAc2di6AJpQBCStR29JOQShEz0UZ5zcVrzIxRNsLjo0XaQNPLEin6RJW002zHv4x9o\""
     }
 
+    signingConfigs {
+        release {
+            storeFile = file("keystore/bytemedrive-keystore.jks")
+            storePassword System.getenv("KEY_STORE_PASSWORD")
+            keyAlias System.getenv("ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
+        }
+    }
+
+    /* Rename APK bundle */
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "bytemedrive-${defaultConfig.versionName}.apk"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {
@@ -110,4 +137,49 @@ dependencies {
 
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+}
+
+/* Rename AAB bundle */
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith("bundle")) {
+        def renameTaskName = "rename${task.name.capitalize()}Aab"
+        def flavor = task.name.substring("bundle".length()).uncapitalize()
+        tasks.create(renameTaskName, Copy) {
+            def path = "${buildDir}/outputs/bundle/${flavor}/"
+            from(path)
+            include "app-${flavor}.aab"
+            destinationDir file("${buildDir}/outputs/renamedBundle/")
+            rename "app-${flavor}.aab", "bytemedrive-${android.defaultConfig.versionName}.aab"
+        }
+
+        task.finalizedBy(renameTaskName)
+    }
+}
+
+task printReleaseVersion {
+    doLast {
+        println(android.defaultConfig.versionName.split("-")[0])
+    }
+}
+
+task setVersionName {
+    doLast {
+        if (!project.hasProperty("versionName")) {
+            println("Missing `versionName` parameter")
+
+            return
+        }
+
+        ant.propertyfile(file: "../gradle.properties") {
+            entry(key: "VERSION_NAME", value: "${project.property("versionName")}")
+        }
+    }
+}
+
+task incrementVersionCode {
+    doLast {
+        ant.propertyfile(file: "../gradle.properties") {
+            entry(key: "VERSION_CODE", value: "${android.defaultConfig.versionCode + 1}")
+        }
+    }
 }

@@ -1,0 +1,77 @@
+name: Build
+
+on:
+  push:
+    branches: [dev]
+    tags:
+      - '*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      ALIAS: ${{ secrets.ALIAS }}
+      KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          architecture: x64
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Decode Keystore
+        id: decode_keystore
+        uses: timheuer/base64-to-file@v1
+        with:
+          fileName: 'bytemedrive-keystore.jks'
+          fileDir: 'app/keystore/'
+          encodedString: ${{ secrets.KEYSTORE }}
+
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@v1.1
+        with:
+          provider: aws
+          region: 'eu-central-1'
+          access_key: ${{ secrets.S3_ACCESS_KEY }}
+          secret_key: ${{ secrets.S3_SECRET_KEY }}
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Generate app bundle.
+        if: github.ref_name != 'dev'
+        run: ./gradlew bundleRelease --stacktrace -P BACKEND_URL=https://api.bytemedrive.com/
+
+      - name: Upload Bundle
+        if: github.ref_name != 'dev'
+        run: s3cmd put app/build/outputs/renamedBundle/*.aab s3://com-bytemedrive-builds/aab/
+
+      - name: Generate app APK.
+        run: ./gradlew assembleRelease --stacktrace -P BACKEND_URL=https://api.bytemedrive.com/
+
+      - name: Upload APK
+        run: s3cmd put app/build/outputs/apk/release/*.apk s3://com-bytemedrive-builds/apk/
