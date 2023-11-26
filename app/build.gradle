@@ -29,8 +29,8 @@ android {
             useSupportLibrary true
         }
 
-        buildConfigField "String", "STRIPE_PUBLISHABLE_KEY", "\"pk_test_51N7wTaL2hkomI7ZgL9WwjYWPcJV5UIUpCyRsBgsj1kzzeaOKBuwZzDO5V6Ejwdgln7udEGIFK4sT8l3dt09zIHJ900HOjKJ74S\""
-//        buildConfigField "String", "STRIPE_PUBLISHABLE_KEY", "\"pk_live_51N7wTaL2hkomI7ZgfknhTcLD5Wm8vwznCAc2di6AJpQBCStR29JOQShEz0UZ5zcVrzIxRNsLjo0XaQNPLEin6RJW002zHv4x9o\""
+        buildConfigField "String", "STRIPE_PUBLISHABLE_KEY_TEST", "\"pk_test_51N7wTaL2hkomI7ZgL9WwjYWPcJV5UIUpCyRsBgsj1kzzeaOKBuwZzDO5V6Ejwdgln7udEGIFK4sT8l3dt09zIHJ900HOjKJ74S\""
+        buildConfigField "String", "STRIPE_PUBLISHABLE_KEY_LIVE", "\"pk_live_51N7wTaL2hkomI7ZgfknhTcLD5Wm8vwznCAc2di6AJpQBCStR29JOQShEz0UZ5zcVrzIxRNsLjo0XaQNPLEin6RJW002zHv4x9o\""
         buildConfigField "String", "BACKEND_URL", "\"${project.getProperties().getOrDefault("BACKEND_URL", "https://dev.bytemedrive.com/")}\""
     }
 

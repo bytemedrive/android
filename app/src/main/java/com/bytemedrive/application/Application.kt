@@ -64,6 +64,11 @@ class Application : android.app.Application() {
         sharedPreferences = ByteMeSharedPreferences(applicationContext)
         encryptedSharedPreferences = EncryptedPrefs(applicationContext, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC))
 
-        PaymentConfiguration.init(applicationContext, BuildConfig.STRIPE_PUBLISHABLE_KEY)
+        val stripePublishableKey =
+            if (sharedPreferences?.backendUrl == "https://api.bytemedrive.com")
+                BuildConfig.STRIPE_PUBLISHABLE_KEY_LIVE
+            else BuildConfig.STRIPE_PUBLISHABLE_KEY_TEST
+
+        PaymentConfiguration.init(applicationContext, stripePublishableKey)
     }
 }
