@@ -16,6 +16,8 @@ import com.bytemedrive.file.shared.bottomsheet.FileBottomSheetCreate
 import com.bytemedrive.file.starred.StarredScreen
 import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFile
 import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFolder
+import com.bytemedrive.settings.SettingsScreen
+import com.bytemedrive.settings.terminateaccount.TerminateAccountScreen
 import com.bytemedrive.wallet.payment.AddCreditMethodScreen
 import com.bytemedrive.wallet.payment.creditcard.PaymentMethodCreditCardScreen
 import com.bytemedrive.wallet.payment.creditcode.PaymentMethodCreditCodeScreen
@@ -109,6 +111,10 @@ fun AppNavHost(
 
             FileBottomSheetCreate(folderId)
         }
+
+        composable(route = AppNavigator.NavTarget.SETTINGS.label) { SettingsScreen() }
+
+        composable(route = AppNavigator.NavTarget.TERMINATE_ACCOUNT.label) { TerminateAccountScreen() }
     }
 }
 

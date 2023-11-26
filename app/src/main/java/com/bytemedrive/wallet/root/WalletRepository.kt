@@ -1,13 +1,16 @@
 package com.bytemedrive.wallet.root
 
+import android.util.Log
 import com.bytemedrive.application.httpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import java.util.UUID
 
 class WalletRepository {
+    private val TAG = WalletRepository::class.qualifiedName
 
     suspend fun getWallet(walletId: UUID): Wallet = httpClient.get("wallets/$walletId").body()
 
@@ -24,4 +27,14 @@ class WalletRepository {
 
     suspend fun stripePayment(walletId: UUID, request: StripePaymentRequest): StripePaymentResponse =
         httpClient.post("wallets/$walletId/stripe-payments") { setBody(request) }.body()
+
+    suspend fun deleteFiles(walletId: UUID, ids: List<String>) {
+        Log.i(TAG, "Removing all wallet files")
+
+        httpClient.delete("wallets/$walletId/files") {
+            setBody(object {
+                val ids = ids
+            })
+        }
+    }
 }

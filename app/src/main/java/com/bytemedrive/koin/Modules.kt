@@ -16,6 +16,7 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.network.HttpClient
 import com.bytemedrive.price.PricesRepository
 import com.bytemedrive.service.ServiceManager
+import com.bytemedrive.settings.terminateaccount.TerminateAccountViewModel
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.signin.SignInRepository
 import com.bytemedrive.signin.SignInViewModel
@@ -38,6 +39,7 @@ import org.koin.dsl.module
 val viewModelsModule = module {
     single { FileViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
+    viewModel { TerminateAccountViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
     viewModel { FilePreviewViewModel() }
     viewModel { FileSelectionViewModel(get(), get()) }
