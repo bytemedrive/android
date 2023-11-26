@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -25,24 +27,96 @@ fun TermsAndConditionsScreen() {
             ),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(text = "ByteMe Drive Terms and Conditions", fontSize = 20.sp, fontWeight = FontWeight(500))
-        Text(text = "By downloading or using the app, these terms will automatically apply to you – you should make sure therefore that you read them carefully before using the app. You’re not allowed to copy or modify the app, any part of the app, or our trademarks in any way. You’re not allowed to attempt to extract the source code of the app, and you also shouldn’t try to translate the app into other languages or make derivative versions. The app itself, and all the trademarks, copyright, database rights, and other intellectual property rights related to it, still belong to Osomahe s.r.o..")
-        Text(text = "Osomahe s.r.o. is committed to ensuring that the app is as useful and efficient as possible. For that reason, we reserve the right to make changes to the app or to charge for its services, at any time and for any reason. We will never charge you for the app or its services without making it very clear to you exactly what you’re paying for.")
-        Text(text = "The ByteMe Drive app stores and processes personal data that you have provided to us, to provide our Service. It’s your responsibility to keep your phone and access to the app secure. We therefore recommend that you do not jailbreak or root your phone, which is the process of removing software restrictions and limitations imposed by the official operating system of your device. It could make your phone vulnerable to malware/viruses/malicious programs, compromise your phone’s security features and it could mean that the ByteMe Drive app won’t work properly or at all.")
-        Text(text = "The app does use third-party services that declare their Terms and Conditions.")
-        Text(text = "Link to Terms and Conditions of third-party service providers used by the app")
-        TextButton(onClick = { /* https://policies.google.com/terms */ }) {
-            Text(text = "Google Play Services")
-        }
-        Text(text = "You should be aware that there are certain things that Osomahe s.r.o. will not take responsibility for. Certain functions of the app will require the app to have an active internet connection. The connection can be Wi-Fi or provided by your mobile network provider, but Osomahe s.r.o. cannot take responsibility for the app not working at full functionality if you don’t have access to Wi-Fi, and you don’t have any of your data allowance left.")
-        Text(text = "If you’re using the app outside of an area with Wi-Fi, you should remember that the terms of the agreement with your mobile network provider will still apply. As a result, you may be charged by your mobile provider for the cost of data for the duration of the connection while accessing the app, or other third-party charges. In using the app, you’re accepting responsibility for any such charges, including roaming data charges if you use the app outside of your home territory (i.e. region or country) without turning off data roaming. If you are not the bill payer for the device on which you’re using the app, please be aware that we assume that you have received permission from the bill payer for using the app.")
-        Text(text = "Along the same lines, Osomahe s.r.o. cannot always take responsibility for the way you use the app i.e. You need to make sure that your device stays charged – if it runs out of battery and you can’t turn it on to avail the Service, Osomahe s.r.o. cannot accept responsibility.")
-        Text(text = "With respect to Osomahe s.r.o.’s responsibility for your use of the app, when you’re using the app, it’s important to bear in mind that although we endeavor to ensure that it is updated and correct at all times, we do rely on third parties to provide information to us so that we can make it available to you. Osomahe s.r.o. accepts no liability for any loss, direct or indirect, you experience as a result of relying wholly on this functionality of the app.")
-        Text(text = "At some point, we may wish to update the app. The app is currently available on Android – the requirements for the system(and for any additional systems we decide to extend the availability of the app to) may change, and you’ll need to download the updates if you want to keep using the app. Osomahe s.r.o. does not promise that it will always update the app so that it is relevant to you and/or works with the Android version that you have installed on your device. However, you promise to always accept updates to the application when offered to you, We may also wish to stop providing the app, and may terminate use of it at any time without giving notice of termination to you. Unless we tell you otherwise, upon any termination, (a) the rights and licenses granted to you in these terms will end; (b) you must stop using the app, and (if needed) delete it from your device.")
-        Text(text = "Changes to This Terms and Conditions")
-        Text(text = "We may update our Terms and Conditions from time to time. Thus, you are advised to review this page periodically for any changes. We will notify you of any changes by posting the new Terms and Conditions on this page.")
-        Text(text = "These terms and conditions are effective as of 2023-03-19.")
-        Text(text = "Contact Us")
-        Text(text = "If you have any questions or suggestions about our Terms and Conditions, do not hesitate to contact us at support@bytemedrive.com.")
+        Text(text = "Terms of Service", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+
+        Text(text = "Introduction and Definitions", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(text = "By downloading or using the app, these terms will automatically apply – the user should make sure therefore that they read them carefully before using the app.")
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Service:") }
+                append(" an anonymous online storage platform that allows Users to securely upload, store, and manage their data while maintaining their anonymity.")
+            })
+
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Service Provider:") }
+                append(" the entity or organization responsible for operating and providing the anonymous online storage service to Users, ensuring the functionality, security, and maintenance of the platform. The service provider is Osomahe, s.r.o.")
+            })
+
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("User:") }
+                append(" any individual or entity that anonymously creates an account by entering a username and password to access the online storage service. The User can then utilize the service to securely upload, store, and manage their data as per the service’s guidelines and obligations.")
+            })
+
+
+        Text(text = "Confidentiality and Data Security", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Anonymity and security:") }
+                append(" The online storage service allows users to anonymously upload, store, and download data. All data stored on the service is encrypted on the user’s device to ensure privacy and data security. The service provider and any unauthorized parties do not have any rights or access to the data stored by users, including information about which data belongs to which user or the amount of data stored.")
+            })
+
+
+        Text(text = "Price Calculation and Charges", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("The price calculation process") }
+                append(" is conducted through a one-way process that does not reveal any information about the user’s data or space usage.")
+            })
+
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Monthly charges:") }
+                append(" Users are charged on a monthly basis based on the amount of data they store during the previous month. The service provider may provide detailed information on pricing and payment methods separately, which users should review and comply with.")
+            })
+
+
+        Text(text = "User Obligations", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Acceptable Use:") }
+                append(" Users must agree to use the online storage service in a lawful manner, refraining from uploading or sharing any content that is illegal, infringing, harmful, or violates the rights of others.")
+            })
+
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Content Responsibility:") }
+                append(" Users are solely responsible for the content they upload or share through the service, including ensuring that they have the necessary rights, permissions, or licenses to do so, and respecting the privacy and intellectual property rights of others.")
+            })
+
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Prohibited Activities:") }
+                append(" Users must not engage in activities that disrupt or harm the service or its users, such as attempting unauthorized access or engaging in any form of unauthorized data mining or scraping.")
+            })
+
+
+        Text(text = "Termination and Data Deletion", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("User-Requested Account Termination:") }
+                append(" Users have the option to request the termination of their account at any time. Upon account termination request, all associated data will be permanently deleted from the service. Should user require the data deletion and/or account termination, it can be requested in-app. The files are deleted immediately and user loses access to any remaining credit.")
+            })
+
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Non-Payment and Data Deletion:") }
+                append("In the event that a user fails to make payment for the storage space utilized, the service provider reserves the right to delete the data associated with that user’s account after notification.")
+            })
+
+
+        Text(text = "Governing Law and Jurisdiction", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("Governing law:") }
+                append(" These terms and conditions and any disputes arising from or relating to the online storage service shall be governed by the laws of the Czech Republic, and any legal action or proceeding shall be exclusively brought in the courts of the Czech Republic. Users consent to the personal jurisdiction of such courts and waive any objection to the convenience or appropriateness of the venue./or account termination, it can be requested in-app. The files are deleted immediately and user loses access to any remaining credit.")
+            })
+
+
+        Text(text = "Modifications to the Terms", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(text = "These terms and conditions are effective as of 2023-11-27. Terms version 23.11.1.")
+        Text(text = "The service provider reserves the right to modify the terms and conditions. The changes and their effective date will be published on the service’s website.")
     }
 }
