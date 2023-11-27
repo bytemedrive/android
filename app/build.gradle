@@ -129,6 +129,7 @@ dependencies {
     implementation('com.stripe:stripe-android:20.31.0') {
         exclude group: 'org.bouncycastle'
     }
+    implementation 'androidx.exifinterface:exifinterface:1.3.6'
 
     testImplementation 'junit:junit:4.13.2'
 

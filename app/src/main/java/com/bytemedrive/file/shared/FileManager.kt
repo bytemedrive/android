@@ -3,6 +3,7 @@ package com.bytemedrive.file.shared
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
+import android.media.ExifInterface
 import android.media.ThumbnailUtils
 import android.os.Environment
 import android.provider.MediaStore
@@ -29,7 +30,6 @@ import java.io.File
 import java.util.Base64
 import java.util.Locale
 import java.util.UUID
-import kotlin.io.path.fileSize
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import java.io.File as JavaFile
@@ -39,6 +39,7 @@ class FileManager(
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
 ) {
+
     private val TAG = FileManager::class.qualifiedName
 
     suspend fun downloadFile(dataFileLinkId: UUID) =
@@ -76,6 +77,9 @@ class FileManager(
 
             val chunks = getChunks(tmpEncryptedFile, tmpFolder)
             val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
+            val exifOrientation = if (contentType.contains("image"))
+                ExifInterface(file.path).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL) else
+                null
 
             Log.i(TAG, "File ${file.name} split into ${chunks.size} chunks")
 
@@ -92,8 +96,9 @@ class FileManager(
                         contentType,
                         Base64.getEncoder().encodeToString(secretKey.encoded),
                         UUID.randomUUID(),
-                        folder
-                    )
+                        folder,
+                        exifOrientation
+                        )
                 )
             }
         }

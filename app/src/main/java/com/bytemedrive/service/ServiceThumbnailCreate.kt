@@ -9,12 +9,12 @@ import android.util.Log
 import androidx.media3.common.MimeTypes
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.image.ImageManager
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
@@ -46,7 +46,9 @@ class ServiceThumbnailCreate : Service() {
 
                                 if (encryptedFile.readBytes().isNotEmpty()) {
                                     val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), dataFile.secretKey)
-                                    val thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
+                                    var thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
+
+                                    dataFile.exifOrientation?.let { thumbnail = ImageManager.rotateBitmap(thumbnail, it) }
 
                                     val stream = ByteArrayOutputStream()
                                     thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, stream)
