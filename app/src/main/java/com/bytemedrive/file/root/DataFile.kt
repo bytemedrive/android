@@ -14,6 +14,7 @@ data class DataFile(
     val secretKey: SecretKey,
     val thumbnails: MutableList<Thumbnail> = mutableListOf(),
     val checksum: String,
+    val exifOrientation: Int?,
 ) {
 
     data class Thumbnail(
