@@ -1,5 +1,6 @@
 package com.bytemedrive.signin
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -13,11 +14,11 @@ class SignInViewModel(private val signInManager: SignInManager) : ViewModel() {
 
     var password = MutableStateFlow(charArrayOf())
 
-    fun signIn(onFailure: () -> Job) = effect {
+    fun signIn(context: Context, onFailure: () -> Job) = viewModelScope.launch {
         val username = username.value.trim()
         val password = password.value
 
-        val successfulSignIn = signInManager.signIn(username, password)
+        val successfulSignIn = signInManager.signIn(username, password, context)
 
         if (!successfulSignIn) {
             onFailure()
@@ -33,6 +34,4 @@ class SignInViewModel(private val signInManager: SignInManager) : ViewModel() {
                 null
             }
         }
-
-    private fun effect(block: suspend () -> Unit) = viewModelScope.launch(Dispatchers.IO) { block() }
 }

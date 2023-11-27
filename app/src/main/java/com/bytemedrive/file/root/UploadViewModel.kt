@@ -22,8 +22,8 @@ class UploadViewModel(
             File.createTempFile(dataFileId.toString(), ".${documentFile.name?.split(".")?.last() ?: "bin"}", cacheDir)
         }
 
-        inputStream.use {
-            inputStream.copyTo(tmpOriginalFile.outputStream(), FileManager.BUFFER_SIZE_DEFAULT)
+        tmpOriginalFile.outputStream().use { outputStream ->
+            inputStream.use { inputStream -> inputStream.copyTo(outputStream, FileManager.BUFFER_SIZE_DEFAULT) }
         }
 
         queueFileUploadRepository.addFile(FileUpload(dataFileId, documentFile.name.orEmpty(), tmpOriginalFile.absolutePath, folderId))

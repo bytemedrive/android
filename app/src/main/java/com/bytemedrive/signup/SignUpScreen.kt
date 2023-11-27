@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +50,7 @@ fun SignUpScreen(
     signUpViewModel: SignUpViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject()
 ) {
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val username by signUpViewModel.username.collectAsState()
@@ -66,7 +68,7 @@ fun SignUpScreen(
         } else {
             val onFailure = { scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError("Username is already being used")) } }
 
-            signUpViewModel.signUp(onFailure)
+            signUpViewModel.signUp(context, onFailure)
         }
     }
 

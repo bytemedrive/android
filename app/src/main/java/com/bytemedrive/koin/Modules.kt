@@ -71,7 +71,7 @@ val accountModule = module {
     single { PricesRepository() }
     single { ServiceManager() }
     single { SignUpRepository() }
-    single { SignInManager(get(), get(), get(), get()) }
+    single { SignInManager(get(), get(), get(), get(), get()) }
     single { SignInRepository() }
     single { StoreRepository() }
     single { WalletRepository() }

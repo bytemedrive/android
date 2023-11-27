@@ -37,7 +37,6 @@ class ServiceFileUpload : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         createChannel()
-
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
         val notification = notificationBuilder(pendingIntent)
@@ -68,7 +67,7 @@ class ServiceFileUpload : Service() {
     }
 
     private suspend fun uploadFile(fileUpload: FileUpload) {
-        Log.i(TAG, "Started uploading ${fileUpload.id}")
+        Log.i(TAG, "Started uploading file id=${fileUpload.id}")
 
         val file = File(fileUpload.path)
 
@@ -85,9 +84,10 @@ class ServiceFileUpload : Service() {
             Log.w(TAG, "File upload canceled. File ${file.path} could not be found.")
         }
 
+        Log.i(TAG, "Removing file id=${fileUpload.id} from uploading queue")
         queueFileUploadRepository.deleteFile(fileUpload.id.toString())
 
-        Log.i(TAG, "Finished uploading ${fileUpload.id}")
+        Log.i(TAG, "Finished uploading file id=${fileUpload.id}")
     }
 
     private fun createChannel() {
