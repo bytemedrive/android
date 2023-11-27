@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -57,6 +58,7 @@ fun SignInScreen(
     signInViewModel: SignInViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject(),
 ) {
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val username by signInViewModel.username.collectAsState()
@@ -79,7 +81,7 @@ fun SignInScreen(
         } else {
             val onFailure = { scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError("Invalid credentials")) } }
 
-            signInViewModel.signIn(onFailure)
+            signInViewModel.signIn(context, onFailure)
         }
     }
 

@@ -1,6 +1,7 @@
 package com.bytemedrive.file.shared.bottomsheet
 
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,6 +48,8 @@ fun UploadFile(
 
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 
+        Log.i("Upload file", "Before adding to queue")
+
         uries.forEach { uri ->
             context.contentResolver.openInputStream(uri)?.let { inputStream ->
                 DocumentFile.fromSingleUri(context, uri)?.let { documentFile ->
@@ -54,6 +57,7 @@ fun UploadFile(
                 }
             }
         }
+        Log.i("Upload file", "After adding to queue")
 
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }

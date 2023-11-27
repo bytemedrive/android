@@ -1,5 +1,6 @@
 package com.bytemedrive.signup
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,7 +40,7 @@ class SignUpViewModel(
 
     val termsAndConditions = MutableStateFlow(false)
 
-    fun signUp(onFailure: () -> Job) = effect {
+    fun signUp(context: Context, onFailure: () -> Job) = effect {
         val username = username.value.trim()
         val password = password.value
         val usernameSha3 = ShaService.hashSha3(username)
@@ -54,7 +55,7 @@ class SignUpViewModel(
 
             signUpRepository.signUp(usernameSha3, customerSignUp)
             walletRepository.createWallet(walletId)
-            signInManager.signInSuccess(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey))
+            signInManager.signInSuccess(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey), context)
 
             val eventSignUp = EventCustomerSignedUp(username, walletId, ZonedDateTime.now())
 

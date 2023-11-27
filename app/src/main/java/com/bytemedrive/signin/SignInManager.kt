@@ -1,11 +1,13 @@
 package com.bytemedrive.signin
 
+import android.content.Context
 import android.util.Log
 import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.application.networkStatus
 import com.bytemedrive.database.DatabaseManager
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
+import com.bytemedrive.service.ServiceManager
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.CustomerAggregate
 import com.bytemedrive.store.EncryptionAlgorithm
@@ -27,7 +29,8 @@ class SignInManager(
     private val signInRepository: SignInRepository,
     private val walletRepository: WalletRepository,
     private val eventSyncService: EventSyncService,
-    private val databaseManager: DatabaseManager
+    private val databaseManager: DatabaseManager,
+    private val serviceManager: ServiceManager
 ) {
 
     private val TAG = SignInManager::class.qualifiedName
@@ -35,21 +38,21 @@ class SignInManager(
     private var jobSync: Job? = null
     private var jobPolling: Job? = null
 
-    fun autoSignIn() {
+    fun autoSignIn(context: Context) {
         val username = encryptedSharedPreferences.username
         val credentialsSha3 = encryptedSharedPreferences.credentialsSha3
         val eventsSecretKey = encryptedSharedPreferences.getEventsSecretKey(EncryptionAlgorithm.AES256)
 
         if (username != null && credentialsSha3 != null && eventsSecretKey != null) {
             Log.i(TAG, "Try autologin for username: $username")
-            signInSuccess(username, credentialsSha3, eventsSecretKey)
+            signInSuccess(username, credentialsSha3, eventsSecretKey, context)
         } else {
             Log.i(TAG, "Autologin not possible")
             signOut()
         }
     }
 
-    suspend fun signIn(username: String, password: CharArray): Boolean {
+    suspend fun signIn(username: String, password: CharArray, context: Context): Boolean {
         try {
             val usernameSha3 = ShaService.hashSha3(username)
             val credentialsSha3 = ShaService.hashSha3("${username}:${password.concatToString()}")
@@ -67,7 +70,8 @@ class SignInManager(
                 signInSuccess(
                     username,
                     credentialsSha3,
-                    EventsSecretKey(eventsSecretKey.id, eventsSecretKey.algorithm, Base64.getEncoder().encodeToString(secretKeyAsBytes))
+                    EventsSecretKey(eventsSecretKey.id, eventsSecretKey.algorithm, Base64.getEncoder().encodeToString(secretKeyAsBytes)),
+                    context
                 )
 
                 true
@@ -80,7 +84,7 @@ class SignInManager(
         }
     }
 
-    fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey) {
+    fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey, context: Context) {
         encryptedSharedPreferences.username = username
         encryptedSharedPreferences.credentialsSha3 = credentialsSha3
         encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
@@ -95,6 +99,7 @@ class SignInManager(
         }
         startEventAutoSync()
         startPollingData()
+        serviceManager.startServices(context)
     }
 
     fun signOut() {

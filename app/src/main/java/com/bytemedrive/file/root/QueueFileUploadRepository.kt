@@ -1,5 +1,6 @@
 package com.bytemedrive.file.root
 
+import android.util.Log
 import com.bytemedrive.database.DatabaseManager
 import com.bytemedrive.database.FileUpload
 import com.couchbase.lite.Collection
@@ -35,6 +36,8 @@ class QueueFileUploadRepository(private val databaseManager: DatabaseManager) {
     }.orEmpty()
 
     fun addFile(fileUpload: FileUpload) = databaseManager.getCollectionFileUpload()?.let { collection ->
+        Log.i(TAG, "Adding file ${fileUpload.name} to uploading queue")
+
         val document = MutableDocument(fileUpload.id.toString()).let {
             it.setString("name", fileUpload.name)
             it.setString("path", fileUpload.path)
@@ -44,11 +47,7 @@ class QueueFileUploadRepository(private val databaseManager: DatabaseManager) {
         collection.save(document)
     }
 
-    fun deleteFile(documentId: String) = databaseManager.getCollectionFileUpload()?.let { collection ->
-        collection.getDocument(documentId)?.let { document ->
-            collection.delete(document)
-        }
-    }
+    fun deleteFile(documentId: String) = databaseManager.getCollectionFileUpload()?.purge(documentId)
 
     private fun queryFileUpload(collection: Collection) = QueryBuilder
         .select(

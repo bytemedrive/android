@@ -61,7 +61,6 @@ class FileViewModel(
     init {
         getThumbnails(context)
         watchFilesToUpload()
-        serviceManager.startServices(context)
     }
 
     fun clickFileAndFolder(item: Item) {
@@ -250,9 +249,11 @@ class FileViewModel(
     }
 
     private fun getThumbnails(context: Context) = viewModelScope.launch {
-        thumbnails.value = dataFileLinks.value.associate { dataFileLink ->
-            dataFileLink.id to findThumbnailForDataFileLink(dataFileLink, context)
-        }
+        thumbnails.value = dataFileLinks.value.mapNotNull { dataFileLink ->
+            findThumbnailForDataFileLink(dataFileLink, context)?.let { thumbnails ->
+                dataFileLink.id to thumbnails
+            }
+        }.toMap()
     }
 
     private fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, context: Context): Bitmap? {

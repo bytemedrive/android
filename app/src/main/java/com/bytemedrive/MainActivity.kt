@@ -22,6 +22,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        get<SignInManager>().autoSignIn()
+        get<SignInManager>().autoSignIn(this)
     }
 }
