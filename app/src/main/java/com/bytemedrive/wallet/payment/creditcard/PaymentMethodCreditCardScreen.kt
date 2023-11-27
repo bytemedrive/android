@@ -59,9 +59,7 @@ fun PaymentMethodCreditCardScreen(
         }
     )
     clientSecret?.let {
-        Log.i(TAG, "Creating payment intent Args")
         val args = PaymentSheetContract.Args.createPaymentIntentArgs(it)
-        Log.i(TAG, "Launching stripe launcher")
         stripeLauncher.launch(args)
         paymentMethodCreditCardViewModel.onPaymentLaunched()
     }

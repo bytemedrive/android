@@ -33,7 +33,6 @@ class PaymentMethodCreditCardViewModel(private val walletRepository: WalletRepos
     }
 
     fun onPaymentLaunched() {
-        Log.i(TAG, "Called on payment launched")
         confirmPaymentParams.update { null }
     }
 
