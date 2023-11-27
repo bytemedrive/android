@@ -65,7 +65,7 @@ class Application : android.app.Application() {
         encryptedSharedPreferences = EncryptedPrefs(applicationContext, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC))
 
         val stripePublishableKey =
-            if (sharedPreferences?.backendUrl == "https://api.bytemedrive.com")
+            if (sharedPreferences?.backendUrl?.startsWith("https://api.bytemedrive.com") == true)
                 BuildConfig.STRIPE_PUBLISHABLE_KEY_LIVE
             else BuildConfig.STRIPE_PUBLISHABLE_KEY_TEST
 

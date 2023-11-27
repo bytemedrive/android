@@ -1,5 +1,6 @@
 package com.bytemedrive.wallet.payment.creditcard
 
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ fun PaymentMethodCreditCardScreen(
     paymentMethodCreditCardViewModel: PaymentMethodCreditCardViewModel = koinViewModel(),
     appNavigator: AppNavigator = get(),
 ) {
+    val TAG = "PaymentMethodCreditCardScreen"
     val context = LocalContext.current
     val clientSecret by paymentMethodCreditCardViewModel.clientSecret.collectAsState()
 
@@ -57,7 +59,9 @@ fun PaymentMethodCreditCardScreen(
         }
     )
     clientSecret?.let {
+        Log.i(TAG, "Creating payment intent Args")
         val args = PaymentSheetContract.Args.createPaymentIntentArgs(it)
+        Log.i(TAG, "Launching stripe launcher")
         stripeLauncher.launch(args)
         paymentMethodCreditCardViewModel.onPaymentLaunched()
     }
