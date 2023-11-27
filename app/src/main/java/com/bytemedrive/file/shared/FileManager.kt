@@ -3,12 +3,12 @@ package com.bytemedrive.file.shared
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
-import android.media.ExifInterface
 import android.media.ThumbnailUtils
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.webkit.MimeTypeMap
+import androidx.exifinterface.media.ExifInterface
 import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.DataFileLink

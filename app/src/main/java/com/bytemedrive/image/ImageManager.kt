@@ -2,8 +2,8 @@ package com.bytemedrive.image
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import androidx.exifinterface.media.ExifInterface
 
-import android.media.ExifInterface
 import java.io.IOException
 
 class ImageManager {
