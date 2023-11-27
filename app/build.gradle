@@ -177,10 +177,22 @@ task setVersionName {
     }
 }
 
-task incrementVersionCode {
+task printVersionCode {
     doLast {
+        println(android.defaultConfig.versionCode)
+    }
+}
+
+task setVersionCode {
+    doLast {
+        if (!project.hasProperty("versionCode")) {
+            println("Missing `versionCode` parameter")
+
+            return
+        }
+
         ant.propertyfile(file: "../gradle.properties") {
-            entry(key: "VERSION_CODE", value: "${android.defaultConfig.versionCode + 1}")
+            entry(key: "VERSION_CODE", value: "${project.property("versionCode")}")
         }
     }
 }
