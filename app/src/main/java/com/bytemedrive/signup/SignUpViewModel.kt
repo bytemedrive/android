@@ -68,13 +68,13 @@ class SignUpViewModel(
         }
     }
 
-    fun validateForm(): String? = when {
+    fun validateForm(): String = when {
         (username.value.length !in USERNAME_MIN_LENGTH..USERNAME_MAX_LENGTH) -> "Username should be from 1 to 64 characters"
         (username.value.contains(" ")) -> "Username should be without spaces"
         (password.value.size < PASSWORD_MIN_LENGTH) -> "Password should have at least 8 characters"
         (!password.value.contentEquals(passwordConfirm.value)) -> "Passwords do not match. Try again"
         (!termsAndConditions.value) -> "Terms and conditions are required"
-        else -> null
+        else -> ""
     }
 
     private fun effect(block: suspend () -> Unit) = viewModelScope.launch(Dispatchers.IO) { block() }

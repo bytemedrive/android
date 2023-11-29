@@ -62,13 +62,13 @@ fun SignUpScreen(
     val signUpHandler = {
         val validation = signUpViewModel.validateForm()
 
-        if (validation?.isNotEmpty() == true) {
-            // TODO: Use another way to show errors -> directly at the fields
-            scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError(validation, true)) }
-        } else {
+        if (validation.isEmpty()) {
             val onFailure = { scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError("Username is already being used")) } }
 
             signUpViewModel.signUp(context, onFailure)
+        } else {
+            // TODO: Use another way to show errors -> directly at the fields
+            scope.launch { snackbarHostState.showSnackbar(SnackbarVisualsWithError(validation, true)) }
         }
     }
 
