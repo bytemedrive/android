@@ -82,7 +82,7 @@ fun FileBottomSheetContextFolder(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItems(folder.id) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItems(folder.id, folderId) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.FolderCopy,
@@ -95,7 +95,7 @@ fun FileBottomSheetContextFolder(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(folder.id) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(folder.id, folderId) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.DriveFileMove,

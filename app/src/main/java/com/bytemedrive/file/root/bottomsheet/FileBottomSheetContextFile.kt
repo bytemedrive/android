@@ -105,7 +105,7 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItems(dataFileLink.id) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToCopyItems(dataFileLink.id, dataFileLink.folderId) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.FileCopy,
@@ -118,7 +118,7 @@ fun FileBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(dataFileLink.id) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(dataFileLink.id, dataFileLink.folderId) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.DriveFileMove,
