@@ -30,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -48,11 +47,10 @@ import com.bytemedrive.file.root.Action
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.navigation.AppNavigator
-import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileSelectionDialog(
     fileSelectionViewModel: FileSelectionViewModel = koinViewModel(),
@@ -60,19 +58,16 @@ fun FileSelectionDialog(
     appNavigator: AppNavigator = koinInject(),
 ) {
     val action by fileViewModel.action.collectAsState()
-    val folders by fileSelectionViewModel.folders.collectAsState()
-    val selectedFolderId by fileSelectionViewModel.selectedFolderId.collectAsState()
+    val selectedFolder by fileSelectionViewModel.selectedFolder.collectAsState()
     val fileAndFolderListPaging = fileSelectionViewModel.getFilesPages().collectAsLazyPagingItems()
-    val folder = folders.find { it.id == selectedFolderId }
-    val innerFolder = folder != null
-    val title = folder?.name ?: "My drive"
+    val title = selectedFolder?.name ?: "My drive"
     val closeDialog = {
         fileViewModel.fileSelectionDialogOpened.value = false
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
-    LaunchedEffect(selectedFolderId) {
-        fileSelectionViewModel.updateFileAndFolderList(selectedFolderId)
+    LaunchedEffect(selectedFolder) {
+        fileSelectionViewModel.updateFileAndFolderList(selectedFolder?.id)
     }
 
     DisposableEffect("unmount") {
@@ -124,19 +119,29 @@ fun FileSelectionDialog(
                     }
 
                     when (action?.type) {
-                        Action.Type.CopyItems -> Button(onClick = {
-                            action?.let { action_ ->
-                                fileSelectionViewModel.copyItem(action_, selectedFolderId, closeDialog)
-                            }
-                        }) { Text(text = "Select") }
-                        Action.Type.MoveItems -> Button(onClick = {
-                            action?.let { action_ ->
-                                selectedFolderId?.let { selectedFolderId_ ->
-                                    fileSelectionViewModel.moveItems(action_, selectedFolderId_, closeDialog)
+                        Action.Type.CopyItems -> {
+                            Button(onClick = {
+                                action?.let { action_ ->
+                                    fileSelectionViewModel.copyItem(action_, selectedFolder?.id, closeDialog)
                                 }
-                            }
-                        }, enabled = innerFolder) { Text(text = "Move") }
-                        else -> Log.w("FileSelectionDialog", "Action type ${action?.type} should be implemented")
+                            }) { Text(text = "Copy here") }
+                        }
+                        Action.Type.MoveItems -> {
+                            val moveToRootFolder = selectedFolder?.id == null && action?.folderId != null
+                            val moveToDifferentFolder = selectedFolder?.id != action?.folderId
+                            val moveEnabled = moveToRootFolder || moveToDifferentFolder
+
+                            Button(onClick = {
+                                action?.let { action_ ->
+                                    selectedFolder?.id?.let { selectedFolderId_ ->
+                                        fileSelectionViewModel.moveItems(action_, selectedFolderId_, closeDialog)
+                                    }
+                                }
+                            }, enabled = moveEnabled) { Text(text = "Move here") }
+                        }
+                        else -> {
+                            Log.w("FileSelectionDialog", "Action type ${action?.type} should be implemented")
+                        }
                     }
                 }
             }

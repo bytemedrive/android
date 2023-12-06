@@ -217,17 +217,17 @@ class FileViewModel(
             pagingSourceFactory = { FilePagingSource(items) }
         ).flow
 
-    fun useSelectionScreenToMoveItems(id: UUID) = useSelectionScreenToMoveItems(listOf(id))
+    fun useSelectionScreenToMoveItems(id: UUID, folderId: UUID?) = useSelectionScreenToMoveItems(listOf(id), folderId)
 
-    fun useSelectionScreenToMoveItems(ids: List<UUID>) {
-        action.value = Action(ids, Action.Type.MoveItems)
+    fun useSelectionScreenToMoveItems(ids: List<UUID>, folderId: UUID?) {
+        action.value = Action(ids, Action.Type.MoveItems, folderId)
         fileSelectionDialogOpened.value = true
     }
 
-    fun useSelectionScreenToCopyItems(id: UUID) = useSelectionScreenToCopyItems(listOf(id))
+    fun useSelectionScreenToCopyItems(id: UUID, folderId: UUID?) = useSelectionScreenToCopyItems(listOf(id), folderId)
 
-    fun useSelectionScreenToCopyItems(ids: List<UUID>) {
-        action.value = Action(ids, Action.Type.CopyItems)
+    fun useSelectionScreenToCopyItems(ids: List<UUID>, folderId: UUID?) {
+        action.value = Action(ids, Action.Type.CopyItems, folderId)
         fileSelectionDialogOpened.value = true
     }
 
@@ -275,7 +275,7 @@ class FileViewModel(
     }
 }
 
-data class Action(val ids: List<UUID>, val type: Type) {
+data class Action(val ids: List<UUID>, val type: Type, val folderId: UUID?) {
     enum class Type(type: String) {
         CopyItems("copyItems"),
         MoveItems("moveItems")

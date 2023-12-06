@@ -28,7 +28,7 @@ import java.util.UUID
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBarFile(
-    folder: UUID? = null,
+    folderId: UUID? = null,
     toggleNav: suspend () -> Unit,
     fileViewModel: FileViewModel = koinInject(),
 ) {
@@ -62,7 +62,7 @@ fun TopBarFile(
                 },
                 actions = {
                     IconButton(onClick = {
-                        fileViewModel.useSelectionScreenToCopyItems(itemsSelected.map { it.id })
+                        fileViewModel.useSelectionScreenToCopyItems(itemsSelected.map { it.id }, folderId)
                         fileViewModel.clearSelectedItems()
                     }) {
                         Icon(
@@ -71,7 +71,7 @@ fun TopBarFile(
                         )
                     }
                     IconButton(onClick = {
-                        fileViewModel.useSelectionScreenToMoveItems(itemsSelected.map { it.id })
+                        fileViewModel.useSelectionScreenToMoveItems(itemsSelected.map { it.id }, folderId)
                         fileViewModel.clearSelectedItems()
                     }) {
                         Icon(
@@ -103,7 +103,7 @@ fun TopBarFile(
                 }
             )
         }
-        folder != null -> TopBarAppContentBack()
+        folderId != null -> TopBarAppContentBack()
         else -> TopBarAppContent(toggleNav)
     }
 
