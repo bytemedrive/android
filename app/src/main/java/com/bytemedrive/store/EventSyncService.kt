@@ -42,15 +42,21 @@ class EventSyncService(private val storeRepository: StoreRepository, private val
     suspend fun addEvents(vararg events: EventObjectWrapper) {
         val allEvents = encryptedSharedPreferences.storeEvent(*events)
 
-        if (allEvents.isNotEmpty()) {
+        if (allEvents.isNotEmpty() && AppState.customer.value == null) {
+            Log.i(TAG, "Recreating CustomerAggregate with ${allEvents.size} events.")
             val customer = CustomerAggregate()
 
             allEvents.stream().forEach { it.data.convert(customer) }
             customer.balanceGbm = walletRepository.getWallet(customer.wallet!!).balanceGbm
 
-            Log.i(TAG, "Customer refreshed.")
+            Log.i(TAG, "Customer recreated.")
             AppState.customer.value = customer
             AppState.authorized.value = true
+        } else if(events.isNotEmpty() && AppState.customer.value != null) {
+            Log.i(TAG, "Adding up to existing CustomerAggregate instance ${events.size} events.")
+            events.toList().stream().forEach{ it.data.convert(AppState.customer.value!!) }
+            AppState.customer.value!!.balanceGbm = walletRepository.getWallet(AppState.customer.value!!.wallet!!).balanceGbm
+            Log.i(TAG, "Customer updated.")
         }
     }
 }
