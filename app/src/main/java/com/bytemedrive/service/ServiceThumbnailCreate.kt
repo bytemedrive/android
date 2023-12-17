@@ -35,7 +35,7 @@ class ServiceThumbnailCreate : Service() {
         serviceScope.launch {
             while (true) {
                 withContext(Dispatchers.IO) {
-                    Log.i(TAG, "Checking whether there are missing thumbnails to be created.")
+
                     AppState.customer?.dataFiles?.value?.forEach { dataFile ->
                         Log.i(TAG, "File chunk view ids=${dataFile.chunksViewIds} has ${dataFile.thumbnails.size} thumbnails.")
 

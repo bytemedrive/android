@@ -32,7 +32,6 @@ class ServiceThumbnailDownload : Service() {
         serviceScope.launch {
             while (true) {
                 withContext(Dispatchers.IO) {
-                    Log.i(TAG, "Checking whether there are missing thumbnails to be downloaded.")
                     val fileList = applicationContext.fileList()
 
                     AppState.customer?.dataFiles?.value?.forEach { dataFile ->
