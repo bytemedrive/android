@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
+import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -34,9 +35,9 @@ fun PaymentMethodCryptoAmountScreen(
     appNavigator: AppNavigator = koinInject(),
 ) {
 
-    LaunchedEffect("initialize") {
-        AppState.title.value = "Monero payment"
-        AppState.topBarComposable.value = { TopBarAppContentBack() }
+    LaunchedEffect(Unit) {
+        AppState.title.update { "Monero payment" }
+        AppState.topBarComposable.update { { TopBarAppContentBack() } }
     }
 
     val amount by paymentMethodCryptoAmountViewModel.amount.collectAsState()
@@ -50,9 +51,9 @@ fun PaymentMethodCryptoAmountScreen(
             OutlinedTextField(
                 modifier = Modifier.weight(3f).padding(end = 8.dp),
                 value = if (amount == null) "" else amount.toString(),
-                onValueChange = {
-                    if (it.matches(Regex("\\d*"))) {
-                        paymentMethodCryptoAmountViewModel.amount.value = it.toIntOrNull()
+                onValueChange = {value ->
+                    if (value.matches(Regex("\\d*"))) {
+                        paymentMethodCryptoAmountViewModel.amount.update {  value.toIntOrNull() }
                     }
                 },
                 label = { Text(text = "Storage amount (GBM)") },

@@ -43,8 +43,8 @@ class FileManager(
     private val TAG = FileManager::class.qualifiedName
 
     suspend fun downloadFile(dataFileLinkId: UUID) =
-        AppState.customer.value?.dataFilesLinks?.find { it.id == dataFileLinkId }?.let { dataFileLink ->
-            AppState.customer.value?.dataFiles?.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
+        AppState.customer!!.dataFilesLinks.value.find { it.id == dataFileLinkId }?.let { dataFileLink ->
+            AppState.customer!!.dataFiles.value.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
                 val contentResolver = context.contentResolver
                 val contentValues = ContentValues().apply {
                     put(MediaStore.Downloads.DISPLAY_NAME, dataFileLink.name)
@@ -65,7 +65,7 @@ class FileManager(
         val tmpOriginalFile = File(file.path)
 
         val checksum = ShaService.checksum(tmpOriginalFile.inputStream())
-        val sameDataFile = AppState.customer.value?.dataFiles?.find { it.checksum == checksum }
+        val sameDataFile = AppState.customer!!.dataFiles.value.find { it.checksum == checksum }
 
         if (sameDataFile != null) {
             eventPublisher.publishEvent(EventFileCopied(sameDataFile.id, UUID.randomUUID(), folder, "Copy of ${sameDataFile.name}"))
@@ -83,7 +83,7 @@ class FileManager(
 
             Log.i(TAG, "File ${file.name} split into ${chunks.size} chunks")
 
-            AppState.customer.value?.wallet?.let { wallet ->
+            AppState.customer?.wallet?.let { wallet ->
                 fileRepository.upload(wallet, chunks)
                 eventPublisher.publishEvent(
                     EventFileUploaded(
@@ -147,7 +147,7 @@ class FileManager(
 
         val chunks = getChunks(tmpEncryptedFile, directory)
 
-        AppState.customer.value?.wallet?.let { wallet ->
+        AppState.customer?.wallet?.let { wallet ->
             eventPublisher.publishEvent(
                 EventThumbnailUploaded(
                     sourceDataFileId,

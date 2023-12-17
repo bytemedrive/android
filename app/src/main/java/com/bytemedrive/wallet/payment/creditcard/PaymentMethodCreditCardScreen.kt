@@ -1,6 +1,5 @@
 package com.bytemedrive.wallet.payment.creditcard
 
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +25,7 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import com.stripe.android.paymentsheet.PaymentSheetContract
+import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 
@@ -66,9 +66,9 @@ fun PaymentMethodCreditCardScreen(
 
     val gbm by paymentMethodCreditCardViewModel.gbm.collectAsState()
 
-    LaunchedEffect("initialize") {
-        AppState.title.value = "Add credit - credit card"
-        AppState.topBarComposable.value = { TopBarAppContentBack() }
+    LaunchedEffect(Unit) {
+        AppState.title.update { "Add credit - credit card" }
+        AppState.topBarComposable.update { { TopBarAppContentBack() } }
     }
 
     Column(
@@ -77,9 +77,9 @@ fun PaymentMethodCreditCardScreen(
     ) {
         OutlinedTextField(
             value = gbm,
-            onValueChange = {
-                if (REGEX_NUMBER_DECIMAL.matches(it)) {
-                    paymentMethodCreditCardViewModel.gbm.value = it
+            onValueChange = { value ->
+                if (REGEX_NUMBER_DECIMAL.matches(value)) {
+                    paymentMethodCreditCardViewModel.gbm.update { value }
                 }
             },
             label = { Text("Gigabytes per month (GBM)") },

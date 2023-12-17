@@ -38,8 +38,8 @@ import com.bytemedrive.navigation.SnackbarVisualsWithError
 import com.bytemedrive.signup.SignUpViewModel
 import com.bytemedrive.ui.component.FieldCheckbox
 import com.bytemedrive.ui.component.FieldPassword
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -96,7 +96,7 @@ fun SignUpScreen(
         )
         OutlinedTextField(
             value = username,
-            onValueChange = { signUpViewModel.username.value = it },
+            onValueChange = { value -> signUpViewModel.username.update { value } },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
@@ -106,7 +106,7 @@ fun SignUpScreen(
         )
         FieldPassword(
             value = password,
-            onValueChange = { signUpViewModel.password.value = it },
+            onValueChange = { value -> signUpViewModel.password.update { value } },
             label = "Password",
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -114,7 +114,7 @@ fun SignUpScreen(
         )
         FieldPassword(
             value = passwordConfirm,
-            onValueChange = { signUpViewModel.passwordConfirm.value = it },
+            onValueChange = { value -> signUpViewModel.passwordConfirm.update { value } },
             label = "Password confirm",
             modifier = Modifier.fillMaxWidth(),
             showEye = false,
@@ -129,7 +129,7 @@ fun SignUpScreen(
             modifier = Modifier.padding(vertical = 12.dp),
             key = "termsAndConditions",
             checked = termsAndConditions,
-            onChangeValue = { _, checked -> signUpViewModel.termsAndConditions.value = checked }
+            onChangeValue = { _, checked -> signUpViewModel.termsAndConditions.update { checked } }
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Agree to our")

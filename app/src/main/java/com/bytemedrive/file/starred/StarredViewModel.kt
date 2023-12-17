@@ -23,6 +23,8 @@ import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -34,10 +36,8 @@ class StarredViewModel(
     private val folderManager: FolderManager
 ) : ViewModel() {
 
-    var dataFileLinks = MutableStateFlow(AppState.customer.value!!.dataFilesLinks)
-    var folders = MutableStateFlow(AppState.customer.value!!.folders)
-
     var list = MutableStateFlow(listOf<Item>())
+
     var starred = MutableStateFlow(listOf<Item>())
 
     val itemsSelected = MutableStateFlow(emptyList<Item>())
@@ -45,14 +45,7 @@ class StarredViewModel(
     val dataFilePreview = MutableStateFlow<DataFile?>(null)
 
     init {
-        viewModelScope.launch {
-            AppState.customer.collectLatest { customer ->
-                val folders = customer?.folders?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }.orEmpty().toMutableList()
-                val dataFileLinks = customer?.dataFilesLinks?.filter { it.starred }?.map { Item(it.id, it.name, ItemType.File, it.starred, false) }.orEmpty().toMutableList()
-
-                starred.value = folders + dataFileLinks
-            }
-        }
+        watchItems()
     }
 
     fun clickFileAndFolder(item: Item) {
@@ -65,11 +58,11 @@ class StarredViewModel(
                 ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
 
                 ItemType.File -> {
-                    AppState.customer.value?.dataFilesLinks?.find { it.id == item.id }?.let { dataFileLink ->
-                        val dataFile = AppState.customer.value?.dataFiles?.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
+                    AppState.customer!!.dataFilesLinks.value.find { it.id == item.id }?.let { dataFileLink ->
+                        val dataFile = AppState.customer!!.dataFiles.value.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
 
                         if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
-                            dataFilePreview.value = dataFile
+                            dataFilePreview.update { dataFile }
                         }
                     }
                 }
@@ -77,22 +70,25 @@ class StarredViewModel(
         }
     }
 
-    fun longClickFileAndFolder(item: Item) {
-        itemsSelected.value = if (itemsSelected.value.contains(item)) {
-            itemsSelected.value - item
-        } else {
-            itemsSelected.value + item
+    fun longClickFileAndFolder(item: Item) =
+        itemsSelected.update {
+            if (it.contains(item)) {
+                itemsSelected.value - item
+            } else {
+                itemsSelected.value + item
+            }
         }
-    }
 
-    fun clearSelectedItems() {
-        itemsSelected.value = emptyList()
-    }
+
+    fun clearSelectedItems() = itemsSelected.update { emptyList() }
 
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
-        AppState.customer.value?.wallet?.let { walletId ->
+        val dataFileLinks = AppState.customer!!.dataFilesLinks
+        val folders = AppState.customer!!.folders
+
+        AppState.customer?.wallet?.let { walletId ->
             dataFileLinks.value.filter { ids.contains(it.id) }.map { file ->
-                val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id }
 
                 if (physicalFileRemovable) {
                     fileRepository.remove(walletId, file.id)
@@ -103,7 +99,7 @@ class StarredViewModel(
 
             folders.value.filter { ids.contains(it.id) }.map { folder ->
                 fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).map { file ->
-                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id }
 
                     if (physicalFileRemovable) {
                         fileRepository.remove(walletId, file.id)
@@ -125,10 +121,26 @@ class StarredViewModel(
 
     fun toggleAllItems(context: Context) {
         if (itemsSelected.value.size == starred.value.size) {
-            itemsSelected.value = emptyList()
+            itemsSelected.update { emptyList() }
         } else {
-            itemsSelected.value = starred.value
+            itemsSelected.update { starred.value }
             Toast.makeText(context, "${starred.value.size} items selected", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun watchItems() = viewModelScope.launch {
+        combine(AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { folders, dataFileLinks ->
+            val tempFolders = folders
+                .filter { it.starred }
+                .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
+
+            val tempFileLinks = dataFileLinks
+                .filter { it.starred }
+                .map { Item(it.id, it.name, ItemType.File, it.starred, false) }
+
+            tempFolders + tempFileLinks
+        }.collectLatest { items ->
+            starred.update { items }
         }
     }
 }

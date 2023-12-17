@@ -21,6 +21,8 @@ import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.max
@@ -29,41 +31,29 @@ class FileSelectionViewModel(
     private val eventPublisher: EventPublisher,
     private val folderManager: FolderManager
 ) : ViewModel() {
+
     val selectedFolder = MutableStateFlow<Folder?>(null)
 
     private var fileAndFolderList = MutableStateFlow(listOf<Item>())
 
     private val history = MutableStateFlow(emptyList<UUID>())
 
-    fun openFolder(id: UUID?) {
-        selectedFolder.value = AppState.customer.value!!.folders.find { it.id == id }
-        updateFileAndFolderList(id)
+    init {
+        watchFileAndFolderList()
     }
 
-    fun addToHistory(id: UUID) {
-        history.value = history.value + id
-    }
+    fun openFolder(id: UUID?) =
+        selectedFolder.update { AppState.customer!!.folders.value.find { it.id == id } }
+
+    fun addToHistory(id: UUID) =
+        history.update { it + id }
 
     fun goBack(closeDialog: () -> Unit) {
         if (history.value.lastOrNull() == null) {
             closeDialog()
         } else {
-            history.value = history.value.subList(0, max(0, history.value.size - 1))
+            history.update { it.subList(0, max(0, history.value.size - 1)) }
             openFolder(history.value.lastOrNull())
-        }
-    }
-
-    fun updateFileAndFolderList(folderId: UUID?) = viewModelScope.launch {
-        AppState.customer.collectLatest { customer ->
-            val tempFolders = customer?.folders
-                ?.filter { folder -> folder.parent == folderId }
-                ?.map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }.orEmpty()
-
-            val tempFiles = customer?.dataFilesLinks
-                ?.filter { dataFileLink -> dataFileLink.folderId == folderId }
-                ?.map { Item(it.id, it.name, ItemType.File, it.starred, false) }.orEmpty()
-
-            fileAndFolderList.value = tempFolders + tempFiles
         }
     }
 
@@ -75,7 +65,7 @@ class FileSelectionViewModel(
 
     // TODO: Rework with use of recursive function to have single iteration
     fun copyItem(action: Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
-        val folders = AppState.customer.value!!.folders
+        val folders = AppState.customer!!.folders.value
 
         folders.filter { folder -> action.ids.contains(folder.id) }.forEach { folder ->
             val currentFolderToCopy = folder.copy(id = UUID.randomUUID(), name = "Copy of ${folder.name}", parent = folderId)
@@ -96,7 +86,7 @@ class FileSelectionViewModel(
             eventPublisher.publishEvent(EventFolderCopied(folder.id, currentFolderToCopy.id, currentFolderToCopy.parent))
         }
 
-        AppState.customer.value!!.dataFilesLinks.filter { file -> action.ids.contains(file.id) }.forEach { file ->
+        AppState.customer!!.dataFilesLinks.value.filter { file -> action.ids.contains(file.id) }.forEach { file ->
             eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}"))
         }
 
@@ -105,9 +95,9 @@ class FileSelectionViewModel(
     }
 
     fun moveItems(action: Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
-        val customer = AppState.customer.value!!
-        val selectedFolders = customer.folders.filter { folder -> action.ids.contains(folder.id) }
-        val selectedFiles = customer.dataFilesLinks.filter { file -> action.ids.contains(file.id) }
+        val customer = AppState.customer!!
+        val selectedFolders = customer.folders.value.filter { folder -> action.ids.contains(folder.id) }
+        val selectedFiles = customer.dataFilesLinks.value.filter { file -> action.ids.contains(file.id) }
 
         selectedFolders.forEach { eventPublisher.publishEvent(EventFolderMoved(it.id, folderId)) }
         selectedFiles.forEach { eventPublisher.publishEvent(EventFileMoved(it.id, folderId)) }
@@ -116,21 +106,37 @@ class FileSelectionViewModel(
         closeDialog()
     }
 
+    private fun watchFileAndFolderList() = viewModelScope.launch {
+        combine(selectedFolder, AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { selectedFolder, folders, dataFileLinks ->
+            val tempFolders = folders
+                .filter { folder -> folder.parent == selectedFolder?.id }
+                .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
+
+            val tempFileLinks = dataFileLinks
+                .filter { dataFileLink -> dataFileLink.folderId == selectedFolder?.id }
+                .map { Item(it.id, it.name, ItemType.File, it.starred, false) }
+
+            tempFolders + tempFileLinks
+        }.collectLatest { items ->
+            fileAndFolderList.update { items }
+        }
+    }
+
     private suspend fun copyFolders(currentFolderId: UUID, newFolderId: UUID) {
-        AppState.customer.value!!.folders.filter { it.parent == currentFolderId }.forEach {
+        AppState.customer!!.folders.value.filter { it.parent == currentFolderId }.forEach {
             eventPublisher.publishEvent(EventFolderCopied(it.id, parentId = newFolderId))
         }
     }
 
     private suspend fun copyFiles(currentFolderId: UUID, newFolderId: UUID?) {
-        AppState.customer.value!!.dataFilesLinks.filter { it.folderId == currentFolderId }.forEach { dataFileLink ->
-            AppState.customer.value!!.dataFiles.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
+        AppState.customer!!.dataFilesLinks.value.filter { it.folderId == currentFolderId }.forEach { dataFileLink ->
+            AppState.customer!!.dataFiles.value.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
                 eventPublisher.publishEvent(EventFileCopied(dataFile.id, UUID.randomUUID(), newFolderId, dataFile.name))
             }
         }
     }
 
-    private fun clearFileSelection() {
-        selectedFolder.value = null
-    }
+    private fun clearFileSelection() =
+        selectedFolder.update { null }
+
 }

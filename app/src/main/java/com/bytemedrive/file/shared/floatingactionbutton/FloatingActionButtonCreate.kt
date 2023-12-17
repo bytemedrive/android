@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.AppNavigator
-import org.koin.androidx.compose.get
 import org.koin.compose.koinInject
 import java.util.UUID
 

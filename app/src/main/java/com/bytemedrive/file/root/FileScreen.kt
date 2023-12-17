@@ -55,6 +55,7 @@ import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.file.shared.selection.FileSelectionDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
+import kotlinx.coroutines.flow.update
 import org.koin.compose.koinInject
 import java.util.UUID
 
@@ -77,22 +78,22 @@ fun FileScreen(
     val dataFilePreview by fileViewModel.dataFilePreview.collectAsState()
     val fileSelectionDialogOpened by fileViewModel.fileSelectionDialogOpened.collectAsState()
 
-    LaunchedEffect("initialize") {
+    LaunchedEffect(Unit) {
         requestPermissions(context)
-        fileViewModel.updateItems(folderId, context)
+        fileViewModel.selectedFolder.update { AppState.customer!!.folders.value.find { it.id == folderId } }
 
-        AppState.topBarComposable.value = { TopBarFile(folderId, it) }
+        AppState.topBarComposable.update { { toggleNav -> TopBarFile(folderId, toggleNav) } }
 
         if (folderId == null) {
-            AppState.title.value = "My files"
+            AppState.title.update { "My files" }
         } else {
             fileViewModel.singleFolder(folderId)?.let { folder ->
-                AppState.title.value = folder.name
+                AppState.title.update { folder.name }
             }
         }
     }
 
-    DisposableEffect("unmount") {
+    DisposableEffect(Unit) {
         onDispose {
             fileViewModel.clearSelectedItems()
         }
@@ -103,11 +104,11 @@ fun FileScreen(
     }
 
     dataFilePreview?.let { dataFilePreview_ ->
-        val dataFileIds = AppState.customer.value?.dataFilesLinks
-            ?.filter { dataFileLink -> dataFileLink.folderId == folderId }
-            ?.map { it.dataFileId }.orEmpty()
+        val dataFileIds = AppState.customer!!.dataFilesLinks.value
+            .filter { dataFileLink -> dataFileLink.folderId == folderId }
+            .map { it.dataFileId }
 
-        FilePreviewDialog(dataFilePreview_, dataFileIds, { fileViewModel.dataFilePreview.value = null })
+        FilePreviewDialog(dataFilePreview_, dataFileIds, { fileViewModel.dataFilePreview.update { null } })
     }
 
     if (fileSelectionDialogOpened) {

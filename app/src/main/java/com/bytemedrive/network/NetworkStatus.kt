@@ -6,6 +6,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 object NetworkStatus {
 
@@ -22,7 +23,7 @@ object NetworkStatus {
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
 
-                connected.value = true
+                connected.update { true }
             }
 
             override fun onCapabilitiesChanged(
@@ -31,15 +32,17 @@ object NetworkStatus {
             ) {
                 super.onCapabilitiesChanged(network, networkCapabilities)
 
-                connected.value = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
-                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED)
+                connected.update {
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                        networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
+                        networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_SUSPENDED)
+                }
             }
 
             override fun onLost(network: Network) {
                 super.onLost(network)
 
-                connected.value = false
+                connected.update { false }
             }
         }
 

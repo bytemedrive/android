@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 object AppState {
 
-    val customer = MutableStateFlow<CustomerAggregate?>(null)
+    var customer: CustomerAggregate? = null
 
     val authorized = MutableStateFlow(false)
 

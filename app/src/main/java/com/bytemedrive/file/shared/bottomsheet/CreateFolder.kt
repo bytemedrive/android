@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.navigation.AppNavigator
+import kotlinx.coroutines.flow.update
 import java.util.UUID
 
 @Composable
@@ -54,7 +55,7 @@ fun CreateFolder(
         AlertDialog(
             onDismissRequest = { dialogNewFolderOpened = false },
             title = { Text(text = "New folder") },
-            text = { OutlinedTextField( modifier = Modifier.focusRequester(focusRequester), value = name, onValueChange = { createFolderViewModel.name.value = it }) },
+            text = { OutlinedTextField( modifier = Modifier.focusRequester(focusRequester), value = name, onValueChange = { value -> createFolderViewModel.name.update { value } }) },
             confirmButton = {
                 TextButton(
                     onClick = { confirmName() }

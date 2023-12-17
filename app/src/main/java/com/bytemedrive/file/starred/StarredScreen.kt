@@ -42,6 +42,7 @@ import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCrea
 import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
+import kotlinx.coroutines.flow.update
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -54,12 +55,12 @@ fun StarredScreen(
     val dataFilePreview by starredViewModel.dataFilePreview.collectAsState()
     val fileAndFolderSelected by starredViewModel.itemsSelected.collectAsState()
 
-    LaunchedEffect("initialize") {
-        AppState.title.value = "Starred files"
-        AppState.topBarComposable.value = { TopBarStarred(it) }
+    LaunchedEffect(Unit) {
+        AppState.title.update { "Starred files" }
+        AppState.topBarComposable.update { { toggleNav -> TopBarStarred(toggleNav) } }
     }
 
-    DisposableEffect("unmount") {
+    DisposableEffect(Unit) {
         onDispose {
             starredViewModel.clearSelectedItems()
         }
@@ -70,11 +71,11 @@ fun StarredScreen(
     }
 
     dataFilePreview?.let { dataFilePreview_ ->
-        val dataFileIds = AppState.customer.value?.dataFilesLinks
-            ?.filter { dataFileLink -> dataFileLink.starred }
-            ?.map { it.dataFileId }.orEmpty()
+        val dataFileIds = AppState.customer!!.dataFilesLinks.value
+            .filter { dataFileLink -> dataFileLink.starred }
+            .map { it.dataFileId }
 
-        FilePreviewDialog(dataFilePreview_, dataFileIds, { starredViewModel.dataFilePreview.value = null })
+        FilePreviewDialog(dataFilePreview_, dataFileIds, { starredViewModel.dataFilePreview.update { null } })
     }
 
     Scaffold(

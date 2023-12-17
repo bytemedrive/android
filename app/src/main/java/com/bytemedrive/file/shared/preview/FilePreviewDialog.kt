@@ -34,6 +34,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MimeTypes
 import com.bytemedrive.file.root.DataFile
 import com.bytemedrive.ui.component.Loader
+import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
 import java.util.UUID
 
@@ -53,13 +54,13 @@ fun FilePreviewDialog(
 
     val name = thumbnails.getOrNull(currentPage)?.dataFile?.name.orEmpty()
 
-    LaunchedEffect("initialize") {
+    LaunchedEffect(Unit) {
         filePreviewViewModel.getThumbnails(initialDataFile.id, dataFileIds, context)
     }
 
     val goBack = {
-        filePreviewViewModel.thumbnailIndex.value = null
-        filePreviewViewModel.thumbnails.value = emptyList()
+        filePreviewViewModel.thumbnailIndex.update { null }
+        filePreviewViewModel.thumbnails.update { emptyList() }
         onClose()
     }
 

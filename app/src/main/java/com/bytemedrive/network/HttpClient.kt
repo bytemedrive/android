@@ -1,8 +1,8 @@
 package com.bytemedrive.network
 
 import android.util.Log
-import com.bytemedrive.application.sharedPreferences
 import com.bytemedrive.application.networkStatus
+import com.bytemedrive.application.sharedPreferences
 import com.bytemedrive.network.JsonConfig.mapper
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp

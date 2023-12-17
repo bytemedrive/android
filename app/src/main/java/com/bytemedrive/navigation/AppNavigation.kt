@@ -1,8 +1,6 @@
 package com.bytemedrive.navigation
 
 import android.content.Context
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,11 +8,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCard
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Divider
@@ -27,11 +23,11 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -65,7 +61,7 @@ fun AppNavigation(
     val scrollState = rememberScrollState()
 
     val selectedItemDefault = remember { navItems.find { it is MenuItem.Navigation && it.route == startDestination } as MenuItem.Navigation? }
-    val selectedItem = remember { mutableStateOf(selectedItemDefault) }
+    var selectedItem by remember { mutableStateOf(selectedItemDefault) }
 
     ModalNavigationDrawer(
         gesturesEnabled = drawerState.isOpen,
@@ -85,12 +81,12 @@ fun AppNavigation(
                                     NavigationDrawerItem(
                                         icon = { Icon(it.icon, contentDescription = null) },
                                         label = { Text(it.title) },
-                                        selected = it == selectedItem.value,
+                                        selected = it == selectedItem,
                                         onClick = {
                                             if (it.onPress != null) {
                                                 it.onPress.invoke()
                                                 scope.launch { drawerState.close() }
-                                                selectedItem.value = it
+                                                selectedItem = it
                                             }
                                         },
                                         modifier = Modifier.padding(horizontal = 12.dp)
@@ -129,7 +125,7 @@ fun AppNavigation(
     )
 }
 
-private fun getUsername() = AppState.customer.value?.username?.value.orEmpty()
+private fun getUsername() = AppState.customer?.username?.value.orEmpty()
 
 private fun getMenuItems(context: Context, signInManager: SignInManager, appNavigator: AppNavigator): List<MenuItem> = listOf(
     MenuItem.Navigation(
@@ -145,7 +141,7 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
         Icons.Default.Language
     ),
     MenuItem.Navigation(
-        context.getString(R.string.menu_app_credit_amount, AppState.customer.value?.balanceGbm ?: 0),
+        context.getString(R.string.menu_app_credit_amount, AppState.customer?.balanceGbm ?: 0),
         null,
         Icons.Default.WbSunny
     ),
@@ -168,4 +164,4 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
     ) { signInManager.signOut() },
 )
 
-private fun usedStorage() = AppState.customer.value?.dataFiles?.sumOf { it.sizeBytes }?.div(1_073_741_824.0)?.let { DecimalFormat("#.##").format(it) } ?: 0
+private fun usedStorage() = AppState.customer!!.dataFiles.value.sumOf { it.sizeBytes }?.div(1_073_741_824.0)?.let { DecimalFormat("#.##").format(it) } ?: 0

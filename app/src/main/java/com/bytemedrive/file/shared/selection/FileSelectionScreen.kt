@@ -47,6 +47,7 @@ import com.bytemedrive.file.root.Action
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.navigation.AppNavigator
+import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -62,24 +63,20 @@ fun FileSelectionDialog(
     val fileAndFolderListPaging = fileSelectionViewModel.getFilesPages().collectAsLazyPagingItems()
     val title = selectedFolder?.name ?: "My drive"
     val closeDialog = {
-        fileViewModel.fileSelectionDialogOpened.value = false
+        fileViewModel.fileSelectionDialogOpened.update { false }
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
-    LaunchedEffect(selectedFolder) {
-        fileSelectionViewModel.updateFileAndFolderList(selectedFolder?.id)
-    }
-
-    DisposableEffect("unmount") {
+    DisposableEffect(Unit) {
         onDispose {
-            fileViewModel.action.value = null
+            fileViewModel.action.update { null }
         }
     }
 
     BackHandler(true) { fileSelectionViewModel.goBack(closeDialog) }
 
     Dialog(
-        onDismissRequest = { fileViewModel.fileSelectionDialogOpened.value = false },
+        onDismissRequest = { fileViewModel.fileSelectionDialogOpened.update { false } },
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Scaffold(

@@ -15,15 +15,16 @@ import androidx.compose.ui.Modifier
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
+import kotlinx.coroutines.flow.update
 import org.koin.compose.koinInject
 
 @Composable
 fun SettingsScreen(
     appNavigator: AppNavigator = koinInject()
 ) {
-    LaunchedEffect("initialize") {
-        AppState.title.value = "Settings"
-        AppState.topBarComposable.value = { TopBarAppContentBack() }
+    LaunchedEffect(Unit) {
+        AppState.title.update { "Settings" }
+        AppState.topBarComposable.update { { TopBarAppContentBack() } }
     }
     
     Column(
