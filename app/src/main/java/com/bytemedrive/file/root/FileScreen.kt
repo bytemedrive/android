@@ -91,11 +91,14 @@ fun FileScreen(
                 AppState.title.update { folder.name }
             }
         }
+
+        fileViewModel.init(context)
     }
 
     DisposableEffect(Unit) {
         onDispose {
             fileViewModel.clearSelectedItems()
+            fileViewModel.cancelJobs()
         }
     }
 
@@ -119,7 +122,7 @@ fun FileScreen(
         floatingActionButton = { FloatingActionButtonCreate(folderId) },
     ) { paddingValues ->
 
-        if (itemsPaged.itemCount == 0) {
+        if (items.isEmpty()) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(text = stringResource(id = R.string.common_no_data))
             }

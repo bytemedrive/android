@@ -58,11 +58,14 @@ fun StarredScreen(
     LaunchedEffect(Unit) {
         AppState.title.update { "Starred files" }
         AppState.topBarComposable.update { { toggleNav -> TopBarStarred(toggleNav) } }
+
+        starredViewModel.init()
     }
 
     DisposableEffect(Unit) {
         onDispose {
             starredViewModel.clearSelectedItems()
+            starredViewModel.cancelJobs()
         }
     }
 
