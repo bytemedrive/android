@@ -173,11 +173,11 @@ fun FileScreen(
                                 }
                                 IconButton(onClick = {
                                     when (item.type) {
-                                        ItemType.File -> appNavigator.navigateTo(
+                                        ItemType.FILE -> appNavigator.navigateTo(
                                             AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FILE, mapOf("id" to item.id.toString())
                                         )
 
-                                        ItemType.Folder -> appNavigator.navigateTo(
+                                        ItemType.FOLDER -> appNavigator.navigateTo(
                                             AppNavigator.NavTarget.FILE_BOTTOM_SHEET_CONTEXT_FOLDER, mapOf("id" to item.id.toString())
                                         )
                                     }
@@ -214,7 +214,7 @@ private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
             item.uploading -> {
                 CircularProgressIndicator()
             }
-            item.type == ItemType.File -> {
+            item.type == ItemType.FILE -> {
                 image?.let { Image(bitmap = it.asImageBitmap(), contentDescription = "Thumbnail ${item.name}", contentScale = ContentScale.Crop) } ?: Icon(
                     imageVector = Icons.Outlined.Description,
                     contentDescription = "File",

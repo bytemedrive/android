@@ -123,7 +123,7 @@ fun StarredScreen(
                                     )
                                 } else {
                                     Icon(
-                                        imageVector = if (item.type == ItemType.File) Icons.Outlined.Description else Icons.Default.Folder,
+                                        imageVector = if (item.type == ItemType.FILE) Icons.Outlined.Description else Icons.Default.Folder,
                                         contentDescription = "Folder",
                                         tint = Color.Black,
                                     )
@@ -147,11 +147,11 @@ fun StarredScreen(
                                 }
                                 IconButton(onClick = {
                                     when (item.type) {
-                                        ItemType.File -> appNavigator.navigateTo(
+                                        ItemType.FILE -> appNavigator.navigateTo(
                                             AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FILE, mapOf("id" to item.id.toString())
                                         )
 
-                                        ItemType.Folder -> appNavigator.navigateTo(
+                                        ItemType.FOLDER -> appNavigator.navigateTo(
                                             AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FOLDER, mapOf("id" to item.id.toString())
                                         )
                                     }
