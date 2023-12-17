@@ -15,3 +15,13 @@ In root folder run `./gradlew assembleRelease`. Path to generated bundle `app/bu
 
 === Generate AAB
 In root folder run `./gradlew bundleRelease`. Path to generated bundle `app/build/outputs/renamedBundle/*.aab`.
+
+== Supported Android version
+
+Android 10 - API 29 - Q
+
+Android 11 - API 30 - R
+
+Android 12 - API 31, 32 - S, S_V2
+
+Android 13 - API 33 - T
