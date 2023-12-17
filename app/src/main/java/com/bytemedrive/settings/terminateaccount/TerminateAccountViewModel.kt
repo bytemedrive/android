@@ -7,6 +7,7 @@ import com.bytemedrive.store.AppState
 import com.bytemedrive.store.StoreRepository
 import com.bytemedrive.wallet.root.WalletRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class TerminateAccountViewModel(
@@ -23,16 +24,16 @@ class TerminateAccountViewModel(
     fun terminateAccount(onInvalidCredentials: () -> Unit) = viewModelScope.launch {
         val usernameSha3 = ShaService.hashSha3(username.value)
         val credentialsSha3 = ShaService.hashSha3("${username.value}:${password.value.concatToString()}")
-        val walletId = AppState.customer.value?.wallet!!
+        val walletId = AppState.customer?.wallet!!
         val thumbnailChunkIds =
-            AppState.customer.value?.dataFiles?.flatMap { dataFile -> dataFile.thumbnails.flatMap { thumbnail -> thumbnail.chunksIds.map { it.toString() } } }.orEmpty()
-        val dataFileChunkIds = AppState.customer.value?.dataFiles?.flatMap { dataFile -> dataFile.chunksIds.map { it.toString() } }.orEmpty()
+            AppState.customer!!.dataFiles.value.flatMap { dataFile -> dataFile.thumbnails.flatMap { thumbnail -> thumbnail.chunksIds.map { it.toString() } } }.orEmpty()
+        val dataFileChunkIds = AppState.customer!!.dataFiles.value.flatMap { dataFile -> dataFile.chunksIds.map { it.toString() } }.orEmpty()
         val allChunkIds = thumbnailChunkIds + dataFileChunkIds
 
         try {
             storeRepository.deleteCustomer(usernameSha3, credentialsSha3)
             walletRepository.deleteFiles(walletId, allChunkIds)
-            alertDialogAccountTerminated.value = true
+            alertDialogAccountTerminated.update { true }
         } catch (e: Exception) {
             onInvalidCredentials()
         }

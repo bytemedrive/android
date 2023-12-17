@@ -6,6 +6,7 @@ import com.bytemedrive.network.JsonConfig.mapper
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.wallet.root.WalletRepository
+import kotlinx.coroutines.flow.update
 import java.util.Base64
 import kotlin.streams.toList
 
@@ -42,7 +43,7 @@ class EventSyncService(private val storeRepository: StoreRepository, private val
     suspend fun addEvents(vararg events: EventObjectWrapper) {
         val allEvents = encryptedSharedPreferences.storeEvent(*events)
 
-        if (allEvents.isNotEmpty() && AppState.customer.value == null) {
+        if (allEvents.isNotEmpty() && AppState.customer == null) {
             Log.i(TAG, "Recreating CustomerAggregate with ${allEvents.size} events.")
             val customer = CustomerAggregate()
 
@@ -50,12 +51,12 @@ class EventSyncService(private val storeRepository: StoreRepository, private val
             customer.balanceGbm = walletRepository.getWallet(customer.wallet!!).balanceGbm
 
             Log.i(TAG, "Customer recreated.")
-            AppState.customer.value = customer
-            AppState.authorized.value = true
-        } else if(events.isNotEmpty() && AppState.customer.value != null) {
+            AppState.customer = customer
+            AppState.authorized.update { true }
+        } else if(events.isNotEmpty() && AppState.customer != null) {
             Log.i(TAG, "Adding up to existing CustomerAggregate instance ${events.size} events.")
-            events.toList().stream().forEach{ it.data.convert(AppState.customer.value!!) }
-            AppState.customer.value!!.balanceGbm = walletRepository.getWallet(AppState.customer.value!!.wallet!!).balanceGbm
+            events.toList().stream().forEach{ it.data.convert(AppState.customer!!) }
+            AppState.customer!!.balanceGbm = walletRepository.getWallet(AppState.customer!!.wallet!!).balanceGbm
             Log.i(TAG, "Customer updated.")
         }
     }

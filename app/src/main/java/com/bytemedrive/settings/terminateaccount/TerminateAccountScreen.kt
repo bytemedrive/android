@@ -39,6 +39,7 @@ import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.store.AppState
 import com.bytemedrive.ui.component.FieldPassword
+import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -56,9 +57,9 @@ fun TerminateAccountScreen(
     val password by terminateAccountViewModel.password.collectAsState()
     val terminated by terminateAccountViewModel.alertDialogAccountTerminated.collectAsState()
 
-    LaunchedEffect("initialize") {
-        AppState.title.value = "Terminate account"
-        AppState.topBarComposable.value = { TopBarAppContentBack() }
+    LaunchedEffect(Unit) {
+        AppState.title.update {   "Terminate account"}
+        AppState.topBarComposable.update { { TopBarAppContentBack() } }
     }
 
     val showToastInvalidCredentials = { Toast.makeText(context, "Invalid credentials", Toast.LENGTH_LONG).show() }
@@ -66,7 +67,7 @@ fun TerminateAccountScreen(
     if (terminated) {
         val onConfirmation = {
             signInManager.signOut()
-            terminateAccountViewModel.alertDialogAccountTerminated.value = false
+            terminateAccountViewModel.alertDialogAccountTerminated.update { false }
         }
         AlertDialogAccountTerminated(onConfirmation = onConfirmation)
     }
@@ -82,7 +83,7 @@ fun TerminateAccountScreen(
         Text("Please enter your credentials again to confirm that you are terminating your ByteMe Drive account.", style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(
             value = username,
-            onValueChange = { terminateAccountViewModel.username.value = it },
+            onValueChange = { value -> terminateAccountViewModel.username.update { value } },
             label = { Text("Username") },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
@@ -92,7 +93,7 @@ fun TerminateAccountScreen(
         )
         FieldPassword(
             value = password,
-            onValueChange = { terminateAccountViewModel.password.value = it },
+            onValueChange = { value -> terminateAccountViewModel.password.update { value } },
             label = "Password",
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),

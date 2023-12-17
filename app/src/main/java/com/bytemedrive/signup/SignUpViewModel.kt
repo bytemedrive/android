@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bytemedrive.network.NoInternetException
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.signin.SignInManager

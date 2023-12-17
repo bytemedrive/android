@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.bytemedrive.price.Prices
 import com.bytemedrive.price.PricesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PaymentMethodCryptoAmountViewModel(private val pricesRepository: PricesRepository) : ViewModel() {
@@ -15,7 +16,7 @@ class PaymentMethodCryptoAmountViewModel(private val pricesRepository: PricesRep
 
     init {
         viewModelScope.launch {
-            prices.value = pricesRepository.getPrices()
+            prices.update { pricesRepository.getPrices() }
         }
     }
 }

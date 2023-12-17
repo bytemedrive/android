@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.nio.charset.StandardCharsets
@@ -94,8 +95,8 @@ class SignInManager(
         if (events.isNotEmpty()) {
             val customer = CustomerAggregate()
             events.stream().forEach { it.data.convert(customer) }
-            AppState.customer.value = customer
-            AppState.authorized.value = true
+            AppState.customer = customer
+            AppState.authorized.update { true }
         }
         startEventAutoSync()
         startPollingData()
@@ -105,8 +106,8 @@ class SignInManager(
     fun signOut() {
         jobSync?.cancel()
         jobPolling?.cancel()
-        AppState.customer.value = null
-        AppState.authorized.value = false
+        AppState.customer = null
+        AppState.authorized.update { false }
         encryptedSharedPreferences.clean()
         databaseManager.clearCollections()
     }
@@ -131,7 +132,7 @@ class SignInManager(
                     continue
                 }
 
-                AppState.customer.value?.let { it.balanceGbm = walletRepository.getWallet(it.wallet!!).balanceGbm }
+                AppState.customer?.let { it.balanceGbm = walletRepository.getWallet(it.wallet!!).balanceGbm }
                 delay(1.minutes)
             }
         }

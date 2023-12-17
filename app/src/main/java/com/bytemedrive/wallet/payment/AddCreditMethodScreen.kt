@@ -22,6 +22,7 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import com.bytemedrive.ui.component.FieldRadioGroup
+import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -30,9 +31,9 @@ fun AddCreditMethodScreen(
     addCreditMethodViewModel: AddCreditMethodViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject(),
 ) {
-    LaunchedEffect("initialize") {
-        AppState.title.value = "Add credit"
-        AppState.topBarComposable.value = { TopBarAppContentBack() }
+    LaunchedEffect(Unit) {
+        AppState.title.update { "Add credit" }
+        AppState.topBarComposable.update { { TopBarAppContentBack() } }
     }
 
     val scrollState = rememberScrollState()
@@ -49,7 +50,7 @@ fun AddCreditMethodScreen(
                 .padding(start = 12.dp, end = 40.dp),
             items = AddCreditMethodViewModel.methodOptions,
             value = method,
-            onChangeValue = { addCreditMethodViewModel.method.value = it }
+            onChangeValue = { value ->  addCreditMethodViewModel.method.update { value } }
         )
 
         Row(

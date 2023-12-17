@@ -36,6 +36,7 @@ fun TopBarFile(
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
 
     val downloadFile = {
+        // TODO: Find also files in selected folders
         fileViewModel.downloadFiles(itemsSelected.map { it.id })
         fileViewModel.clearSelectedItems()
 

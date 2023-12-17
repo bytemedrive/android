@@ -12,7 +12,7 @@ data class DataFile(
     val sizeBytes: Long,
     val contentType: String,
     val secretKey: SecretKey,
-    val thumbnails: MutableList<Thumbnail> = mutableListOf(),
+    val thumbnails: List<Thumbnail> = emptyList(),
     val checksum: String,
     val exifOrientation: Int?,
 ) {

@@ -29,11 +29,11 @@ class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRe
         viewModelScope.launch {
             loading.update { true }
 
-            val payment = walletRepository.createMoneroPayment(AppState.customer.value?.wallet!!, MoneroPaymentRequest(storageAmount))
+            val payment = walletRepository.createMoneroPayment(AppState.customer?.wallet!!, MoneroPaymentRequest(storageAmount))
 
-            walletAddress.value = payment.walletAddress
-            amount.value = payment.amount
-            expirationAt.value = payment.expirationAt
+            walletAddress.update { payment.walletAddress }
+            amount.update { payment.amount }
+            expirationAt.update { payment.expirationAt }
 
             val timer = object: CountDownTimer(Duration.between(ZonedDateTime.now(), expirationAt.value).toMillis(), 1000) {
                 override fun onTick(millisUntilFinished: Long) {
@@ -44,7 +44,7 @@ class PaymentMethodCryptoPaymentViewModel(private val walletRepository: WalletRe
                     val seconds = (millisUntilFinished - hours * (1_000 * 60 * 60) - minutes * (1_000 * 60)) / 1_000
                     val secondsString = if (seconds < 10) "0$seconds" else seconds
 
-                    expiresIn.value = "$hoursString:$minutesString:$secondsString"
+                    expiresIn.update { "$hoursString:$minutesString:$secondsString" }
                 }
 
                 override fun onFinish() {

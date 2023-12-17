@@ -14,23 +14,24 @@ import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
+import com.bytemedrive.folder.Folder
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
-import com.bytemedrive.service.ServiceManager
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID
 
 class FileViewModel(
     context: Context,
-    serviceManager: ServiceManager,
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
     private val appNavigator: AppNavigator,
@@ -42,9 +43,9 @@ class FileViewModel(
 
     private val TAG = FileViewModel::class.qualifiedName
 
-    var dataFileLinks = MutableStateFlow(AppState.customer.value!!.dataFilesLinks)
     var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
-    var folders = MutableStateFlow(AppState.customer.value!!.folders)
+
+    val selectedFolder = MutableStateFlow<Folder?>(null)
 
     var items = MutableStateFlow(listOf<Item>())
 
@@ -61,6 +62,7 @@ class FileViewModel(
     init {
         getThumbnails(context)
         watchFilesToUpload()
+        watchItems(context)
     }
 
     fun clickFileAndFolder(item: Item) {
@@ -73,11 +75,11 @@ class FileViewModel(
                 ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
 
                 ItemType.File -> {
-                    AppState.customer.value?.dataFilesLinks?.find { it.id == item.id }?.let { dataFileLink ->
-                        val dataFile = AppState.customer.value?.dataFiles?.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
+                    AppState.customer!!.dataFilesLinks.value.find { it.id == item.id }?.let { dataFileLink ->
+                        val dataFile = AppState.customer!!.dataFiles.value.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
 
                         if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
-                            dataFilePreview.value = dataFile
+                            dataFilePreview.update { dataFile }
                         }
                     }
                 }
@@ -85,52 +87,37 @@ class FileViewModel(
         }
     }
 
-    fun longClickFileAndFolder(item: Item) {
-        itemsSelected.value = if (itemsSelected.value.contains(item)) {
-            itemsSelected.value - item
-        } else {
-            itemsSelected.value + item
+    fun longClickFileAndFolder(item: Item) =
+        itemsSelected.update {
+            if (it.contains(item)) {
+                itemsSelected.value - item
+            } else {
+                itemsSelected.value + item
+            }
         }
-    }
 
     fun toggleAllItems(context: Context) {
         if (itemsSelected.value.size == items.value.size) {
-            itemsSelected.value = emptyList()
+            itemsSelected.update { emptyList() }
         } else {
-            itemsSelected.value = items.value
+            itemsSelected.update { items.value }
             Toast.makeText(context, "${items.value.size} items selected", Toast.LENGTH_SHORT).show()
         }
     }
 
-    fun clearSelectedItems() {
-        itemsSelected.value = emptyList()
-    }
+    fun clearSelectedItems() = itemsSelected.update { emptyList() }
 
-    fun updateItems(folderId: UUID?, context: Context) = viewModelScope.launch {
-        AppState.customer.collectLatest { customer ->
-            val tempFolders = customer?.folders
-                ?.filter { folder -> folder.parent == folderId }
-                ?.map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }.orEmpty()
+    fun singleDataFileLink(id: UUID) = AppState.customer!!.dataFilesLinks.value.find { it.id == id }
 
-            val tempFiles = customer?.dataFilesLinks
-                ?.filter { file -> file.folderId == folderId }
-                ?.map { Item(it.id, it.name, ItemType.File, it.starred, false, it.folderId) }.orEmpty()
-
-            dataFileLinks.value = customer?.dataFilesLinks.orEmpty().toMutableList()
-            folders.value = customer?.folders.orEmpty().toMutableList()
-            items.value = tempFolders + tempFiles
-            getThumbnails(context)
-        }
-    }
-
-    fun singleDataFileLink(id: UUID) = dataFileLinks.value.find { it.id == id }
-
-    fun singleFolder(id: UUID) = folders.value.find { it.id == id }
+    fun singleFolder(id: UUID) = AppState.customer!!.folders.value.find { it.id == id }
 
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
-        AppState.customer.value?.wallet?.let { walletId ->
+        val dataFileLinks = AppState.customer!!.dataFilesLinks
+        val folders = AppState.customer!!.folders
+
+        AppState.customer?.wallet?.let { walletId ->
             dataFileLinks.value.filter { ids.contains(it.id) }.map { file ->
-                val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id }
 
                 if (physicalFileRemovable) {
                     fileRepository.remove(walletId, file.id)
@@ -141,8 +128,7 @@ class FileViewModel(
 
             folders.value.filter { ids.contains(it.id) }.map { folder ->
                 fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).map { file ->
-                    val physicalFileRemovable =
-                        dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id }
 
                     if (physicalFileRemovable) {
                         fileRepository.remove(walletId, file.id)
@@ -157,9 +143,11 @@ class FileViewModel(
     }
 
     fun removeFile(id: UUID, onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
-        AppState.customer.value?.wallet?.let { walletId ->
+        val dataFileLinks = AppState.customer!!.dataFilesLinks
+
+        AppState.customer?.wallet?.let { walletId ->
             val file = dataFileLinks.value.find { it.id == id }
-            val physicalFileRemovable = dataFileLinks.value.none { it.id == file?.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+            val physicalFileRemovable = dataFileLinks.value.none { it.id == file?.id }
 
             eventPublisher.publishEvent(EventFileDeleted(listOf(id)))
 
@@ -172,11 +160,13 @@ class FileViewModel(
     }
 
     fun removeFolder(id: UUID, onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
-        AppState.customer.value?.wallet?.let { walletId ->
+        val dataFileLinks = AppState.customer!!.dataFilesLinks
+        val folders = AppState.customer!!.folders
+
+        AppState.customer?.wallet?.let { walletId ->
             folders.value.find { it.id == id }?.let { folder ->
                 fileManager.findAllFilesRecursively(id, folders.value, dataFileLinks.value).forEach { file ->
-                    val physicalFileRemovable =
-                        dataFileLinks.value.none { it.id == file.id } // TODO: Fix - add DataFile class for physical file representation, File will be soft file
+                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id }
 
                     eventPublisher.publishEvent(EventFileDeleted(listOf(file.id)))
 
@@ -220,15 +210,15 @@ class FileViewModel(
     fun useSelectionScreenToMoveItems(id: UUID, folderId: UUID?) = useSelectionScreenToMoveItems(listOf(id), folderId)
 
     fun useSelectionScreenToMoveItems(ids: List<UUID>, folderId: UUID?) {
-        action.value = Action(ids, Action.Type.MoveItems, folderId)
-        fileSelectionDialogOpened.value = true
+        action.update { Action(ids, Action.Type.MoveItems, folderId) }
+        fileSelectionDialogOpened.update { true }
     }
 
     fun useSelectionScreenToCopyItems(id: UUID, folderId: UUID?) = useSelectionScreenToCopyItems(listOf(id), folderId)
 
     fun useSelectionScreenToCopyItems(ids: List<UUID>, folderId: UUID?) {
-        action.value = Action(ids, Action.Type.CopyItems, folderId)
-        fileSelectionDialogOpened.value = true
+        action.update { Action(ids, Action.Type.CopyItems, folderId) }
+        fileSelectionDialogOpened.update { true }
     }
 
     fun downloadFiles(ids: List<UUID>) = viewModelScope.launch {
@@ -241,25 +231,44 @@ class FileViewModel(
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
+    private fun watchItems(context: Context) = viewModelScope.launch {
+        combine(selectedFolder, AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { selectedFolder, folders, dataFilesLinks ->
+            val tempFolders = folders
+                .filter { folder -> folder.parent == selectedFolder?.id }
+                .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
+
+            val tempFiles = dataFilesLinks
+                .filter { file -> file.folderId == selectedFolder?.id }
+                .map { Item(it.id, it.name, ItemType.File, it.starred, false, it.folderId) }
+
+            tempFolders + tempFiles
+        }.collectLatest { items_ ->
+            items.update { items_ }
+            getThumbnails(context)
+        }
+    }
+
     private fun watchFilesToUpload() = viewModelScope.launch {
         itemsUploading = queueFileUploadRepository.watchFiles().map { files ->
             files.map { Item(it.id, it.name, ItemType.File, starred = false, uploading = true, folderId = it.folderId) }
         }
-
     }
 
-    private fun getThumbnails(context: Context) = viewModelScope.launch {
-        thumbnails.value = dataFileLinks.value.mapNotNull { dataFileLink ->
-            findThumbnailForDataFileLink(dataFileLink, context)?.let { thumbnails ->
-                dataFileLink.id to thumbnails
-            }
-        }.toMap()
+    private fun getThumbnails(context: Context) {
+        thumbnails.update {
+            AppState.customer!!.dataFilesLinks.value.mapNotNull { dataFileLink ->
+                findThumbnailForDataFileLink(dataFileLink, context)?.let { thumbnails ->
+                    dataFileLink.id to thumbnails
+                }
+            }.toMap()
+        }
     }
 
     private fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, context: Context): Bitmap? {
-        val dataFiles = AppState.customer.value?.dataFiles
+        val dataFiles = AppState.customer?.dataFiles
+
         if (dataFiles != null) {
-            val dataFile = dataFiles.find { it.id == dataFileLink.dataFileId }
+            val dataFile = AppState.customer!!.dataFiles.value.find { it.id == dataFileLink.dataFileId }
             val thumbnail = dataFile?.thumbnails?.find { thumbnail -> thumbnail.resolution == Resolution.P360 }
 
             return thumbnail?.let {

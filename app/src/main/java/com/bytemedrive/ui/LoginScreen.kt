@@ -22,7 +22,7 @@ fun Login(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect("initialize") {
+    LaunchedEffect(Unit) {
         serviceManager.stopServices(context)
     }
 

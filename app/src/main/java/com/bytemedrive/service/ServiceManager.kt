@@ -3,7 +3,6 @@ package com.bytemedrive.service
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.bytemedrive.file.root.QueueFileUploadRepository
 
 class ServiceManager {
     private val TAG = ServiceManager::class.qualifiedName

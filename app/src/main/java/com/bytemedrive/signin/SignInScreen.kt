@@ -47,6 +47,7 @@ import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.SnackbarVisualsWithError
 import com.bytemedrive.ui.component.FieldPassword
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -117,7 +118,7 @@ fun SignInScreen(
             )
             OutlinedTextField(
                 value = username,
-                onValueChange = { signInViewModel.username.value = it },
+                onValueChange = { value -> signInViewModel.username.update { value } },
                 label = { Text("Username") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -127,7 +128,7 @@ fun SignInScreen(
             )
             FieldPassword(
                 value = password,
-                onValueChange = { signInViewModel.password.value = it },
+                onValueChange = { value -> signInViewModel.password.update { value } },
                 label = "Password",
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),

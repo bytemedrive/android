@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import com.bytemedrive.ui.component.Loader
+import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -39,9 +40,9 @@ fun PaymentMethodCryptoPaymentScreen(
 ) {
     val loading by paymentMethodCryptoPaymentViewModel.loading.collectAsState()
 
-    LaunchedEffect("initialize") {
-        AppState.title.value = "Monero payment"
-        AppState.topBarComposable.value = { TopBarAppContentBack() }
+    LaunchedEffect(Unit) {
+        AppState.title.update { "Monero payment" }
+        AppState.topBarComposable.update { { TopBarAppContentBack() } }
         paymentMethodCryptoPaymentViewModel.init(storageAmount)
     }
 

@@ -13,7 +13,6 @@ import com.bytemedrive.store.AppState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
@@ -34,9 +33,9 @@ class ServiceThumbnailDownload : Service() {
             while (true) {
                 withContext(Dispatchers.IO) {
                     Log.i(TAG, "Checking whether there are missing thumbnails to be downloaded.")
-                    val fileList = applicationContext.fileList();
+                    val fileList = applicationContext.fileList()
 
-                    AppState.customer.value?.dataFiles?.forEach { dataFile ->
+                    AppState.customer?.dataFiles?.value?.forEach { dataFile ->
                         resolutions.forEach { resolution ->
                             val thumbnailName = FileManager.getThumbnailName(dataFile.id, resolution)
 

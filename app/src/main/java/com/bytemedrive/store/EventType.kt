@@ -6,8 +6,8 @@ import com.bytemedrive.file.root.EventFileMoved
 import com.bytemedrive.file.root.EventFileStarAdded
 import com.bytemedrive.file.root.EventFileStarRemoved
 import com.bytemedrive.file.root.EventFileUploaded
-import com.bytemedrive.folder.EventFolderCopied
 import com.bytemedrive.file.root.EventThumbnailUploaded
+import com.bytemedrive.folder.EventFolderCopied
 import com.bytemedrive.folder.EventFolderCreated
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderMoved

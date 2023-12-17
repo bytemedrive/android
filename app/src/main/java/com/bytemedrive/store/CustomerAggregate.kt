@@ -19,11 +19,11 @@ class CustomerAggregate {
         _username.update { username }
     }
 
-    var dataFiles: MutableList<DataFile> = mutableListOf()
+    var dataFiles = MutableStateFlow<List<DataFile>>(emptyList())
 
-    var dataFilesLinks: MutableList<DataFileLink> = mutableListOf()
+    var dataFilesLinks = MutableStateFlow<List<DataFileLink>>(emptyList())
 
-    var folders: MutableList<Folder> = mutableListOf()
+    var folders = MutableStateFlow<List<Folder>>(emptyList())
 
     var wallet: UUID? = null
 

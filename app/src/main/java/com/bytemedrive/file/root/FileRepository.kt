@@ -1,7 +1,6 @@
 package com.bytemedrive.file.root
 
 import android.util.Log
-import androidx.media3.common.MimeTypes
 import com.bytemedrive.application.httpClient
 import com.bytemedrive.network.RequestFailedException
 import io.ktor.client.request.delete
@@ -11,7 +10,6 @@ import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode

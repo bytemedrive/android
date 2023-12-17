@@ -1,10 +1,10 @@
 package com.bytemedrive.koin
 
 import com.bytemedrive.database.DatabaseManager
-import com.bytemedrive.file.root.QueueFileDownloadRepository
 import com.bytemedrive.file.root.FileRepository
-import com.bytemedrive.file.root.QueueFileUploadRepository
 import com.bytemedrive.file.root.FileViewModel
+import com.bytemedrive.file.root.QueueFileDownloadRepository
+import com.bytemedrive.file.root.QueueFileUploadRepository
 import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.file.shared.FileManager
@@ -25,9 +25,9 @@ import com.bytemedrive.signup.SignUpViewModel
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.StoreRepository
-import com.bytemedrive.wallet.payment.creditcode.PaymentMethodCreditCodeViewModel
 import com.bytemedrive.wallet.payment.AddCreditMethodViewModel
 import com.bytemedrive.wallet.payment.creditcard.PaymentMethodCreditCardViewModel
+import com.bytemedrive.wallet.payment.creditcode.PaymentMethodCreditCodeViewModel
 import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoAmountViewModel
 import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoPaymentViewModel
 import com.bytemedrive.wallet.root.WalletRepository
@@ -37,7 +37,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelsModule = module {
-    single { FileViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { FileViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
     viewModel { TerminateAccountViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }

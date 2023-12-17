@@ -2,6 +2,7 @@ package com.bytemedrive.file.root
 
 import com.bytemedrive.store.Convertable
 import com.bytemedrive.store.CustomerAggregate
+import kotlinx.coroutines.flow.update
 import java.util.Base64
 import java.util.UUID
 import javax.crypto.spec.SecretKeySpec
@@ -21,6 +22,16 @@ data class EventThumbnailUploaded(
         val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
         val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
 
-        customer.dataFiles.find { it.id == sourceDataFileId }?.thumbnails?.add(DataFile.Thumbnail(resolution, chunksIds, chunksViewIds, sizeBytes, contentType, secretKey))
+        customer.dataFiles.update { dataFiles ->
+            dataFiles.map { dataFile ->
+                if (dataFile.id == sourceDataFileId) {
+                    val thumbnail = DataFile.Thumbnail(resolution, chunksIds, chunksViewIds, sizeBytes, contentType, secretKey)
+
+                    dataFile.copy(thumbnails = dataFile.thumbnails + thumbnail)
+                } else {
+                    dataFile
+                }
+            }
+        }
     }
 }
