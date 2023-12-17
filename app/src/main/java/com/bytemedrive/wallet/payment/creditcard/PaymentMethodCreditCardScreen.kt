@@ -28,6 +28,7 @@ import com.stripe.android.paymentsheet.PaymentSheetContract
 import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 val REGEX_NUMBER_DECIMAL = "\\d*".toRegex()
 
@@ -35,9 +36,8 @@ val REGEX_NUMBER_DECIMAL = "\\d*".toRegex()
 @Composable
 fun PaymentMethodCreditCardScreen(
     paymentMethodCreditCardViewModel: PaymentMethodCreditCardViewModel = koinViewModel(),
-    appNavigator: AppNavigator = get(),
+    appNavigator: AppNavigator = koinInject(),
 ) {
-    val TAG = "PaymentMethodCreditCardScreen"
     val context = LocalContext.current
     val clientSecret by paymentMethodCreditCardViewModel.clientSecret.collectAsState()
 

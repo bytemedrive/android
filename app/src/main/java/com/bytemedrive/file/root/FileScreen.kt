@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -70,9 +72,7 @@ fun FileScreen(
 ) {
     val context = LocalContext.current
     val items by fileViewModel.items.collectAsState()
-    val itemsUploading by fileViewModel.itemsUploading.collectAsState(emptyList())
-    val itemsUploadingByFolderId = itemsUploading.filter { it.folderId?.equals(folderId) ?: true }
-    val itemsPaged = fileViewModel.getItemsPages(itemsUploadingByFolderId + items).collectAsLazyPagingItems()
+    val itemsPaged = fileViewModel.getItemsPages().collectAsLazyPagingItems()
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
     val thumbnails by fileViewModel.thumbnails.collectAsState()
     val dataFilePreview by fileViewModel.dataFilePreview.collectAsState()
@@ -91,6 +91,10 @@ fun FileScreen(
                 AppState.title.update { folder.name }
             }
         }
+    }
+
+    LaunchedEffect(items) {
+        itemsPaged.refresh()
     }
 
     DisposableEffect(Unit) {
@@ -118,22 +122,23 @@ fun FileScreen(
     Scaffold(
         floatingActionButton = { FloatingActionButtonCreate(folderId) },
     ) { paddingValues ->
-
-        if (itemsPaged.itemCount == 0) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Text(text = stringResource(id = R.string.common_no_data))
-            }
-        } else {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp, vertical = 32.dp)
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 32.dp)
-                ) {
+                if (items.isEmpty()) {
+                    item {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                            Text(text = stringResource(id = R.string.common_no_data))
+                        }
+                    }
+                } else {
                     items(items = itemsPaged) { fileAndFolder ->
                         fileAndFolder?.let { item ->
                             val itemSelected = itemsSelected.contains(item)
@@ -194,7 +199,6 @@ fun FileScreen(
     }
 }
 
-
 @Composable
 private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
     Box(
@@ -208,9 +212,11 @@ private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
                     tint = Color.Black,
                 )
             }
+
             item.uploading -> {
                 CircularProgressIndicator()
             }
+
             item.type == ItemType.File -> {
                 image?.let { Image(bitmap = it.asImageBitmap(), contentDescription = "Thumbnail ${item.name}", contentScale = ContentScale.Crop) } ?: Icon(
                     imageVector = Icons.Outlined.Description,
@@ -218,6 +224,7 @@ private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
                     tint = Color.Black,
                 )
             }
+
             else -> {
                 Icon(
                     imageVector = Icons.Default.Folder,

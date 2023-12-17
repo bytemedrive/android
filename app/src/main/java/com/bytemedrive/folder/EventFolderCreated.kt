@@ -13,6 +13,7 @@ data class EventFolderCreated(
 ) : Convertable {
 
     override fun convert(customer: CustomerAggregate) {
-        customer.folders.update { it + Folder(id, name, starred, parent) }
+//        customer.folders.update { it + Folder(id, name, starred, parent) }
+        customer.folders.value = customer.folders.value + Folder(id, name, starred, parent)
     }
 }

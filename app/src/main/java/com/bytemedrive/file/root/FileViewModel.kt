@@ -10,6 +10,7 @@ import androidx.media3.common.MimeTypes
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
@@ -23,7 +24,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -51,8 +51,6 @@ class FileViewModel(
 
     val itemsSelected = MutableStateFlow(emptyList<Item>())
 
-    var itemsUploading: Flow<List<Item>> = emptyFlow()
-
     val fileSelectionDialogOpened = MutableStateFlow(false)
 
     val action = MutableStateFlow<Action?>(null)
@@ -61,7 +59,6 @@ class FileViewModel(
 
     init {
         getThumbnails(context)
-        watchFilesToUpload()
         watchItems(context)
     }
 
@@ -88,11 +85,11 @@ class FileViewModel(
     }
 
     fun longClickFileAndFolder(item: Item) =
-        itemsSelected.update {
-            if (it.contains(item)) {
-                itemsSelected.value - item
+        itemsSelected.update { items ->
+            if (items.contains(item)) {
+                items - item
             } else {
-                itemsSelected.value + item
+                items + item
             }
         }
 
@@ -201,12 +198,6 @@ class FileViewModel(
         onSuccess()
     }
 
-    fun getItemsPages(items: List<Item>): Flow<PagingData<Item>> =
-        Pager(
-            config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { FilePagingSource(items) }
-        ).flow
-
     fun useSelectionScreenToMoveItems(id: UUID, folderId: UUID?) = useSelectionScreenToMoveItems(listOf(id), folderId)
 
     fun useSelectionScreenToMoveItems(ids: List<UUID>, folderId: UUID?) {
@@ -231,8 +222,19 @@ class FileViewModel(
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
+    fun getItemsPages(): Flow<PagingData<Item>> =
+        Pager(
+            config = PagingConfig(pageSize = 20),
+            pagingSourceFactory = { FilePagingSource2(queueFileUploadRepository, selectedFolder.value) }
+        ).flow
+
     private fun watchItems(context: Context) = viewModelScope.launch {
-        combine(selectedFolder, AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { selectedFolder, folders, dataFilesLinks ->
+        combine(
+            selectedFolder,
+            AppState.customer!!.folders,
+            AppState.customer!!.dataFilesLinks,
+            queueFileUploadRepository.watchFiles()
+        ) { selectedFolder, folders, dataFilesLinks, filesToUpload ->
             val tempFolders = folders
                 .filter { folder -> folder.parent == selectedFolder?.id }
                 .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
@@ -241,16 +243,14 @@ class FileViewModel(
                 .filter { file -> file.folderId == selectedFolder?.id }
                 .map { Item(it.id, it.name, ItemType.File, it.starred, false, it.folderId) }
 
-            tempFolders + tempFiles
-        }.collectLatest { items_ ->
-            items.update { items_ }
-            getThumbnails(context)
-        }
-    }
+            val tempFilesToUpload = filesToUpload
+                .map { Item(it.id, it.name, ItemType.File, starred = false, uploading = true, folderId = it.folderId) }
+                .filter { it.folderId?.equals(selectedFolder?.id) ?: true }
 
-    private fun watchFilesToUpload() = viewModelScope.launch {
-        itemsUploading = queueFileUploadRepository.watchFiles().map { files ->
-            files.map { Item(it.id, it.name, ItemType.File, starred = false, uploading = true, folderId = it.folderId) }
+            tempFilesToUpload + tempFolders + tempFiles
+        }.collectLatest { collectedItems ->
+            items.update { collectedItems }
+            getThumbnails(context)
         }
     }
 
