@@ -164,4 +164,4 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
     ) { signInManager.signOut() },
 )
 
-private fun usedStorage() = AppState.customer!!.dataFiles.value.sumOf { it.sizeBytes }?.div(1_073_741_824.0)?.let { DecimalFormat("#.##").format(it) } ?: 0
+private fun usedStorage() = AppState.customer!!.dataFiles.value.sumOf { it.sizeBytes }.div(1_073_741_824.0).let { DecimalFormat("#.##").format(it) } ?: 0

@@ -20,6 +20,7 @@ import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -44,7 +45,9 @@ class StarredViewModel(
 
     val dataFilePreview = MutableStateFlow<DataFile?>(null)
 
-    init {
+    private var watchJob: Job? = null
+
+    fun init() {
         watchItems()
     }
 
@@ -78,7 +81,6 @@ class StarredViewModel(
                 itemsSelected.value + item
             }
         }
-
 
     fun clearSelectedItems() = itemsSelected.update { emptyList() }
 
@@ -128,19 +130,25 @@ class StarredViewModel(
         }
     }
 
-    private fun watchItems() = viewModelScope.launch {
-        combine(AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { folders, dataFileLinks ->
-            val tempFolders = folders
-                .filter { it.starred }
-                .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
+    fun cancelJobs() {
+        watchJob?.cancel()
+    }
 
-            val tempFileLinks = dataFileLinks
-                .filter { it.starred }
-                .map { Item(it.id, it.name, ItemType.File, it.starred, false) }
+    private fun watchItems() {
+        watchJob = viewModelScope.launch {
+            combine(AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { folders, dataFileLinks ->
+                val tempFolders = folders
+                    .filter { it.starred }
+                    .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
 
-            tempFolders + tempFileLinks
-        }.collectLatest { items ->
-            starred.update { items }
+                val tempFileLinks = dataFileLinks
+                    .filter { it.starred }
+                    .map { Item(it.id, it.name, ItemType.File, it.starred, false) }
+
+                tempFolders + tempFileLinks
+            }.collectLatest { items ->
+                starred.update { items }
+            }
         }
     }
 }
