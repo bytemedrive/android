@@ -87,7 +87,7 @@ class FileSelectionViewModel(
         }
 
         AppState.customer!!.dataFilesLinks.value.filter { file -> action.ids.contains(file.id) }.forEach { file ->
-            eventPublisher.publishEvent(EventFileCopied(file.id, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}"))
+            eventPublisher.publishEvent(EventFileCopied(file.dataFileId, UUID.randomUUID(), folderId = folderId, name = "Copy of ${file.name}"))
         }
 
         clearFileSelection()
@@ -130,7 +130,7 @@ class FileSelectionViewModel(
 
     private suspend fun copyFiles(currentFolderId: UUID, newFolderId: UUID?) {
         AppState.customer!!.dataFilesLinks.value.filter { it.folderId == currentFolderId }.forEach { dataFileLink ->
-            AppState.customer!!.dataFiles.value.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
+                AppState.customer!!.dataFiles.value.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
                 eventPublisher.publishEvent(EventFileCopied(dataFile.id, UUID.randomUUID(), newFolderId, dataFile.name))
             }
         }
