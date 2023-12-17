@@ -3,6 +3,8 @@ package com.bytemedrive.file.shared.bottomsheet
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -24,6 +26,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
@@ -55,7 +58,15 @@ fun CreateFolder(
         AlertDialog(
             onDismissRequest = { dialogNewFolderOpened = false },
             title = { Text(text = "New folder") },
-            text = { OutlinedTextField( modifier = Modifier.focusRequester(focusRequester), value = name, onValueChange = { value -> createFolderViewModel.name.update { value } }) },
+            text = {
+                OutlinedTextField(
+                    modifier = Modifier.focusRequester(focusRequester),
+                    value = name,
+                    onValueChange = { value -> createFolderViewModel.name.update { value } },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { confirmName() }),
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = { confirmName() }
@@ -69,9 +80,10 @@ fun CreateFolder(
         )
     }
 
-    Column(modifier = Modifier
-        .padding(16.dp)
-        .clickable { dialogNewFolderOpened = true }, horizontalAlignment = Alignment.CenterHorizontally
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .clickable { dialogNewFolderOpened = true }, horizontalAlignment = Alignment.CenterHorizontally
     ) {
         IconButton(onClick = { dialogNewFolderOpened = true }) {
             Icon(
