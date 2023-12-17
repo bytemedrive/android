@@ -43,6 +43,8 @@ fun PaymentMethodCryptoAmountScreen(
     val amount by paymentMethodCryptoAmountViewModel.amount.collectAsState()
     val prices by paymentMethodCryptoAmountViewModel.prices.collectAsState()
 
+    val submitForm = { appNavigator.navigateTo(AppNavigator.NavTarget.PAYMENT_METHOD_CRYPTO_PAYMENT, mapOf("storageAmount" to amount.toString())) }
+
     Column(modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 36.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -58,7 +60,7 @@ fun PaymentMethodCryptoAmountScreen(
                 },
                 label = { Text(text = "Storage amount (GBM)") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Number),
-                keyboardActions = KeyboardActions(onDone = { }),
+                keyboardActions = KeyboardActions(onDone = { submitForm() }),
             )
             Text(text = "~ ${if (prices != null && amount != null) amount!!.times(prices!!.gbmPriceInXmr).toString() else "0"} XMR", modifier = Modifier.weight(1f))
         }
@@ -69,7 +71,7 @@ fun PaymentMethodCryptoAmountScreen(
             verticalAlignment = Alignment.Bottom
         ) {
             Button(
-                onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.PAYMENT_METHOD_CRYPTO_PAYMENT, mapOf("storageAmount" to amount.toString())) },
+                onClick = submitForm,
                 enabled = amount != null
             ) {
                 Text(text = "Next")
