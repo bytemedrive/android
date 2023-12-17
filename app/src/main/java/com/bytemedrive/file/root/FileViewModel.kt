@@ -22,11 +22,9 @@ import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -73,9 +71,9 @@ class FileViewModel(
             longClickFileAndFolder(item)
         } else {
             when (item.type) {
-                ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
+                ItemType.FOLDER -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
 
-                ItemType.File -> {
+                ItemType.FILE -> {
                     AppState.customer!!.dataFilesLinks.value.find { it.id == item.id }?.let { dataFileLink ->
                         val dataFile = AppState.customer!!.dataFiles.value.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
 
@@ -211,14 +209,14 @@ class FileViewModel(
     fun useSelectionScreenToMoveItems(id: UUID, folderId: UUID?) = useSelectionScreenToMoveItems(listOf(id), folderId)
 
     fun useSelectionScreenToMoveItems(ids: List<UUID>, folderId: UUID?) {
-        action.update { Action(ids, Action.Type.MoveItems, folderId) }
+        action.update { Action(ids, Action.Type.MOVE_ITEMS, folderId) }
         fileSelectionDialogOpened.update { true }
     }
 
     fun useSelectionScreenToCopyItems(id: UUID, folderId: UUID?) = useSelectionScreenToCopyItems(listOf(id), folderId)
 
     fun useSelectionScreenToCopyItems(ids: List<UUID>, folderId: UUID?) {
-        action.update { Action(ids, Action.Type.CopyItems, folderId) }
+        action.update { Action(ids, Action.Type.COPY_ITEMS, folderId) }
         fileSelectionDialogOpened.update { true }
     }
 
@@ -246,14 +244,14 @@ class FileViewModel(
             ) { selectedFolder, folders, dataFilesLinks, filesToUpload ->
                 val tempFolders = folders
                     .filter { folder -> folder.parent == selectedFolder?.id }
-                    .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
+                    .map { Item(it.id, it.name, ItemType.FOLDER, it.starred, false) }
 
                 val tempFiles = dataFilesLinks
                     .filter { file -> file.folderId == selectedFolder?.id }
-                    .map { Item(it.id, it.name, ItemType.File, it.starred, false, it.folderId) }
+                    .map { Item(it.id, it.name, ItemType.FILE, it.starred, false, it.folderId) }
 
                 val tempFilesToUpload = filesToUpload
-                    .map { Item(it.id, it.name, ItemType.File, starred = false, uploading = true, folderId = it.folderId) }
+                    .map { Item(it.id, it.name, ItemType.FILE, starred = false, uploading = true, folderId = it.folderId) }
                     .filter { it.folderId?.equals(selectedFolder?.id) ?: true }
 
                 tempFilesToUpload + tempFolders + tempFiles
@@ -296,7 +294,7 @@ class FileViewModel(
 
 data class Action(val ids: List<UUID>, val type: Type, val folderId: UUID?) {
     enum class Type(type: String) {
-        CopyItems("copyItems"),
-        MoveItems("moveItems")
+        COPY_ITEMS("copyItems"),
+        MOVE_ITEMS("moveItems")
     }
 }

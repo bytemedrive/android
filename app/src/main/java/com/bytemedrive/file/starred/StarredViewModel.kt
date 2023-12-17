@@ -58,9 +58,9 @@ class StarredViewModel(
             longClickFileAndFolder(item)
         } else {
             when (item.type) {
-                ItemType.Folder -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
+                ItemType.FOLDER -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
 
-                ItemType.File -> {
+                ItemType.FILE -> {
                     AppState.customer!!.dataFilesLinks.value.find { it.id == item.id }?.let { dataFileLink ->
                         val dataFile = AppState.customer!!.dataFiles.value.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
 
@@ -139,11 +139,11 @@ class StarredViewModel(
             combine(AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { folders, dataFileLinks ->
                 val tempFolders = folders
                     .filter { it.starred }
-                    .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
+                    .map { Item(it.id, it.name, ItemType.FOLDER, it.starred, false) }
 
                 val tempFileLinks = dataFileLinks
                     .filter { it.starred }
-                    .map { Item(it.id, it.name, ItemType.File, it.starred, false) }
+                    .map { Item(it.id, it.name, ItemType.FILE, it.starred, false) }
 
                 tempFolders + tempFileLinks
             }.collectLatest { items ->

@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -116,14 +115,14 @@ fun FileSelectionDialog(
                     }
 
                     when (action?.type) {
-                        Action.Type.CopyItems -> {
+                        Action.Type.COPY_ITEMS -> {
                             Button(onClick = {
                                 action?.let { action_ ->
                                     fileSelectionViewModel.copyItem(action_, selectedFolder?.id, closeDialog)
                                 }
                             }) { Text(text = "Copy here") }
                         }
-                        Action.Type.MoveItems -> {
+                        Action.Type.MOVE_ITEMS -> {
                             val moveToRootFolder = selectedFolder?.id == null && action?.folderId != null
                             val moveToDifferentFolder = selectedFolder?.id != action?.folderId
                             val moveEnabled = moveToRootFolder || moveToDifferentFolder
@@ -154,7 +153,7 @@ fun FileSelectionDialog(
                             items(items = fileAndFolderListPaging) {
                                 it?.let { item ->
                                     val selectedItem = action?.ids?.contains(item.id) == true
-                                    val clickable = item.type == ItemType.Folder && !selectedItem
+                                    val clickable = item.type == ItemType.FOLDER && !selectedItem
 
                                     Row(
                                         modifier = Modifier
@@ -168,7 +167,7 @@ fun FileSelectionDialog(
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         Icon(
-                                            imageVector = if (item.type == ItemType.File) Icons.Outlined.Description else Icons.Default.Folder,
+                                            imageVector = if (item.type == ItemType.FILE) Icons.Outlined.Description else Icons.Default.Folder,
                                             contentDescription = "Folder",
                                             tint = Color.Black,
                                         )
