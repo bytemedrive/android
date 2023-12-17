@@ -1,5 +1,7 @@
 package com.bytemedrive.wallet.payment.creditcard
 
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +15,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,8 +41,8 @@ fun PaymentMethodCreditCardScreen(
     paymentMethodCreditCardViewModel: PaymentMethodCreditCardViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject(),
 ) {
-    val TAG = "PaymentMethodCreditCardScreen"
     val context = LocalContext.current
+    val activity = LocalContext.current as Activity
     val clientSecret by paymentMethodCreditCardViewModel.clientSecret.collectAsState()
 
     val stripeLauncher = rememberLauncherForActivityResult(
@@ -68,12 +71,22 @@ fun PaymentMethodCreditCardScreen(
     val gbm by paymentMethodCreditCardViewModel.gbm.collectAsState()
 
     LaunchedEffect(Unit) {
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
         AppState.title.update { "Add credit - credit card" }
         AppState.topBarComposable.update { { TopBarAppContentBack() } }
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         OutlinedTextField(
