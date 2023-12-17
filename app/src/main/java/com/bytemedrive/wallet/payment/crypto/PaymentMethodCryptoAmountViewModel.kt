@@ -14,9 +14,15 @@ class PaymentMethodCryptoAmountViewModel(private val pricesRepository: PricesRep
 
     val prices = MutableStateFlow<Prices?>(null)
 
+    val loading = MutableStateFlow(false)
+
     init {
         viewModelScope.launch {
+            loading.update { true }
+
             prices.update { pricesRepository.getPrices() }
+
+            loading.update { false }
         }
     }
 }

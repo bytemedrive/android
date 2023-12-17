@@ -13,7 +13,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,6 +34,7 @@ import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
+import com.bytemedrive.ui.component.ButtonLoading
 import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -45,12 +45,14 @@ fun PaymentMethodCreditCodeScreen(
     paymentMethodCreditCodeViewModel: PaymentMethodCreditCodeViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject(),
 ) {
+
     LaunchedEffect(Unit) {
         AppState.title.update { "Add credit - credit code" }
         AppState.topBarComposable.update { { TopBarAppContentBack() } }
     }
 
     val code by paymentMethodCreditCodeViewModel.code.collectAsState()
+    val loading by paymentMethodCreditCodeViewModel.loading.collectAsState()
 
     val onSubmit = {
         paymentMethodCreditCodeViewModel.redeemCoupon(AppState.customer?.wallet!!, code)
@@ -107,8 +109,10 @@ fun PaymentMethodCreditCodeScreen(
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
                 Text(text = stringResource(R.string.common_back))
             }
-            Button(
-                onClick = onSubmit
+            ButtonLoading(
+                onClick = onSubmit,
+                loading = loading,
+                enabled = !loading
             ) {
                 Text(text = "Validate your code")
             }
