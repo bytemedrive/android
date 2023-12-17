@@ -19,8 +19,10 @@ import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
@@ -59,9 +61,13 @@ class FileViewModel(
 
     val dataFilePreview = MutableStateFlow<DataFile?>(null)
 
+    private var watchJob: Job? = null
+
     init {
         getThumbnails(context)
-        watchFilesToUpload()
+    }
+
+    fun init (context: Context) {
         watchItems(context)
     }
 
@@ -231,26 +237,35 @@ class FileViewModel(
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
-    private fun watchItems(context: Context) = viewModelScope.launch {
-        combine(selectedFolder, AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { selectedFolder, folders, dataFilesLinks ->
-            val tempFolders = folders
-                .filter { folder -> folder.parent == selectedFolder?.id }
-                .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
-
-            val tempFiles = dataFilesLinks
-                .filter { file -> file.folderId == selectedFolder?.id }
-                .map { Item(it.id, it.name, ItemType.File, it.starred, false, it.folderId) }
-
-            tempFolders + tempFiles
-        }.collectLatest { items_ ->
-            items.update { items_ }
-            getThumbnails(context)
-        }
+    fun cancelJobs() {
+        watchJob?.cancel()
     }
 
-    private fun watchFilesToUpload() = viewModelScope.launch {
-        itemsUploading = queueFileUploadRepository.watchFiles().map { files ->
-            files.map { Item(it.id, it.name, ItemType.File, starred = false, uploading = true, folderId = it.folderId) }
+    private fun watchItems(context: Context) {
+        watchJob = viewModelScope.launch {
+            combine(
+                selectedFolder,
+                AppState.customer!!.folders,
+                AppState.customer!!.dataFilesLinks,
+                queueFileUploadRepository.watchFiles()
+            ) { selectedFolder, folders, dataFilesLinks, filesToUpload ->
+                val tempFolders = folders
+                    .filter { folder -> folder.parent == selectedFolder?.id }
+                    .map { Item(it.id, it.name, ItemType.Folder, it.starred, false) }
+
+                val tempFiles = dataFilesLinks
+                    .filter { file -> file.folderId == selectedFolder?.id }
+                    .map { Item(it.id, it.name, ItemType.File, it.starred, false, it.folderId) }
+
+                val tempFilesToUpload = filesToUpload
+                    .map { Item(it.id, it.name, ItemType.File, starred = false, uploading = true, folderId = it.folderId) }
+                    .filter { it.folderId?.equals(selectedFolder?.id) ?: true }
+
+                tempFilesToUpload + tempFolders + tempFiles
+            }.collectLatest { collectedItems ->
+                items.update { collectedItems }
+                getThumbnails(context)
+            }
         }
     }
 
