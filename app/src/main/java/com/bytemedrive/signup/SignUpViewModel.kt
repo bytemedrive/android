@@ -12,9 +12,9 @@ import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventsSecretKey
 import com.bytemedrive.wallet.root.WalletRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
@@ -39,7 +39,11 @@ class SignUpViewModel(
 
     val termsAndConditions = MutableStateFlow(false)
 
-    fun signUp(context: Context, onFailure: () -> Job) = effect {
+    val loading = MutableStateFlow(false)
+
+    fun signUp(context: Context, onFailure: () -> Job) = viewModelScope.launch {
+        loading.update { true }
+
         val username = username.value.trim()
         val password = password.value
         val usernameSha3 = ShaService.hashSha3(username)
@@ -60,10 +64,12 @@ class SignUpViewModel(
 
             eventPublisher.publishEvent(eventSignUp)
         } catch (exception: UnknownHostException) {
-           throw exception
+            throw exception
         } catch (exception: Exception) {
             onFailure()
             Log.e(TAG, "Signup failed for username: $username", exception)
+        } finally {
+            loading.update { false }
         }
     }
 
@@ -75,8 +81,6 @@ class SignUpViewModel(
         (!termsAndConditions.value) -> "Terms and conditions are required"
         else -> ""
     }
-
-    private fun effect(block: suspend () -> Unit) = viewModelScope.launch(Dispatchers.IO) { block() }
 
     companion object {
 

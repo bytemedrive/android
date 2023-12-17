@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SignInViewModel(private val signInManager: SignInManager) : ViewModel() {
@@ -13,7 +14,11 @@ class SignInViewModel(private val signInManager: SignInManager) : ViewModel() {
 
     var password = MutableStateFlow(charArrayOf())
 
+    val loading = MutableStateFlow(false)
+
     fun signIn(context: Context, onFailure: () -> Job) = viewModelScope.launch {
+        loading.update { true }
+
         val username = username.value.trim()
         val password = password.value
 
@@ -22,6 +27,8 @@ class SignInViewModel(private val signInManager: SignInManager) : ViewModel() {
         if (!successfulSignIn) {
             onFailure()
         }
+
+        loading.update { false }
     }
 
     fun validateForm(): String? =

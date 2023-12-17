@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -36,6 +35,7 @@ import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.SnackbarVisualsWithError
 import com.bytemedrive.signup.SignUpViewModel
+import com.bytemedrive.ui.component.ButtonLoading
 import com.bytemedrive.ui.component.FieldCheckbox
 import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.flow.update
@@ -57,6 +57,7 @@ fun SignUpScreen(
     val password by signUpViewModel.password.collectAsState()
     val passwordConfirm by signUpViewModel.passwordConfirm.collectAsState()
     val termsAndConditions by signUpViewModel.termsAndConditions.collectAsState()
+    val loading by signUpViewModel.loading.collectAsState()
     val focusRequester = remember { FocusRequester() }
 
     val signUpHandler = {
@@ -138,11 +139,13 @@ fun SignUpScreen(
                 }
             }
         }
-        Button(
-            onClick = { signUpHandler() },
+        ButtonLoading(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp)
+                .padding(top = 16.dp),
+            loading = loading,
+            enabled = !loading,
+            onClick = { signUpHandler() },
         ) {
             Text(text = "Sign up")
         }

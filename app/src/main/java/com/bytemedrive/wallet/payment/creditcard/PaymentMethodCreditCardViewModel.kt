@@ -22,13 +22,17 @@ class PaymentMethodCreditCardViewModel(private val walletRepository: WalletRepos
 
     private val confirmPaymentParams = MutableStateFlow<ConfirmPaymentIntentParams?>(null)
 
-    fun makePayment() {
-        viewModelScope.launch {
-            Log.i(TAG, "Creating payment intent for wallet id=${AppState.customer?.wallet!!} and gbm=${gbm.value.toLong()}")
-            val paymentIntent = walletRepository.stripePayment(AppState.customer?.wallet!!, StripePaymentRequest(gbm.value.toLong()))
-            Log.i(TAG, "Payment intent created. Price eur=${paymentIntent.priceEur}, client secret isEmpty=${paymentIntent.clientSecret.isEmpty()}")
-            clientSecret.update { paymentIntent.clientSecret }
-        }
+    val loading = MutableStateFlow(false)
+
+    fun makePayment() = viewModelScope.launch {
+        loading.update { true }
+
+        Log.i(TAG, "Creating payment intent for wallet id=${AppState.customer?.wallet!!} and gbm=${gbm.value.toLong()}")
+        val paymentIntent = walletRepository.stripePayment(AppState.customer?.wallet!!, StripePaymentRequest(gbm.value.toLong()))
+        Log.i(TAG, "Payment intent created. Price eur=${paymentIntent.priceEur}, client secret isEmpty=${paymentIntent.clientSecret.isEmpty()}")
+        clientSecret.update { paymentIntent.clientSecret }
+
+        loading.update { false }
     }
 
     fun onPaymentLaunched() {
@@ -38,7 +42,7 @@ class PaymentMethodCreditCardViewModel(private val walletRepository: WalletRepos
     fun handlePaymentResult(result: PaymentSheetResult, onCompleted: () -> Unit, onFailed: () -> Unit) {
         Log.i(TAG, "Payment result=$result")
 
-        when(result) {
+        when (result) {
             PaymentSheetResult.Completed -> onCompleted()
             else -> onFailed()
         }

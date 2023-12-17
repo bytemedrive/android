@@ -15,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -46,6 +45,7 @@ import com.bytemedrive.BuildConfig
 import com.bytemedrive.R
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.SnackbarVisualsWithError
+import com.bytemedrive.ui.component.ButtonLoading
 import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -64,6 +64,7 @@ fun SignInScreen(
     val scope = rememberCoroutineScope()
     val username by signInViewModel.username.collectAsState()
     val password by signInViewModel.password.collectAsState()
+    val loading by signInViewModel.loading.collectAsState()
 
     var secretSettingsCounter by remember { mutableStateOf(0) }
 
@@ -137,11 +138,13 @@ fun SignInScreen(
                     signIn()
                 })
             )
-            Button(
-                onClick = { signIn() },
+            ButtonLoading(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(top = 16.dp)
+                    .fillMaxWidth(),
+                onClick = { signIn() },
+                loading = loading,
+                enabled = !loading
             ) {
                 Text(text = "Sign in")
             }
