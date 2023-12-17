@@ -33,7 +33,6 @@ import java.io.File
 import java.util.UUID
 
 class FileViewModel(
-    context: Context,
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
     private val appNavigator: AppNavigator,
@@ -62,10 +61,6 @@ class FileViewModel(
     val dataFilePreview = MutableStateFlow<DataFile?>(null)
 
     private var watchJob: Job? = null
-
-    init {
-        getThumbnails(context)
-    }
 
     fun init (context: Context) {
         watchItems(context)
@@ -96,9 +91,9 @@ class FileViewModel(
     fun longClickFileAndFolder(item: Item) =
         itemsSelected.update {
             if (it.contains(item)) {
-                itemsSelected.value - item
+                it - item
             } else {
-                itemsSelected.value + item
+                it + item
             }
         }
 
@@ -272,8 +267,8 @@ class FileViewModel(
     private fun getThumbnails(context: Context) {
         thumbnails.update {
             AppState.customer!!.dataFilesLinks.value.mapNotNull { dataFileLink ->
-                findThumbnailForDataFileLink(dataFileLink, context)?.let { thumbnails ->
-                    dataFileLink.id to thumbnails
+                findThumbnailForDataFileLink(dataFileLink, context)?.let { thumbnail ->
+                    dataFileLink.id to thumbnail
                 }
             }.toMap()
         }
