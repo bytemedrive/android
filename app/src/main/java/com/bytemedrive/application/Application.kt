@@ -12,8 +12,10 @@ import com.bytemedrive.store.EncryptedPrefs
 import com.stripe.android.PaymentConfiguration
 import io.ktor.client.HttpClient
 import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 
 val sharedPreferences: ByteMeSharedPreferences by lazy {
     Application.sharedPreferences!!
@@ -51,9 +53,10 @@ class Application : android.app.Application() {
 
         if (!isKoinStarted) {
             startKoin {
+                androidLogger(if (BuildConfig.DEBUG) Level.ERROR else Level.NONE)
                 androidContext(applicationContext)
                 workManagerFactory()
-                modules(accountModule, viewModelsModule, databaseModule, networkModule, storeModule)
+                modules(databaseModule, accountModule, viewModelsModule, networkModule, storeModule)
             }
 
             isKoinStarted = true
