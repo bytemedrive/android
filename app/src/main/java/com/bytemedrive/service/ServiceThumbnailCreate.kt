@@ -8,6 +8,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.media3.common.MimeTypes
 import com.bytemedrive.file.root.Resolution
+import com.bytemedrive.file.root.UploadChunk
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.image.ImageManager
 import com.bytemedrive.privacy.AesService
@@ -37,15 +38,20 @@ class ServiceThumbnailCreate : Service() {
                 withContext(Dispatchers.IO) {
 
                     AppState.customer?.dataFiles?.value?.forEach { dataFile ->
-                        Log.i(TAG, "File chunk view ids=${dataFile.chunksViewIds} has ${dataFile.thumbnails.size} thumbnails.")
+                        val chunkViewIds = dataFile.chunks.map(UploadChunk::viewId)
+                        Log.i(TAG, "File chunk view ids=$chunkViewIds has ${dataFile.thumbnails.size} thumbnails.")
 
                         resolutions.forEach { resolution ->
                             if (dataFile.contentType == MimeTypes.IMAGE_JPEG && dataFile.thumbnails.find { it.resolution == resolution } == null) {
-                                Log.i(TAG, "Missing thumbnail with resolution $resolution for file chunk view ids=${dataFile.chunksViewIds}.")
-                                val encryptedFile = fileManager.rebuildFile(dataFile.chunksViewIds, "${dataFile.id}-encrypted", dataFile.contentType, applicationContext.cacheDir)
+                                Log.i(TAG, "Missing thumbnail with resolution $resolution for file chunk view ids=$chunkViewIds.")
+                                val encryptedFile = fileManager.rebuildFile(chunkViewIds, "${dataFile.id}-encrypted", dataFile.contentType, applicationContext.cacheDir)
 
-                                if (encryptedFile.readBytes().isNotEmpty()) {
-                                    val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), dataFile.secretKey)
+                                val sizeOfChunks = dataFile.chunks.sumOf(UploadChunk::sizeBytes)
+
+                                if (sizeOfChunks != encryptedFile.length()) {
+                                    Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
+                                } else {
+                                    val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), dataFile.secretKey!!)
                                     var thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
 
                                     dataFile.exifOrientation?.let { thumbnail = ImageManager.rotateBitmap(thumbnail, it) }

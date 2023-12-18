@@ -5,15 +5,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class UploadViewModel(
     private val queueFileUploadRepository: QueueFileUploadRepository,
+    private val eventPublisher: EventPublisher
 ) : ViewModel() {
 
     fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: UUID?) = viewModelScope.launch {
@@ -27,5 +30,6 @@ class UploadViewModel(
         }
 
         queueFileUploadRepository.addFile(FileUpload(dataFileId, documentFile.name.orEmpty(), tmpOriginalFile.absolutePath, folderId))
+        eventPublisher.publishEvent(EventFileUploadQueued(dataFileId, documentFile.name.orEmpty(), documentFile.length(), UUID.randomUUID(), ZonedDateTime.now(), folderId))
     }
 }

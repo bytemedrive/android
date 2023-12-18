@@ -44,7 +44,7 @@ val viewModelsModule = module {
     viewModel { FilePreviewViewModel() }
     viewModel { FileSelectionViewModel(get(), get()) }
     viewModel { SignInViewModel(get()) }
-    viewModel { UploadViewModel(get()) }
+    viewModel { UploadViewModel(get(), get()) }
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
     viewModel { PaymentMethodCreditCardViewModel(get()) }

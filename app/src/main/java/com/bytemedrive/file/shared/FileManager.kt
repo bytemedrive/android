@@ -13,11 +13,13 @@ import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.DataFileLink
 import com.bytemedrive.file.root.EventFileCopied
+import com.bytemedrive.file.root.EventFileUploadCompleted
 import com.bytemedrive.file.root.EventFileUploadStarted
-import com.bytemedrive.file.root.EventThumbnailUploaded
+import com.bytemedrive.file.root.EventThumbnailCompleted
+import com.bytemedrive.file.root.EventThumbnailStarted
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Resolution
-import com.bytemedrive.file.root.bottomsheet.FileUploadChunk
+import com.bytemedrive.file.root.UploadChunk
 import com.bytemedrive.folder.Folder
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
@@ -54,9 +56,15 @@ class FileManager(
                     put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
                 }
                 val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-                val encryptedFile = rebuildFile(dataFile.chunks.map { it.viewId }, "${dataFileLink.id}-encrypted", dataFile.contentType, context.cacheDir)
+                val encryptedFile = rebuildFile(dataFile.chunks.map { it.viewId }, "${dataFileLink.id}-encrypted", dataFile.contentType!!, context.cacheDir)
 
-                AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey, encryptedFile.length())
+                val sizeOfChunks = dataFile.chunks.sumOf(UploadChunk::sizeBytes)
+
+                if (sizeOfChunks != encryptedFile.length()) {
+                    Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
+                } else {
+                    AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey!!, encryptedFile.length())
+                }
             }
         }
 
@@ -89,20 +97,19 @@ class FileManager(
                 eventPublisher.publishEvent(
                     EventFileUploadStarted(
                         dataFileId,
-                        chunks.map { FileUploadChunk(it.id, it.viewId, it.file.length()) },
-                        fileUpload. name,
-                        tmpEncryptedFile.length(),
+                        chunks.map { UploadChunk(it.id, it.viewId, it.file.length()) },
                         checksum,
                         contentType,
                         Base64.getEncoder().encodeToString(secretKey.encoded),
-                        UUID.randomUUID(),
                         ZonedDateTime.now(),
-                        folder,
                         exifOrientation
                     )
                 )
                 fileRepository.upload(wallet, chunks)
-                // TODO EventFileUploadCompleted
+                eventPublisher.publishEvent(EventFileUploadCompleted(dataFileId, ZonedDateTime.now()))
+                tmpOriginalFile.delete()
+                tmpEncryptedFile.delete()
+                chunks.forEach { it.file.delete() }
             }
         }
     }
@@ -151,21 +158,21 @@ class FileManager(
         val chunks = getChunks(tmpEncryptedFile, directory)
 
         AppState.customer?.wallet?.let { wallet ->
-            fileRepository.upload(wallet, chunks)
-
             eventPublisher.publishEvent(
-                EventThumbnailUploaded(
+                EventThumbnailStarted(
                     sourceDataFileId,
-                    chunks.map { it.id },
-                    chunks.map { it.viewId },
-                    tmpEncryptedFile.length(),
+                    chunks.map { UploadChunk(it.id, it.viewId, it.file.length()) },
+                    bytes.size.toLong(),
                     ShaService.checksum(bytes.inputStream()),
                     contentType,
                     Base64.getEncoder().encodeToString(secretKey.encoded),
                     resolution,
+                    ZonedDateTime.now()
                 )
             )
 
+            fileRepository.upload(wallet, chunks)
+            eventPublisher.publishEvent(EventThumbnailCompleted(sourceDataFileId, resolution, ZonedDateTime.now()))
         }
     }
 
