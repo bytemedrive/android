@@ -24,11 +24,5 @@ data class EventThumbnailCompleted(
                 }
             )
         }
-        customer.dataFilesLinks.update { dataFileLinks ->
-            dataFileLinks.updateIf(
-                { it.dataFileId == sourceDataFileId },
-                { it.copy(uploading = false) }
-            )
-        }
     }
 }

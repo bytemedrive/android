@@ -17,7 +17,7 @@ data class EventFileUploadQueued(
 
     override fun convert(customer: CustomerAggregate) {
         val dataFile = DataFile(dataFileId, name, sizeBytes, DataFile.UploadStatus.QUEUED)
-        val dataFileLink = DataFileLink(dataFileLinkId, dataFileId, name, folderId)
+        val dataFileLink = DataFileLink(dataFileLinkId, dataFileId, name, folderId, true)
 
         customer.dataFiles.update { it + dataFile }
         customer.dataFilesLinks.update { it + dataFileLink }
