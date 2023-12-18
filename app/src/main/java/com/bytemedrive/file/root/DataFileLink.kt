@@ -7,5 +7,6 @@ data class DataFileLink(
     val dataFileId: UUID,
     val name: String,
     val folderId: UUID?,
+    val uploading: Boolean = true,
     val starred: Boolean = false,
 )
