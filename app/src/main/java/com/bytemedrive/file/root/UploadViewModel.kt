@@ -8,6 +8,7 @@ import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
@@ -29,7 +30,9 @@ class UploadViewModel(
             inputStream.use { inputStream -> inputStream.copyTo(outputStream, FileManager.BUFFER_SIZE_DEFAULT) }
         }
 
-        queueFileUploadRepository.addFile(FileUpload(dataFileId, documentFile.name.orEmpty(), tmpOriginalFile.absolutePath, folderId))
-        eventPublisher.publishEvent(EventFileUploadQueued(dataFileId, documentFile.name.orEmpty(), documentFile.length(), UUID.randomUUID(), ZonedDateTime.now(), folderId))
+        runBlocking {
+            eventPublisher.publishEvent(EventFileUploadQueued(dataFileId, documentFile.name.orEmpty(), documentFile.length(), UUID.randomUUID(), ZonedDateTime.now(), folderId))
+            queueFileUploadRepository.addFile(FileUpload(dataFileId, documentFile.name.orEmpty(), tmpOriginalFile.absolutePath, folderId))
+        }
     }
 }
