@@ -42,7 +42,6 @@ class EventSyncService(private val storeRepository: StoreRepository, private val
     }
 
     suspend fun addEvents(vararg events: EventObjectWrapper) {
-        delay(10000)
         val allEvents = encryptedSharedPreferences.storeEvent(*events)
 
         if (allEvents.isNotEmpty() && AppState.customer == null) {
