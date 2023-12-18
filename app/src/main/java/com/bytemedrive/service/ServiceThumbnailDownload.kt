@@ -6,7 +6,9 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import androidx.media3.common.MimeTypes
+import com.bytemedrive.file.root.DataFile
 import com.bytemedrive.file.root.Resolution
+import com.bytemedrive.file.root.UploadChunk
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
@@ -34,7 +36,7 @@ class ServiceThumbnailDownload : Service() {
                 withContext(Dispatchers.IO) {
                     val fileList = applicationContext.fileList()
 
-                    AppState.customer?.dataFiles?.value?.forEach { dataFile ->
+                    AppState.customer?.dataFiles?.value?.filter { it.uploadStatus == DataFile.UploadStatus.COMPLETED }?.forEach { dataFile ->
                         resolutions.forEach { resolution ->
                             val thumbnailName = FileManager.getThumbnailName(dataFile.id, resolution)
 
@@ -45,13 +47,17 @@ class ServiceThumbnailDownload : Service() {
                                     .find { it.resolution == resolution }
                                     ?.let { thumbnail ->
                                         val encryptedFile = fileManager.rebuildFile(
-                                            thumbnail.chunksViewIds,
+                                            thumbnail.chunks.map(UploadChunk::viewId),
                                             FileManager.getThumbnailName(dataFile.id, resolution),
                                             thumbnail.contentType,
                                             applicationContext.cacheDir
                                         )
 
-                                        if (encryptedFile.readBytes().isNotEmpty()) {
+                                        val sizeOfChunks = thumbnail.chunks.sumOf(UploadChunk::sizeBytes)
+
+                                        if (sizeOfChunks != encryptedFile.length()) {
+                                            Log.e(TAG, "Encrypted thumbnail size ${encryptedFile.length()} is not same as encrypted thumbnail chunks size $sizeOfChunks")
+                                        } else {
                                             val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), thumbnail.secretKey)
 
                                             applicationContext.openFileOutput(thumbnailName, Context.MODE_PRIVATE).use { it.write(fileDecrypted) }

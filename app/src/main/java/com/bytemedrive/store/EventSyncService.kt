@@ -6,6 +6,7 @@ import com.bytemedrive.network.JsonConfig.mapper
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.wallet.root.WalletRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import java.util.Base64
 import kotlin.streams.toList

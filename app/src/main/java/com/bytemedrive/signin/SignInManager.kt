@@ -86,21 +86,26 @@ class SignInManager(
     }
 
     fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey, context: Context) {
-        encryptedSharedPreferences.username = username
-        encryptedSharedPreferences.credentialsSha3 = credentialsSha3
-        encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
+        try {
+            encryptedSharedPreferences.username = username
+            encryptedSharedPreferences.credentialsSha3 = credentialsSha3
+            encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
 
-        val events = encryptedSharedPreferences.getEvents()
+            val events = encryptedSharedPreferences.getEvents()
 
-        if (events.isNotEmpty()) {
-            val customer = CustomerAggregate()
-            events.stream().forEach { it.data.convert(customer) }
-            AppState.customer = customer
-            AppState.authorized.update { true }
+            if (events.isNotEmpty()) {
+                val customer = CustomerAggregate()
+                events.stream().forEach { it.data.convert(customer) }
+                AppState.customer = customer
+                AppState.authorized.update { true }
+            }
+            startEventAutoSync()
+            startPollingData()
+            serviceManager.startServices(context)
+        } catch (e: Exception) {
+            Log.e(TAG, "")
+            signOut()
         }
-        startEventAutoSync()
-        startPollingData()
-        serviceManager.startServices(context)
     }
 
     fun signOut() = CoroutineScope(Dispatchers.IO).launch {
