@@ -13,10 +13,11 @@ import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.DataFileLink
 import com.bytemedrive.file.root.EventFileCopied
-import com.bytemedrive.file.root.EventFileUploaded
+import com.bytemedrive.file.root.EventFileUploadStarted
 import com.bytemedrive.file.root.EventThumbnailUploaded
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Resolution
+import com.bytemedrive.file.root.bottomsheet.FileUploadChunk
 import com.bytemedrive.folder.Folder
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
@@ -27,6 +28,7 @@ import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.time.ZonedDateTime
 import java.util.Base64
 import java.util.Locale
 import java.util.UUID
@@ -52,7 +54,7 @@ class FileManager(
                     put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
                 }
                 val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-                val encryptedFile = rebuildFile(dataFile.chunksViewIds, "${dataFileLink.id}-encrypted", dataFile.contentType, context.cacheDir)
+                val encryptedFile = rebuildFile(dataFile.chunks.map { it.viewId }, "${dataFileLink.id}-encrypted", dataFile.contentType, context.cacheDir)
 
                 AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey, encryptedFile.length())
             }
@@ -84,22 +86,23 @@ class FileManager(
             Log.i(TAG, "File ${file.name} split into ${chunks.size} chunks")
 
             AppState.customer?.wallet?.let { wallet ->
-                fileRepository.upload(wallet, chunks)
                 eventPublisher.publishEvent(
-                    EventFileUploaded(
+                    EventFileUploadStarted(
                         dataFileId,
-                        chunks.map { it.id },
-                        chunks.map { it.viewId },
-                        fileUpload.name,
+                        chunks.map { FileUploadChunk(it.id, it.viewId, it.file.length()) },
+                        fileUpload. name,
                         tmpEncryptedFile.length(),
                         checksum,
                         contentType,
                         Base64.getEncoder().encodeToString(secretKey.encoded),
                         UUID.randomUUID(),
+                        ZonedDateTime.now(),
                         folder,
                         exifOrientation
-                        )
+                    )
                 )
+                fileRepository.upload(wallet, chunks)
+                // TODO EventFileUploadCompleted
             }
         }
     }
@@ -148,6 +151,8 @@ class FileManager(
         val chunks = getChunks(tmpEncryptedFile, directory)
 
         AppState.customer?.wallet?.let { wallet ->
+            fileRepository.upload(wallet, chunks)
+
             eventPublisher.publishEvent(
                 EventThumbnailUploaded(
                     sourceDataFileId,
@@ -161,7 +166,6 @@ class FileManager(
                 )
             )
 
-            fileRepository.upload(wallet, chunks)
         }
     }
 
