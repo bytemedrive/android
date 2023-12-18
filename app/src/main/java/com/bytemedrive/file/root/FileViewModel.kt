@@ -246,9 +246,9 @@ class FileViewModel(
 
                 val tempFiles = dataFilesLinks
                     .filter { file -> file.folderId == selectedFolder?.id }
-                    .map { Item(it.id, it.name, ItemType.FILE, it.starred, false, it.folderId) }
+                    .map { Item(it.id, it.name, ItemType.FILE, it.starred, it.uploading, it.folderId) }
 
-                tempFolders + tempFiles
+                tempFolders.sortedBy { it.name.lowercase() } + tempFiles.sortedBy { it.name.lowercase() }
             }.collectLatest { collectedItems ->
                 items.update { collectedItems }
                 getThumbnails(context)
