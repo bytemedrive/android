@@ -37,7 +37,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelsModule = module {
-    single { FileViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    single { FileViewModel(get(), get(), get(), get(), get(), get()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
     viewModel { TerminateAccountViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }

@@ -39,7 +39,7 @@ class SignInManager(
     private var jobSync: Job? = null
     private var jobPolling: Job? = null
 
-    fun autoSignIn(context: Context) {
+    fun autoSignIn(context: Context) = CoroutineScope(Dispatchers.Default).launch {
         val username = encryptedSharedPreferences.username
         val credentialsSha3 = encryptedSharedPreferences.credentialsSha3
         val eventsSecretKey = encryptedSharedPreferences.getEventsSecretKey(EncryptionAlgorithm.AES256)
@@ -103,7 +103,7 @@ class SignInManager(
         serviceManager.startServices(context)
     }
 
-    fun signOut() {
+    fun signOut() = CoroutineScope(Dispatchers.IO).launch {
         jobSync?.cancel()
         jobPolling?.cancel()
         AppState.customer = null

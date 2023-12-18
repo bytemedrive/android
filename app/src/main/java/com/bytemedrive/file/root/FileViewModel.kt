@@ -36,7 +36,6 @@ class FileViewModel(
     private val appNavigator: AppNavigator,
     private val folderManager: FolderManager,
     private val fileManager: FileManager,
-    private val queueFileUploadRepository: QueueFileUploadRepository,
     private val queueFileDownloadRepository: QueueFileDownloadRepository,
 ) : ViewModel() {
 
@@ -60,7 +59,7 @@ class FileViewModel(
 
     private var watchJob: Job? = null
 
-    fun init (context: Context) {
+    fun init(context: Context) {
         watchItems(context)
     }
 
@@ -240,8 +239,7 @@ class FileViewModel(
                 selectedFolder,
                 AppState.customer!!.folders,
                 AppState.customer!!.dataFilesLinks,
-                queueFileUploadRepository.watchFiles()
-            ) { selectedFolder, folders, dataFilesLinks, filesToUpload ->
+            ) { selectedFolder, folders, dataFilesLinks, ->
                 val tempFolders = folders
                     .filter { folder -> folder.parent == selectedFolder?.id }
                     .map { Item(it.id, it.name, ItemType.FOLDER, it.starred, false) }
@@ -250,11 +248,7 @@ class FileViewModel(
                     .filter { file -> file.folderId == selectedFolder?.id }
                     .map { Item(it.id, it.name, ItemType.FILE, it.starred, false, it.folderId) }
 
-                val tempFilesToUpload = filesToUpload
-                    .map { Item(it.id, it.name, ItemType.FILE, starred = false, uploading = true, folderId = it.folderId) }
-                    .filter { it.folderId?.equals(selectedFolder?.id) ?: true }
-
-                tempFilesToUpload + tempFolders + tempFiles
+                tempFolders + tempFiles
             }.collectLatest { collectedItems ->
                 items.update { collectedItems }
                 getThumbnails(context)
