@@ -7,14 +7,14 @@ import androidx.room.Query
 import java.util.UUID
 
 @Dao
-interface FileUploadDao {
+interface FileDownloadDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun add(vararg files: FileUploadEntity)
+    suspend fun add(vararg files: FileDownloadEntity)
 
-    @Query("select * from file_upload order by queuedAt asc")
-    suspend fun getAll(): List<FileUploadEntity>
+    @Query("select * from file_download order by queuedAt asc")
+    suspend fun getAll(): List<FileDownloadEntity>
 
-    @Query("delete from file_upload where id = :id")
+    @Query("delete from file_download where id = :id")
     suspend fun delete(id: UUID)
 }

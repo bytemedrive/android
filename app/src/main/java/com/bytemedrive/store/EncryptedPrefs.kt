@@ -10,6 +10,7 @@ import java.security.SecureRandom
 import java.util.Base64
 import java.util.UUID
 import java.util.stream.Collectors
+import kotlin.streams.toList
 
 class EncryptedPrefs(context: Context, masterKeyAlias: String) {
 
@@ -42,6 +43,10 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
     var secretKeys: MutableSet<String>?
         get() = encryptedSharedPreferences.getStringSet(KEY_SECRET_KEYS, mutableSetOf())
         set(value) = encryptedSharedPreferences.edit().putStringSet(KEY_SECRET_KEYS, value).apply()
+
+    var dbPasswordBase64: String?
+        get() = encryptedSharedPreferences.getString(KEY_DB_PASSWORD, null)
+        set(value) = encryptedSharedPreferences.edit().putString(KEY_DB_PASSWORD, value).apply()
 
     fun storeEvent(vararg events: EventObjectWrapper): List<EventObjectWrapper> {
         Log.i(TAG, "EncryptedPrefs storing ${events.size} events")
@@ -114,14 +119,13 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
     }
 
     fun getDbPassword(): ByteArray {
-        val dbPasswordBase64 = encryptedSharedPreferences.getString(KEY_DB_PASSWORD, null)
         if (dbPasswordBase64 != null) {
             return Base64.getDecoder().decode(dbPasswordBase64)
         }
         val dbPassword = ByteArray(16)
         val random = SecureRandom()
         random.nextBytes(dbPassword)
-        encryptedSharedPreferences.edit().putString(KEY_DB_PASSWORD, Base64.getEncoder().encodeToString(dbPassword)).apply()
+        dbPasswordBase64 = Base64.getEncoder().encodeToString(dbPassword)
         return dbPassword
     }
 

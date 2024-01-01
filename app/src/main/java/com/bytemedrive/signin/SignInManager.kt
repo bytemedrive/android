@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.application.networkStatus
-import com.bytemedrive.database.DatabaseManager
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.service.ServiceManager
@@ -30,7 +30,7 @@ class SignInManager(
     private val signInRepository: SignInRepository,
     private val walletRepository: WalletRepository,
     private val eventSyncService: EventSyncService,
-    private val databaseManager: DatabaseManager,
+    private val byteMeDatabase: ByteMeDatabase,
     private val serviceManager: ServiceManager
 ) {
 
@@ -113,8 +113,8 @@ class SignInManager(
         jobPolling?.cancel()
         AppState.customer = null
         AppState.authorized.update { false }
+        byteMeDatabase.clearAllTables()
         encryptedSharedPreferences.clean()
-        databaseManager.clearCollections()
     }
 
     private fun startEventAutoSync() {

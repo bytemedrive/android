@@ -5,13 +5,10 @@ import androidx.room.PrimaryKey
 import java.time.ZonedDateTime
 import java.util.UUID
 
-@Entity(tableName = "file_upload")
-data class FileUploadEntity(
+@Entity(tableName = "file_download")
+data class FileDownloadEntity(
 
     @PrimaryKey
     val id: UUID,
-    val name: String,
-    val path: String,
-    val folderId: UUID?,
     val queuedAt: ZonedDateTime
 )

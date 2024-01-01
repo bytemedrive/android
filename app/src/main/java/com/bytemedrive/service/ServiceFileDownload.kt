@@ -69,7 +69,7 @@ class ServiceFileDownload : Service() {
         Log.i(TAG, "Started downloading $dataFileLinkId")
 
         fileManager.downloadFile(dataFileLinkId)
-        queueFileDownloadRepository.deleteFile(dataFileLinkId.toString())
+        queueFileDownloadRepository.deleteFile(dataFileLinkId)
 
         Log.i(TAG, "Finished downloading $dataFileLinkId")
     }
