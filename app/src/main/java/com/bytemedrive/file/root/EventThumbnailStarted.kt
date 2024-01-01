@@ -1,13 +1,11 @@
 package com.bytemedrive.file.root
 
-import com.bytemedrive.kotlin.updateIf
+import com.bytemedrive.database.ByteMeDatabase
+import com.bytemedrive.datafile.entity.Thumbnail
+import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.time.ZonedDateTime
-import java.util.Base64
 import java.util.UUID
-import javax.crypto.spec.SecretKeySpec
 
 data class EventThumbnailStarted(
     val sourceDataFileId: UUID,
@@ -20,18 +18,9 @@ data class EventThumbnailStarted(
     val startedAt: ZonedDateTime,
 ) : Convertable {
 
-    override fun convert(customer: CustomerAggregate) {
-        val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
-        val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
-
-        customer.dataFiles.update { dataFiles ->
-            dataFiles.updateIf(
-                { it.id == sourceDataFileId },
-                {
-                    val thumbnail = DataFile.Thumbnail(resolution, chunks, sizeBytes, contentType, secretKey, DataFile.UploadStatus.STARTED)
-                    it.copy(thumbnails = it.thumbnails + thumbnail)
-                }
-            )
-        }
+    override suspend fun convert(database: ByteMeDatabase) {
+        val dao = database.dataFileDao()
+        val dataFile = dao.geDataFileById(sourceDataFileId)
+        dao.update(dataFile.copy(thumbnails = dataFile.thumbnails + Thumbnail(resolution, chunks, sizeBytes, contentType, secretKeyBase64, UploadStatus.STARTED)))
     }
 }

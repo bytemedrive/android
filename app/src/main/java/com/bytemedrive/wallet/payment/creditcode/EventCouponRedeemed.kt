@@ -9,7 +9,7 @@ data class EventCouponRedeemed(
     val code: String
 ) : Convertable {
 
-    override fun convert(customer: CustomerAggregate) {
+    override suspend fun convert(customer: CustomerAggregate) {
 
     }
 }

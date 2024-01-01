@@ -1,13 +1,10 @@
 package com.bytemedrive.file.root
 
-import com.bytemedrive.kotlin.updateIf
+import com.bytemedrive.database.ByteMeDatabase
+import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.time.ZonedDateTime
-import java.util.Base64
 import java.util.UUID
-import javax.crypto.spec.SecretKeySpec
 
 data class EventFileUploadStarted(
     val dataFileId: UUID,
@@ -19,22 +16,17 @@ data class EventFileUploadStarted(
     val exifOrientation: Int?,
 ) : Convertable {
 
-    override fun convert(customer: CustomerAggregate) {
-        val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
-        val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
-
-        customer.dataFiles.update { dataFile ->
-            dataFile.updateIf(
-                { it.id == dataFileId },
-                { it.copy(
-                    chunks = chunks,
-                    checksum = checksum,
-                    contentType = contentType,
-                    secretKey = secretKey,
-                    exifOrientation = exifOrientation,
-                    uploadStatus = DataFile.UploadStatus.STARTED
-                ) }
+    override suspend fun convert(database: ByteMeDatabase) {
+        val dataFile = database.dataFileDao().geDataFileById(dataFileId)
+        database.dataFileDao().update(
+            dataFile.copy(
+                chunks = chunks,
+                contentType = contentType,
+                secretKeyBase64 = secretKeyBase64,
+                checksum = checksum,
+                uploadStatus = UploadStatus.STARTED,
+                exifOrientation = exifOrientation
             )
-        }
+        )
     }
 }

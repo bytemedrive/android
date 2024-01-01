@@ -57,6 +57,10 @@ val databaseModule = module {
     single { ByteMeDatabase.newInstance(androidContext()) }
     single { get<ByteMeDatabase>().fileDownloadDao() }
     single { get<ByteMeDatabase>().fileUploadDao() }
+    single { get<ByteMeDatabase>().eventDao() }
+    single { get<ByteMeDatabase>().customerDao() }
+    single { get<ByteMeDatabase>().dataFileDao() }
+    single { get<ByteMeDatabase>().folderDao() }
 }
 
 val networkModule = module {
@@ -81,5 +85,5 @@ val accountModule = module {
 
 val storeModule = module {
     single { EventPublisher(get(), get()) }
-    single { EventSyncService(get(), get()) }
+    single { EventSyncService(get(), get(), get()) }
 }

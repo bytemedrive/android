@@ -1,8 +1,7 @@
 package com.bytemedrive.folder
 
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.util.UUID
 
 data class EventFolderCreated(
@@ -12,7 +11,7 @@ data class EventFolderCreated(
     val parent: UUID? = null
 ) : Convertable {
 
-    override fun convert(customer: CustomerAggregate) {
-        customer.folders.update { it + Folder(id, name, starred, parent) }
+    override suspend fun convert(database: ByteMeDatabase) {
+        database.folderDao().add(FolderEntity(id, name, starred, parent))
     }
 }

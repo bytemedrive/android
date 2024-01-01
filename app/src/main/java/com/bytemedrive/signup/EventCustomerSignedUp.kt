@@ -11,7 +11,7 @@ data class EventCustomerSignedUp(
     val signedUpAt: ZonedDateTime
 ) : Convertable {
 
-    override fun convert(customer: CustomerAggregate) {
+    override suspend fun convert(customer: CustomerAggregate) {
         customer.setUsername(username)
         customer.wallet = wallet
         customer.signUpAt = signedUpAt

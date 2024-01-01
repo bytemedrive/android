@@ -1,7 +1,8 @@
 package com.bytemedrive.store
 
+import com.bytemedrive.database.ByteMeDatabase
+
 interface Convertable {
 
-    fun convert(customer: CustomerAggregate)
-
+    suspend fun convert(database: ByteMeDatabase)
 }
