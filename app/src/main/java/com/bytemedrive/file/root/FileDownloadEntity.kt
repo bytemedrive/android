@@ -1,5 +1,6 @@
 package com.bytemedrive.file.root
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.ZonedDateTime
@@ -9,6 +10,6 @@ import java.util.UUID
 data class FileDownloadEntity(
 
     @PrimaryKey
-    val id: UUID,
-    val queuedAt: ZonedDateTime
+    @ColumnInfo(name = "id") val id: UUID,
+    @ColumnInfo(name = "queued_at") val queuedAt: ZonedDateTime
 )

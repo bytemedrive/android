@@ -1,5 +1,6 @@
 package com.bytemedrive.file.root
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.ZonedDateTime
@@ -9,9 +10,9 @@ import java.util.UUID
 data class FileUploadEntity(
 
     @PrimaryKey
-    val id: UUID,
-    val name: String,
-    val path: String,
-    val folderId: UUID?,
-    val queuedAt: ZonedDateTime
+    @ColumnInfo(name = "id") val id: UUID,
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "path") val path: String,
+    @ColumnInfo(name = "folder_id") val folderId: UUID?,
+    @ColumnInfo(name = "queued_at") val queuedAt: ZonedDateTime
 )

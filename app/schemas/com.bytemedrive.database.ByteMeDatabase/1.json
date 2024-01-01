@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b28aeda94b3d744b565b4e3ae817b5dd",
+    "identityHash": "70fb678f1b1101c60e2ab99dee8e6da8",
     "entities": [
       {
         "tableName": "file_download",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `queuedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `queued_at` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -16,7 +16,7 @@
           },
           {
             "fieldPath": "queuedAt",
-            "columnName": "queuedAt",
+            "columnName": "queued_at",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -32,7 +32,7 @@
       },
       {
         "tableName": "file_upload",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `name` TEXT NOT NULL, `path` TEXT NOT NULL, `folderId` BLOB, `queuedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `name` TEXT NOT NULL, `path` TEXT NOT NULL, `folder_id` BLOB, `queued_at` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -54,13 +54,13 @@
           },
           {
             "fieldPath": "folderId",
-            "columnName": "folderId",
+            "columnName": "folder_id",
             "affinity": "BLOB",
             "notNull": false
           },
           {
             "fieldPath": "queuedAt",
-            "columnName": "queuedAt",
+            "columnName": "queued_at",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -76,7 +76,7 @@
       },
       {
         "tableName": "event",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `eventType` TEXT NOT NULL, `publishedAt` TEXT NOT NULL, `dataJson` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `event_type` TEXT NOT NULL, `published_at` TEXT NOT NULL, `data_json` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -86,19 +86,19 @@
           },
           {
             "fieldPath": "eventType",
-            "columnName": "eventType",
+            "columnName": "event_type",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "publishedAt",
-            "columnName": "publishedAt",
+            "columnName": "published_at",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "dataJson",
-            "columnName": "dataJson",
+            "columnName": "data_json",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -345,7 +345,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b28aeda94b3d744b565b4e3ae817b5dd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '70fb678f1b1101c60e2ab99dee8e6da8')"
     ]
   }
 }
