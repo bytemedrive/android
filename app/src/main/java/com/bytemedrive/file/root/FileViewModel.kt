@@ -248,7 +248,7 @@ class FileViewModel(
                     .filter { file -> file.folderId == selectedFolder?.id }
                     .map { Item(it.id, it.name, ItemType.FILE, it.starred, it.uploading, it.folderId) }
 
-                tempFolders.sortedBy { it.name.lowercase() } + tempFiles.sortedBy { it.name.lowercase() }
+                tempFolders + tempFiles
             }.collectLatest { collectedItems ->
                 items.update { collectedItems }
                 getThumbnails(context)
