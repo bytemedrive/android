@@ -1,5 +1,7 @@
 package com.bytemedrive.koin
 
+import com.bytemedrive.database.ByteMeDatabase
+import com.bytemedrive.database.DataFileLinkDao
 import com.bytemedrive.database.DatabaseManager
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.FileViewModel
@@ -54,7 +56,9 @@ val viewModelsModule = module {
 }
 
 val databaseModule = module {
-    single { DatabaseManager(androidContext()) }
+    single { ByteMeDatabase.newInstance(androidContext()) }
+    single { get<ByteMeDatabase>().dataFileLinkDao() }
+    single { get<ByteMeDatabase>().fileUploadDao() }
 }
 
 val networkModule = module {

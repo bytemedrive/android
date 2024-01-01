@@ -6,13 +6,15 @@ import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import com.bytemedrive.network.JsonConfig.mapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.security.SecureRandom
+import java.util.Base64
 import java.util.UUID
 import java.util.stream.Collectors
-import kotlin.streams.toList
 
 class EncryptedPrefs(context: Context, masterKeyAlias: String) {
+
     private val TAG = EncryptedPrefs::class.qualifiedName
-    
+
     private val encryptedSharedPreferences: SharedPreferences
 
     var username: String?
@@ -111,6 +113,18 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
         return null
     }
 
+    fun getDbPassword(): ByteArray {
+        val dbPasswordBase64 = encryptedSharedPreferences.getString(KEY_DB_PASSWORD, null)
+        if (dbPasswordBase64 != null) {
+            return Base64.getDecoder().decode(dbPasswordBase64)
+        }
+        val dbPassword = ByteArray(16)
+        val random = SecureRandom()
+        random.nextBytes(dbPassword)
+        encryptedSharedPreferences.edit().putString(KEY_DB_PASSWORD, Base64.getEncoder().encodeToString(dbPassword)).apply()
+        return dbPassword
+    }
+
     fun clean() {
         username = null
         credentialsSha3 = null
@@ -127,6 +141,7 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
         private const val KEY_SECRET_KEYS = "secret-keys"
         private const val KEY_EVENTS = "events"
         private const val KEY_EVENTS_COUNT = "events-count"
+        private const val KEY_DB_PASSWORD = "db-password"
     }
 
     init {

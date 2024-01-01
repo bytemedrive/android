@@ -76,7 +76,7 @@ class ServiceFileUpload : Service() {
                 fileManager.uploadFile(fileUpload, applicationContext.cacheDir, file)
             } catch (exception: Exception) {
                 Log.e(TAG, "File upload failed! File path=${file.path}.")
-                queueFileUploadRepository.deleteFile(fileUpload.id.toString())
+                queueFileUploadRepository.deleteFile(fileUpload.id)
 
                 throw IllegalStateException("${file.name} upload failed! Please try again.", exception)
             }
@@ -85,7 +85,7 @@ class ServiceFileUpload : Service() {
         }
 
         Log.i(TAG, "Removing file id=${fileUpload.id} from uploading queue")
-        queueFileUploadRepository.deleteFile(fileUpload.id.toString())
+        queueFileUploadRepository.deleteFile(fileUpload.id)
 
         Log.i(TAG, "Finished uploading file id=${fileUpload.id}")
     }
