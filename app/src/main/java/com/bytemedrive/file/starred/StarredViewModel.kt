@@ -8,7 +8,7 @@ import androidx.media3.common.MimeTypes
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.bytemedrive.file.root.DataFile
+import com.bytemedrive.datafile.entity.DataFileEntity
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.FilePagingSource
 import com.bytemedrive.file.root.FileRepository
@@ -43,7 +43,7 @@ class StarredViewModel(
 
     val itemsSelected = MutableStateFlow(emptyList<Item>())
 
-    val dataFilePreview = MutableStateFlow<DataFile?>(null)
+    val dataFilePreview = MutableStateFlow<DataFileEntity?>(null)
 
     private var watchJob: Job? = null
 
@@ -85,7 +85,7 @@ class StarredViewModel(
     fun clearSelectedItems() = itemsSelected.update { emptyList() }
 
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
-        val dataFileLinks = AppState.customer!!.dataFilesLinks
+        /*val dataFileLinks = AppState.customer!!.dataFilesLinks
         val folders = AppState.customer!!.folders
 
         AppState.customer?.wallet?.let { walletId ->
@@ -112,7 +112,7 @@ class StarredViewModel(
 
                 (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).map { it.id }
             }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFolderDeleted(foldersToRemove)) }
-        }
+        }*/
     }
 
     fun getStarredFilesPages(): Flow<PagingData<Item>> =

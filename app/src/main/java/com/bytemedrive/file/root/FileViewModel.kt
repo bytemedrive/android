@@ -5,16 +5,20 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.bytemedrive.datafile.entity.DataFileEntity
+import com.bytemedrive.datafile.entity.DataFileLinkEntity
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
 import com.bytemedrive.folder.EventFolderStarRemoved
-import com.bytemedrive.folder.Folder
+import com.bytemedrive.folder.FolderDao
+import com.bytemedrive.folder.FolderEntity
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
@@ -37,13 +41,14 @@ class FileViewModel(
     private val folderManager: FolderManager,
     private val fileManager: FileManager,
     private val queueFileDownloadRepository: QueueFileDownloadRepository,
+    private val folderDao: FolderDao,
 ) : ViewModel() {
 
     private val TAG = FileViewModel::class.qualifiedName
 
     var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
 
-    val selectedFolder = MutableStateFlow<Folder?>(null)
+    val selectedFolder = MutableStateFlow<FolderEntity?>(null)
 
     var items = MutableStateFlow(listOf<Item>())
 
@@ -55,7 +60,7 @@ class FileViewModel(
 
     val action = MutableStateFlow<Action?>(null)
 
-    val dataFilePreview = MutableStateFlow<DataFile?>(null)
+    val dataFilePreview = MutableStateFlow<DataFileEntity?>(null)
 
     private var watchJob: Job? = null
 
@@ -107,10 +112,10 @@ class FileViewModel(
 
     fun singleDataFileLink(id: UUID) = AppState.customer!!.dataFilesLinks.value.find { it.id == id }
 
-    fun singleFolder(id: UUID) = AppState.customer!!.folders.value.find { it.id == id }
+    fun singleFolder(id: UUID) = folderDao.getById(id)
 
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
-        val dataFileLinks = AppState.customer!!.dataFilesLinks
+        /*val dataFileLinks = AppState.customer!!.dataFilesLinks
         val folders = AppState.customer!!.folders
 
         AppState.customer?.wallet?.let { walletId ->
@@ -137,7 +142,7 @@ class FileViewModel(
 
                 (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).map { it.id }
             }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFolderDeleted(foldersToRemove)) }
-        }
+        }*/
     }
 
     fun removeFile(id: UUID, onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
@@ -158,7 +163,7 @@ class FileViewModel(
     }
 
     fun removeFolder(id: UUID, onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
-        val dataFileLinks = AppState.customer!!.dataFilesLinks
+       /* val dataFileLinks = AppState.customer!!.dataFilesLinks
         val folders = AppState.customer!!.folders
 
         AppState.customer?.wallet?.let { walletId ->
@@ -178,7 +183,7 @@ class FileViewModel(
             }
 
             onSuccess?.invoke()
-        }
+        }*/
     }
 
     fun toggleStarredFile(id: UUID, value: Boolean, onSuccess: () -> Unit) = viewModelScope.launch {
@@ -266,7 +271,7 @@ class FileViewModel(
         }
     }
 
-    private fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, context: Context): Bitmap? {
+    private fun findThumbnailForDataFileLink(dataFileLink: DataFileLinkEntity, context: Context): Bitmap? {
         val dataFiles = AppState.customer?.dataFiles
 
         if (dataFiles != null) {

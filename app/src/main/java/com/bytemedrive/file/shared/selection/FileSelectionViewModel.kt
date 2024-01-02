@@ -14,7 +14,7 @@ import com.bytemedrive.file.root.Item
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.folder.EventFolderCopied
 import com.bytemedrive.folder.EventFolderMoved
-import com.bytemedrive.folder.Folder
+import com.bytemedrive.folder.FolderEntity
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
@@ -32,7 +32,7 @@ class FileSelectionViewModel(
     private val folderManager: FolderManager
 ) : ViewModel() {
 
-    val selectedFolder = MutableStateFlow<Folder?>(null)
+    val selectedFolder = MutableStateFlow<FolderEntity?>(null)
 
     private var fileAndFolderList = MutableStateFlow(listOf<Item>())
 
@@ -65,7 +65,7 @@ class FileSelectionViewModel(
 
     // TODO: Rework with use of recursive function to have single iteration
     fun copyItem(action: Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
-        val folders = AppState.customer!!.folders.value
+        /*val folders = AppState.customer!!.folders.value
 
         folders.filter { folder -> action.ids.contains(folder.id) }.forEach { folder ->
             val currentFolderToCopy = folder.copy(id = UUID.randomUUID(), name = "Copy of ${folder.name}", parent = folderId)
@@ -91,7 +91,7 @@ class FileSelectionViewModel(
         }
 
         clearFileSelection()
-        closeDialog()
+        closeDialog()*/
     }
 
     fun moveItems(action: Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
@@ -123,9 +123,9 @@ class FileSelectionViewModel(
     }
 
     private suspend fun copyFolders(currentFolderId: UUID, newFolderId: UUID) {
-        AppState.customer!!.folders.value.filter { it.parent == currentFolderId }.forEach {
+        /*AppState.customer!!.folders.value.filter { it.parent == currentFolderId }.forEach {
             eventPublisher.publishEvent(EventFolderCopied(it.id, parentId = newFolderId))
-        }
+        }*/
     }
 
     private suspend fun copyFiles(currentFolderId: UUID, newFolderId: UUID?) {

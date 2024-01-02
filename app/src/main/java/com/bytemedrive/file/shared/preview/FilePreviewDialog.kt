@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.MimeTypes
-import com.bytemedrive.file.root.DataFile
+import com.bytemedrive.datafile.entity.DataFileEntity
 import com.bytemedrive.ui.component.Loader
 import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
@@ -41,7 +41,7 @@ import java.util.UUID
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FilePreviewDialog(
-    initialDataFile: DataFile,
+    initialDataFile: DataFileEntity,
     dataFileIds: List<UUID>,
     onClose: () -> Unit,
     filePreviewViewModel: FilePreviewViewModel = koinViewModel()

@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
-import com.bytemedrive.file.root.DataFile
+import com.bytemedrive.datafile.entity.DataFileEntity
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.store.AppState
@@ -51,5 +51,5 @@ class FilePreviewViewModel : ViewModel() {
         loading.update { false }
     }
 
-    class Thumbnail(val bitmap: Bitmap, val dataFile: DataFile)
+    class Thumbnail(val bitmap: Bitmap, val dataFile: DataFileEntity)
 }

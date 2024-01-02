@@ -1,7 +1,8 @@
 package com.bytemedrive.signup
 
+import com.bytemedrive.customer.entity.CustomerEntity
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -11,9 +12,7 @@ data class EventCustomerSignedUp(
     val signedUpAt: ZonedDateTime
 ) : Convertable {
 
-    override suspend fun convert(customer: CustomerAggregate) {
-        customer.setUsername(username)
-        customer.wallet = wallet
-        customer.signUpAt = signedUpAt
+    override suspend fun convert(database: ByteMeDatabase) {
+        database.customerDao().update(CustomerEntity(username, wallet, signedUpAt, null))
     }
 }

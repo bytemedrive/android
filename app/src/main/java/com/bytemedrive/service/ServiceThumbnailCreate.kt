@@ -51,7 +51,7 @@ class ServiceThumbnailCreate : Service() {
                                 if (sizeOfChunks != encryptedFile.length()) {
                                     Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
                                 } else {
-                                    val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), dataFile.secretKey!!)
+                                    val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), AesService.secretKey(dataFile.secretKeyBase64!!))
                                     var thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
 
                                     dataFile.exifOrientation?.let { thumbnail = ImageManager.rotateBitmap(thumbnail, it) }

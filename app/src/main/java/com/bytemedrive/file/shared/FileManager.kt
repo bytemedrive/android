@@ -10,8 +10,8 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.exifinterface.media.ExifInterface
 import com.bytemedrive.database.FileUpload
+import com.bytemedrive.datafile.entity.DataFileLinkEntity
 import com.bytemedrive.file.root.Chunk
-import com.bytemedrive.file.root.DataFileLink
 import com.bytemedrive.file.root.EventFileCopied
 import com.bytemedrive.file.root.EventFileUploadCompleted
 import com.bytemedrive.file.root.EventFileUploadStarted
@@ -20,7 +20,7 @@ import com.bytemedrive.file.root.EventThumbnailStarted
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.root.UploadChunk
-import com.bytemedrive.folder.Folder
+import com.bytemedrive.folder.FolderEntity
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.AppState
@@ -63,7 +63,8 @@ class FileManager(
                 if (sizeOfChunks != encryptedFile.length()) {
                     Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
                 } else {
-                    AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, dataFile.secretKey!!, encryptedFile.length())
+                    val secretKey = AesService.secretKey(dataFile.secretKeyBase64!!)
+                    AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, secretKey, encryptedFile.length())
                 }
             }
         }
@@ -114,11 +115,11 @@ class FileManager(
         }
     }
 
-    fun findAllFilesRecursively(folderId: UUID, allFolders: List<Folder>, allFiles: List<DataFileLink>): List<DataFileLink> {
+    fun findAllFilesRecursively(folderId: UUID, allFolders: List<FolderEntity>, allFiles: List<DataFileLinkEntity>): List<DataFileLinkEntity> {
         val filesToRemove = allFiles.filter { it.folderId == folderId }
         val subFolders = allFolders.filter { it.parent == folderId }
 
-        val filesInSubFolders = mutableListOf<DataFileLink>()
+        val filesInSubFolders = mutableListOf<DataFileLinkEntity>()
         for (subfolder in subFolders) {
             filesInSubFolders.addAll(findAllFilesRecursively(subfolder.id, allFolders, allFiles))
         }

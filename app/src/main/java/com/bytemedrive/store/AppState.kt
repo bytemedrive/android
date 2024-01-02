@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 object AppState {
 
+    var customer: CustomerAggregate? = null
+
     val authorized = MutableStateFlow(false)
 
     val title = MutableStateFlow("")

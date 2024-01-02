@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 @Dao
@@ -18,7 +19,10 @@ interface FolderDao {
     suspend fun update(vararg folders: FolderEntity)
 
     @Query("select * from folder where id = :id")
-    suspend fun getById(id: UUID): FolderEntity
+    fun getById(id: UUID): FolderEntity
+
+    @Query("select * from folder where id = :id")
+    fun getByIdAsFlow(id: UUID): Flow<FolderEntity>
 
     @Query("select * from folder where parent = :id")
     suspend fun getByParent(id: UUID): List<FolderEntity>
