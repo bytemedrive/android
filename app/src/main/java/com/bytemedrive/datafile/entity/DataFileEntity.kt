@@ -9,16 +9,16 @@ import java.util.UUID
 @Entity(tableName = "data_file")
 data class DataFileEntity(
     @PrimaryKey
-    @ColumnInfo(name = "id") val id: UUID,
-    @ColumnInfo(name = "chunks") val chunks: List<UploadChunk>,
-    @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "size_bytes") val sizeBytes: Long,
-    @ColumnInfo(name = "content_type") val contentType: String?,
-    @ColumnInfo(name = "secret_key_base64") val secretKeyBase64: String?,
-    @ColumnInfo(name = "thumbnails") val thumbnails: List<Thumbnail>,
-    @ColumnInfo(name = "checksum") val checksum: String?,
-    @ColumnInfo(name = "upload_status") val uploadStatus: UploadStatus,
-    @ColumnInfo(name = "exif_orientation") val exifOrientation: Int?
+    val id: UUID,
+    val chunks: List<UploadChunk>,
+    val name: String,
+    val sizeBytes: Long,
+    val contentType: String?,
+    val secretKeyBase64: String?,
+    val thumbnails: List<Thumbnail>,
+    val checksum: String?,
+    val uploadStatus: UploadStatus,
+    val exifOrientation: Int?
 ) {
 
     constructor(id: UUID, name: String, sizeBytes: Long, uploadStatus: UploadStatus) :

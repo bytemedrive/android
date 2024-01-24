@@ -7,7 +7,6 @@ import java.util.UUID
 
 data class EventFileCopied(val dataFileId: UUID, val dataFileLinkId: UUID, val folderId: UUID? = null, val name: String) : Convertable {
 
-    override suspend fun convert(database: ByteMeDatabase) {
+    override suspend fun convert(database: ByteMeDatabase) =
         database.dataFileDao().add(DataFileLinkEntity(dataFileLinkId, dataFileId, name, folderId, false, false))
-    }
 }

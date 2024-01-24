@@ -9,12 +9,11 @@ import java.util.UUID
 @Entity(
     tableName = "folder",
     indices = [Index(value = ["parent"])]
-    )
+)
 data class FolderEntity(
-
     @PrimaryKey
-    @ColumnInfo(name = "id") val id: UUID,
-    @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "starred") val starred: Boolean = false,
-    @ColumnInfo(name = "parent") val parent: UUID? = null,
+    val id: UUID,
+    val name: String,
+    val starred: Boolean = false,
+    val parent: UUID? = null,
 )

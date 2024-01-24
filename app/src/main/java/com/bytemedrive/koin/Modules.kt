@@ -1,17 +1,23 @@
 package com.bytemedrive.koin
 
 import com.bytemedrive.database.ByteMeDatabase
+import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.QueueFileDownloadRepository
 import com.bytemedrive.file.root.QueueFileUploadRepository
 import com.bytemedrive.file.root.UploadViewModel
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
+import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFileViewModel
+import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFolderViewModel
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.file.shared.preview.FilePreviewViewModel
 import com.bytemedrive.file.shared.selection.FileSelectionViewModel
 import com.bytemedrive.file.starred.StarredViewModel
+import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFileViewModel
+import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFolderViewModel
 import com.bytemedrive.folder.FolderManager
+import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.network.HttpClient
 import com.bytemedrive.price.PricesRepository
@@ -34,13 +40,21 @@ import com.bytemedrive.wallet.root.WalletRepository
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
+val IODispatcher = "IODispatcher"
+val DefaultDispatcher = "DefaultDispatcher"
+
 val viewModelsModule = module {
-    single { FileViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    single { FileViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     single { StarredViewModel(get(), get(), get(), get(), get()) }
     viewModel { TerminateAccountViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
+    viewModel { FileBottomSheetContextFolderViewModel(get()) }
+    viewModel { FileBottomSheetContextFileViewModel(get()) }
+    viewModel { StarredBottomSheetContextFolderViewModel(get()) }
+    viewModel { StarredBottomSheetContextFileViewModel(get()) }
     viewModel { FilePreviewViewModel() }
     viewModel { FileSelectionViewModel(get(), get()) }
     viewModel { SignInViewModel(get()) }
@@ -69,9 +83,11 @@ val networkModule = module {
 
 val accountModule = module {
     single { AppNavigator() }
+    single { DataFileRepository(get()) }
     single { QueueFileDownloadRepository(get()) }
     single { FileManager(androidApplication(), get(), get()) }
     single { FileRepository() }
+    single { FolderRepository(get(named(IODispatcher)), get()) }
     single { QueueFileUploadRepository(get()) }
     single { FolderManager() }
     single { PricesRepository() }

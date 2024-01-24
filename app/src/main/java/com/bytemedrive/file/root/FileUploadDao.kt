@@ -12,7 +12,7 @@ interface FileUploadDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(vararg files: FileUploadEntity)
 
-    @Query("select * from file_upload order by queued_at asc")
+    @Query("select * from file_upload order by queuedAt asc")
     suspend fun getAll(): List<FileUploadEntity>
 
     @Query("delete from file_upload where id = :id")

@@ -6,12 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.util.UUID
 
-@Entity(
-    tableName = "data_file_link",
-    indices = [Index(value = ["dataFileId"]), Index(value = ["folderId"])]
-)
-data class DataFileLinkEntity(
-    @PrimaryKey
+data class DataFileLink(
     val id: UUID,
     val dataFileId: UUID,
     val name: String,
@@ -19,6 +14,12 @@ data class DataFileLinkEntity(
     val uploading: Boolean,
     val starred: Boolean,
 ) {
-
-    fun ofUploading(uploading: Boolean): DataFileLinkEntity = DataFileLinkEntity(id, dataFileId, name, folderId, uploading, starred)
+    constructor(dataFileLinkEntity: DataFileLinkEntity): this(
+        dataFileLinkEntity.id,
+        dataFileLinkEntity.dataFileId,
+        dataFileLinkEntity.name,
+        dataFileLinkEntity.folderId,
+        dataFileLinkEntity.uploading,
+        dataFileLinkEntity.starred,
+    )
 }

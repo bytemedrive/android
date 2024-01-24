@@ -45,8 +45,6 @@ abstract class ByteMeDatabase : RoomDatabase() {
 
         private const val DATABASE_NAME = "byteme"
         fun newInstance(context: Context) =
-            Room.databaseBuilder(context, ByteMeDatabase::class.java, DATABASE_NAME)
-                .openHelperFactory(SupportOpenHelperFactory(encryptedSharedPreferences.getDbPassword()))
-                .build()
+            Room.databaseBuilder(context, ByteMeDatabase::class.java, DATABASE_NAME).openHelperFactory(SupportOpenHelperFactory(encryptedSharedPreferences.getDbPassword())).build()
     }
 }

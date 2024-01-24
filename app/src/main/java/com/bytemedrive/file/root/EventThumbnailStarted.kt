@@ -1,5 +1,6 @@
 package com.bytemedrive.file.root
 
+import android.util.Log
 import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.datafile.entity.Thumbnail
 import com.bytemedrive.datafile.entity.UploadStatus
@@ -17,10 +18,21 @@ data class EventThumbnailStarted(
     val resolution: Resolution,
     val startedAt: ZonedDateTime,
 ) : Convertable {
+    private val TAG = EventThumbnailStarted::class.qualifiedName
 
     override suspend fun convert(database: ByteMeDatabase) {
         val dao = database.dataFileDao()
-        val dataFile = dao.geDataFileById(sourceDataFileId)
-        dao.update(dataFile.copy(thumbnails = dataFile.thumbnails + Thumbnail(resolution, chunks, sizeBytes, contentType, secretKeyBase64, UploadStatus.STARTED)))
+
+        val dataFileEntity = dao.getDataFileById(sourceDataFileId)
+
+        if (dataFileEntity == null) {
+            Log.w(TAG, "Trying to get non existing data file id=$sourceDataFileId")
+
+            return
+        }
+
+        val thumbnails = dataFileEntity.thumbnails + Thumbnail(resolution, chunks, sizeBytes, contentType, secretKeyBase64, UploadStatus.STARTED)
+
+        dao.update(dataFileEntity.copy(thumbnails = thumbnails))
     }
 }

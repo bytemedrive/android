@@ -1,5 +1,6 @@
 package com.bytemedrive.file.root
 
+import android.util.Log
 import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.store.Convertable
@@ -15,11 +16,21 @@ data class EventFileUploadStarted(
     val startedAt: ZonedDateTime,
     val exifOrientation: Int?,
 ) : Convertable {
+    private val TAG = EventFileUploadStarted::class.qualifiedName
 
     override suspend fun convert(database: ByteMeDatabase) {
-        val dataFile = database.dataFileDao().geDataFileById(dataFileId)
-        database.dataFileDao().update(
-            dataFile.copy(
+        val dao = database.dataFileDao()
+
+        val dataFileEntity = dao.getDataFileById(dataFileId)
+
+        if (dataFileEntity == null) {
+            Log.w(TAG, "Trying to get non existing data file id=$dataFileId")
+
+            return
+        }
+
+        dao.update(
+            dataFileEntity.copy(
                 chunks = chunks,
                 contentType = contentType,
                 secretKeyBase64 = secretKeyBase64,

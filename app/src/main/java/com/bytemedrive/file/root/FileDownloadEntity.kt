@@ -8,8 +8,7 @@ import java.util.UUID
 
 @Entity(tableName = "file_download")
 data class FileDownloadEntity(
-
     @PrimaryKey
-    @ColumnInfo(name = "id") val id: UUID,
-    @ColumnInfo(name = "queued_at") val queuedAt: ZonedDateTime
+    val id: UUID,
+    val queuedAt: ZonedDateTime
 )

@@ -18,7 +18,12 @@ data class EventFileUploadQueued(
 ) : Convertable {
 
     override suspend fun convert(database: ByteMeDatabase) {
-        database.dataFileDao().add(DataFileEntity(dataFileId, name, sizeBytes, UploadStatus.QUEUED))
-        database.dataFileDao().add(DataFileLinkEntity(dataFileLinkId, dataFileId, name, folderId, true, false))
+        val dao = database.dataFileDao()
+
+        val dataFileEntity = DataFileEntity(dataFileId, name, sizeBytes, UploadStatus.QUEUED)
+        dao.add(dataFileEntity)
+
+        val dataFileLinkEntity = DataFileLinkEntity(dataFileLinkId, dataFileId, name, folderId, true, false)
+        dao.add(dataFileLinkEntity)
     }
 }

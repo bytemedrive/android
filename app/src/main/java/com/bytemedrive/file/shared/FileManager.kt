@@ -10,6 +10,7 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.exifinterface.media.ExifInterface
 import com.bytemedrive.database.FileUpload
+import com.bytemedrive.datafile.entity.DataFileLink
 import com.bytemedrive.datafile.entity.DataFileLinkEntity
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.EventFileCopied
@@ -20,7 +21,7 @@ import com.bytemedrive.file.root.EventThumbnailStarted
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.root.UploadChunk
-import com.bytemedrive.folder.FolderEntity
+import com.bytemedrive.folder.Folder
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.AppState
@@ -115,11 +116,11 @@ class FileManager(
         }
     }
 
-    fun findAllFilesRecursively(folderId: UUID, allFolders: List<FolderEntity>, allFiles: List<DataFileLinkEntity>): List<DataFileLinkEntity> {
+    fun findAllFilesRecursively(folderId: UUID, allFolders: List<Folder>, allFiles: List<DataFileLink>): List<DataFileLink> {
         val filesToRemove = allFiles.filter { it.folderId == folderId }
         val subFolders = allFolders.filter { it.parent == folderId }
 
-        val filesInSubFolders = mutableListOf<DataFileLinkEntity>()
+        val filesInSubFolders = mutableListOf<DataFileLink>()
         for (subfolder in subFolders) {
             filesInSubFolders.addAll(findAllFilesRecursively(subfolder.id, allFolders, allFiles))
         }

@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +32,8 @@ import androidx.compose.ui.platform.LocalContext
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.ui.component.AlertDialogRemove
+import com.bytemedrive.ui.component.Loader
+import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.util.UUID
 
@@ -38,10 +41,15 @@ import java.util.UUID
 @Composable
 fun FileBottomSheetContextFile(
     dataFileLinkId: UUID,
+    fileBottomSheetContextFileViewModel: FileBottomSheetContextFileViewModel = koinViewModel(),
     fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
-) =
-    fileViewModel.singleDataFileLink(dataFileLinkId)?.let { dataFileLink ->
+) {
+    LaunchedEffect(Unit) {
+        fileBottomSheetContextFileViewModel.initialize(dataFileLinkId)
+    }
+
+    fileBottomSheetContextFileViewModel.dataFileLink?.let { dataFileLink ->
         val context = LocalContext.current
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
@@ -143,5 +151,6 @@ fun FileBottomSheetContextFile(
             )
 
         }
+    } ?: Loader()
 
-    }
+}

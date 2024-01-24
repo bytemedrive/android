@@ -10,9 +10,9 @@ import java.util.UUID
 data class FileUploadEntity(
 
     @PrimaryKey
-    @ColumnInfo(name = "id") val id: UUID,
-    @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "path") val path: String,
-    @ColumnInfo(name = "folder_id") val folderId: UUID?,
-    @ColumnInfo(name = "queued_at") val queuedAt: ZonedDateTime
+    val id: UUID,
+    val name: String,
+    val path: String,
+    val folderId: UUID?,
+    val queuedAt: ZonedDateTime
 )
