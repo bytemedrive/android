@@ -1,5 +1,6 @@
 package com.bytemedrive.koin
 
+import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.file.root.FileRepository
@@ -18,6 +19,7 @@ import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFileVie
 import com.bytemedrive.file.starred.bottomsheet.StarredBottomSheetContextFolderViewModel
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.folder.FolderRepository
+import com.bytemedrive.navigation.AppNavigationViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.network.HttpClient
 import com.bytemedrive.price.PricesRepository
@@ -47,18 +49,19 @@ val IODispatcher = "IODispatcher"
 val DefaultDispatcher = "DefaultDispatcher"
 
 val viewModelsModule = module {
-    single { FileViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
-    single { StarredViewModel(get(), get(), get(), get(), get()) }
+    single { FileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { StarredViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { AppNavigationViewModel(get(), get()) }
     viewModel { TerminateAccountViewModel(get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
     viewModel { FileBottomSheetContextFolderViewModel(get()) }
     viewModel { FileBottomSheetContextFileViewModel(get()) }
     viewModel { StarredBottomSheetContextFolderViewModel(get()) }
     viewModel { StarredBottomSheetContextFileViewModel(get()) }
-    viewModel { FilePreviewViewModel() }
-    viewModel { FileSelectionViewModel(get(), get()) }
+    viewModel { FilePreviewViewModel(get()) }
+    viewModel { FileSelectionViewModel(get(), get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
-    viewModel { UploadViewModel(get(), get()) }
+    viewModel { UploadViewModel(get(), get(), get()) }
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
     viewModel { PaymentMethodCreditCardViewModel(get()) }
@@ -83,11 +86,12 @@ val networkModule = module {
 
 val accountModule = module {
     single { AppNavigator() }
+    single { CustomerRepository(get()) }
     single { DataFileRepository(get()) }
     single { QueueFileDownloadRepository(get()) }
-    single { FileManager(androidApplication(), get(), get()) }
+    single { FileManager(androidApplication(), get(), get(), get(), get()) }
     single { FileRepository() }
-    single { FolderRepository(get(named(IODispatcher)), get()) }
+    single { FolderRepository( get()) }
     single { QueueFileUploadRepository(get()) }
     single { FolderManager() }
     single { PricesRepository() }

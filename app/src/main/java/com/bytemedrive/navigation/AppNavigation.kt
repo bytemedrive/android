@@ -42,6 +42,7 @@ import com.bytemedrive.store.AppState
 import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.text.DecimalFormat
 
@@ -50,6 +51,7 @@ import java.text.DecimalFormat
 fun AppNavigation(
     navHostController: NavHostController,
     bottomSheetNavigator: BottomSheetNavigator,
+    appNavigationViewModel: AppNavigationViewModel = koinViewModel(),
     signInManager: SignInManager = koinInject(),
     appNavigator: AppNavigator = koinInject(),
 ) {
@@ -57,7 +59,7 @@ fun AppNavigation(
     val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val navItems = getMenuItems(context, signInManager, appNavigator)
+    val navItems = getMenuItems(context, signInManager, appNavigator, appNavigationViewModel.usedStorage)
     val scrollState = rememberScrollState()
 
     val selectedItemDefault = remember { navItems.find { it is MenuItem.Navigation && it.route == startDestination } as MenuItem.Navigation? }
@@ -102,7 +104,7 @@ fun AppNavigation(
                     ) {
                         Text(
                             modifier = Modifier.padding(bottom = 16.dp),
-                            text = stringResource(R.string.menu_app_username_label, getUsername()),
+                            text = stringResource(R.string.menu_app_username_label, appNavigationViewModel.username),
                             fontSize = 12.sp
                         )
                         Text(
@@ -125,9 +127,7 @@ fun AppNavigation(
     )
 }
 
-private fun getUsername() = AppState.customer?.username?.value.orEmpty()
-
-private fun getMenuItems(context: Context, signInManager: SignInManager, appNavigator: AppNavigator): List<MenuItem> = listOf(
+private fun getMenuItems(context: Context, signInManager: SignInManager, appNavigator: AppNavigator, usedStorage: String): List<MenuItem> = listOf(
     MenuItem.Navigation(
         "Dashboard",
         AppNavigator.NavTarget.FILE,
@@ -136,7 +136,7 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
     MenuItem.Divider,
     MenuItem.Label(context.getString(R.string.menu_app_my_data)),
     MenuItem.Navigation(
-        context.getString(R.string.menu_app_used_storage, usedStorage()),
+        context.getString(R.string.menu_app_used_storage, DecimalFormat("#.##").format(usedStorage)),
         null,
         Icons.Default.Language
     ),
@@ -163,5 +163,3 @@ private fun getMenuItems(context: Context, signInManager: SignInManager, appNavi
         Icons.Default.Logout
     ) { signInManager.signOut() },
 )
-
-private fun usedStorage() = AppState.customer!!.dataFiles.value.sumOf { it.sizeBytes }.div(1_073_741_824.0).let { DecimalFormat("#.##").format(it) } ?: 0

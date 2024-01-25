@@ -10,7 +10,7 @@ import java.util.UUID
 data class CustomerEntity(
     @PrimaryKey
     val username: String,
-    val wallet: UUID?,
+    val walletId: UUID?,
     val signUpAt: ZonedDateTime?,
     val balanceGbm: Long?
 )

@@ -16,5 +16,5 @@ interface CustomerDao {
     suspend fun update(vararg customers: CustomerEntity)
 
     @Query(value = "select * from customer where username = :username")
-    suspend fun getByUsername(username: String): CustomerEntity
+    suspend fun getByUsername(username: String): CustomerEntity?
 }

@@ -8,6 +8,7 @@ import androidx.media3.common.MimeTypes
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.DataFileEntity
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.FilePagingSource
@@ -15,6 +16,7 @@ import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Item
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.file.shared.preview.FilePreview
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.navigation.AppNavigator
@@ -34,7 +36,8 @@ class StarredViewModel(
     private val eventPublisher: EventPublisher,
     private val fileRepository: FileRepository,
     private val fileManager: FileManager,
-    private val folderManager: FolderManager
+    private val folderManager: FolderManager,
+    private val dataFileRepository: DataFileRepository
 ) : ViewModel() {
 
     var list = MutableStateFlow(listOf<Item>())
@@ -43,7 +46,7 @@ class StarredViewModel(
 
     val itemsSelected = MutableStateFlow(emptyList<Item>())
 
-    val dataFilePreview = MutableStateFlow<DataFileEntity?>(null)
+    val dataFilePreview = MutableStateFlow<FilePreview?>(null)
 
     private var watchJob: Job? = null
 
@@ -61,11 +64,14 @@ class StarredViewModel(
                 ItemType.FOLDER -> appNavigator.navigateTo(AppNavigator.NavTarget.FILE, mapOf("folderId" to item.id.toString()))
 
                 ItemType.FILE -> {
-                    AppState.customer!!.dataFilesLinks.value.find { it.id == item.id }?.let { dataFileLink ->
-                        val dataFile = AppState.customer!!.dataFiles.value.find { dataFile -> dataFile.id == dataFileLink.dataFileId }
+                    viewModelScope.launch {
+                        dataFileRepository.getDataFileLinkById(item.id)?.let { dataFileLink ->
+                            val dataFile = dataFileRepository.getDataFileById(dataFileLink.dataFileId)
+                            val dataFileIdsStarred = dataFileRepository.getAllDataFileLinks(starred = true).map { it.dataFileId }
 
-                        if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
-                            dataFilePreview.update { dataFile }
+                            if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
+                                dataFilePreview.update { FilePreview(dataFile, dataFileIdsStarred) }
+                            }
                         }
                     }
                 }

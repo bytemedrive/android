@@ -9,9 +9,10 @@ import android.provider.MediaStore
 import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.exifinterface.media.ExifInterface
+import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.database.FileUpload
+import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.DataFileLink
-import com.bytemedrive.datafile.entity.DataFileLinkEntity
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.EventFileCopied
 import com.bytemedrive.file.root.EventFileUploadCompleted
@@ -24,7 +25,6 @@ import com.bytemedrive.file.root.UploadChunk
 import com.bytemedrive.folder.Folder
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
-import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.jvm.javaio.toInputStream
@@ -43,13 +43,15 @@ class FileManager(
     private val context: Context,
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
+    private val dataFileRepository: DataFileRepository,
+    private val customerRepository: CustomerRepository
 ) {
 
     private val TAG = FileManager::class.qualifiedName
 
     suspend fun downloadFile(dataFileLinkId: UUID) =
-        AppState.customer!!.dataFilesLinks.value.find { it.id == dataFileLinkId }?.let { dataFileLink ->
-            AppState.customer!!.dataFiles.value.find { it.id == dataFileLink.dataFileId }?.let { dataFile ->
+        dataFileRepository.getDataFileLinkById(dataFileLinkId)?.let { dataFileLink ->
+            dataFileRepository.getDataFileById(dataFileLink.id)?.let { dataFile ->
                 val contentResolver = context.contentResolver
                 val contentValues = ContentValues().apply {
                     put(MediaStore.Downloads.DISPLAY_NAME, dataFileLink.name)
@@ -77,7 +79,7 @@ class FileManager(
         val tmpOriginalFile = File(file.path)
 
         val checksum = ShaService.checksum(tmpOriginalFile.inputStream())
-        val sameDataFile = AppState.customer!!.dataFiles.value.find { it.checksum == checksum }
+        val sameDataFile = dataFileRepository.getDataFileByChecksum(checksum)
 
         if (sameDataFile != null) {
             eventPublisher.publishEvent(EventFileCopied(sameDataFile.id, UUID.randomUUID(), folder, "Copy of ${sameDataFile.name}"))
@@ -95,7 +97,7 @@ class FileManager(
 
             Log.i(TAG, "File ${file.name} split into ${chunks.size} chunks")
 
-            AppState.customer?.wallet?.let { wallet ->
+            customerRepository.getCustomer()?.let { customer ->
                 eventPublisher.publishEvent(
                     EventFileUploadStarted(
                         dataFileId,
@@ -107,7 +109,7 @@ class FileManager(
                         exifOrientation
                     )
                 )
-                fileRepository.upload(wallet, chunks)
+                customer.walletId?.let { fileRepository.upload(it, chunks) }
                 eventPublisher.publishEvent(EventFileUploadCompleted(dataFileId, ZonedDateTime.now()))
                 tmpOriginalFile.delete()
                 tmpEncryptedFile.delete()
@@ -159,7 +161,7 @@ class FileManager(
 
         val chunks = getChunks(tmpEncryptedFile, directory)
 
-        AppState.customer?.wallet?.let { wallet ->
+        customerRepository.getCustomer()?.let { customer ->
             eventPublisher.publishEvent(
                 EventThumbnailStarted(
                     sourceDataFileId,
@@ -173,7 +175,7 @@ class FileManager(
                 )
             )
 
-            fileRepository.upload(wallet, chunks)
+            customer.walletId?.let { fileRepository.upload(it, chunks) }
             eventPublisher.publishEvent(EventThumbnailCompleted(sourceDataFileId, resolution, ZonedDateTime.now()))
         }
     }

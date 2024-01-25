@@ -20,21 +20,35 @@ interface DataFileDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(vararg dataFile: DataFileLinkEntity)
 
+    @Query("SELECT SUM(sizeBytes) / 1073741824.0 as usedStorage FROM data_file")
+    suspend fun getUsedStorage(): String
 
     @Query("select * from data_file where id = :id")
     suspend fun getDataFileById(id: UUID): DataFileEntity?
 
-    @Query("select * from data_file_link")
-    suspend fun getAllDataFileLinks(): List<DataFileLinkEntity>
+    @Query("SELECT * FROM data_file WHERE checksum = :checksum")
+    suspend fun getDataFileByChecksum(checksum: String): DataFileEntity?
+
+    @Query("select * from data_file where id IN(:ids)")
+    suspend fun getDataFilesByIds(ids: List<UUID>): List<DataFileEntity>
+
+    @Query("SELECT * FROM data_file_link WHERE starred = :starred")
+    suspend fun getAllDataFileLinks(starred: Boolean): List<DataFileLinkEntity>
 
     @Query("select * from data_file_link where id = :id")
     suspend fun getDataFileLinkById(id: UUID): DataFileLinkEntity?
 
+    @Query("select * from data_file_link where dataFileId IN (:dataFileLinkIds)")
+    suspend fun getDataFileLinksByIds(dataFileLinkIds: List<UUID>): List<DataFileLinkEntity>
+
     @Query("select * from data_file_link where dataFileId= :dataFileId")
-    suspend fun getDataFileLinksByDataFile(dataFileId: UUID): List<DataFileLinkEntity>
+    suspend fun getDataFileLinksByDataFileId(dataFileId: UUID): List<DataFileLinkEntity>
 
     @Query("select * from data_file_link where folderId = :folderId")
     fun getDataFileLinksByFolderIdFlow(folderId: UUID?): Flow<List<DataFileLinkEntity>>
+
+    @Query("select * from data_file_link where folderId = :folderId")
+    suspend fun getDataFileLinksByFolderId(folderId: UUID?): List<DataFileLinkEntity>
 
     @Update
     suspend fun update(vararg dataFiles: DataFileEntity)

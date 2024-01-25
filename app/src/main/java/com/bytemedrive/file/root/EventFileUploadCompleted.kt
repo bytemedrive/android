@@ -26,7 +26,7 @@ data class EventFileUploadCompleted(
 
         dao.update(dataFileEntity.ofUploadStatus(UploadStatus.COMPLETED))
 
-        val dataFileLinkEntities = dao.getDataFileLinksByDataFile(dataFileId).map { it.ofUploading(false) }.toTypedArray()
+        val dataFileLinkEntities = dao.getDataFileLinksByDataFileId(dataFileId).map { it.ofUploading(false) }.toTypedArray()
 
         dao.update(*dataFileLinkEntities)
     }

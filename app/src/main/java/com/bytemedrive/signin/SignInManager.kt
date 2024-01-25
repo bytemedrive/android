@@ -127,17 +127,22 @@ class SignInManager(
     private fun startPollingData() {
         jobPolling = CoroutineScope(Dispatchers.IO).launch {
             val username: String? = encryptedSharedPreferences.username
+
             while (isActive) {
                 if (!networkStatus.connected.value) {
                     continue
                 }
+
                 val customer = username?.let { database.customerDao().getByUsername(it) }
+
                 if (customer != null) {
-                    val balance = customer.wallet?.let { walletRepository.getWallet(it) }?.balanceGbm
+                    val balance = customer.walletId?.let { walletRepository.getWallet(it) }?.balanceGbm
+
                     if (customer.balanceGbm != balance) {
                         database.customerDao().update(customer.copy(balanceGbm = balance))
                     }
                 }
+
                 delay(1.minutes)
             }
         }

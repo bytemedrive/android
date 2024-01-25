@@ -35,8 +35,7 @@ fun UploadFile(
     appNavigator: AppNavigator,
 ) {
     val context = LocalContext.current
-    val folders by AppState.customer!!.folders.collectAsState()
-    val folder = folders.find { it.id == folderId }
+    val folder = uploadViewModel.folders.find { it.id == folderId }
 
     val pickFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uries: List<Uri> ->
         if (uries.isEmpty()) {

@@ -1,10 +1,15 @@
 package com.bytemedrive.file.root
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.database.FileUpload
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.folder.Folder
+import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,8 +22,17 @@ import java.util.UUID
 
 class UploadViewModel(
     private val queueFileUploadRepository: QueueFileUploadRepository,
-    private val eventPublisher: EventPublisher
+    private val eventPublisher: EventPublisher,
+    private val folderRepository: FolderRepository
 ) : ViewModel() {
+
+    var folders by mutableStateOf(emptyList<Folder>())
+
+    init {
+        viewModelScope.launch {
+            folders = folderRepository.getAllFolders()
+        }
+    }
 
     fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: UUID?) = viewModelScope.launch {
         val dataFileId = UUID.randomUUID()

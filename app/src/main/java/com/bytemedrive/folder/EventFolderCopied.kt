@@ -5,7 +5,7 @@ import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.store.Convertable
 import java.util.UUID
 
-data class EventFolderCopied(val sourceFolderId: UUID, val targetFolderId: UUID, val parentId: UUID? = null) : Convertable {
+data class EventFolderCopied(val sourceFolderId: UUID, val targetFolderId: UUID? = null, val parentId: UUID? = null) : Convertable {
     private val TAG = EventFolderCopied::class.qualifiedName
 
     override suspend fun convert(database: ByteMeDatabase) {
@@ -19,6 +19,8 @@ data class EventFolderCopied(val sourceFolderId: UUID, val targetFolderId: UUID,
             return
         }
 
-        dao.add(FolderEntity(targetFolderId, sourceFolderEntity.name, false, parentId))
+        val id = targetFolderId ?: sourceFolderEntity.id
+
+        dao.add(FolderEntity(id, sourceFolderEntity.name, false, parentId))
     }
 }

@@ -104,11 +104,7 @@ fun FileScreen(
     }
 
     dataFilePreview?.let { dataFilePreview_ ->
-        val dataFileIds = AppState.customer!!.dataFilesLinks.value
-            .filter { dataFileLink -> dataFileLink.folderId == folderId }
-            .map { it.dataFileId }
-
-        FilePreviewDialog(dataFilePreview_, dataFileIds, { fileViewModel.dataFilePreview.update { null } })
+        FilePreviewDialog(dataFilePreview_, { fileViewModel.dataFilePreview.update { null } })
     }
 
     if (fileSelectionDialogOpened) {
