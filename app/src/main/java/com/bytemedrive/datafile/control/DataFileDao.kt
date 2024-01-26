@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.bytemedrive.datafile.entity.DataFileEntity
 import com.bytemedrive.datafile.entity.DataFileLinkEntity
+import com.bytemedrive.datafile.entity.UploadStatus
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
@@ -23,6 +24,9 @@ interface DataFileDao {
     @Query("SELECT SUM(sizeBytes) / 1073741824.0 as usedStorage FROM data_file")
     suspend fun getUsedStorage(): String
 
+    @Query("SELECT * FROM data_file")
+    suspend fun getAllDataFiles(): List<DataFileEntity>
+
     @Query("select * from data_file where id = :id")
     suspend fun getDataFileById(id: UUID): DataFileEntity?
 
@@ -32,8 +36,17 @@ interface DataFileDao {
     @Query("select * from data_file where id IN(:ids)")
     suspend fun getDataFilesByIds(ids: List<UUID>): List<DataFileEntity>
 
+    @Query("select * from data_file where uploadStatus = :uploadStatus")
+    suspend fun getDataFilesByUploadStatus(uploadStatus: UploadStatus): List<DataFileEntity>
+
+    @Query("SELECT * FROM data_file_link")
+    suspend fun getAllDataFileLinks(): List<DataFileLinkEntity>
+
     @Query("SELECT * FROM data_file_link WHERE starred = :starred")
-    suspend fun getAllDataFileLinks(starred: Boolean): List<DataFileLinkEntity>
+    suspend fun getDataFileLinksStarred(starred: Boolean): List<DataFileLinkEntity>
+
+    @Query("SELECT * FROM data_file_link WHERE starred = :starred")
+    fun getDataFileLinksStarredFlow(starred: Boolean): Flow<List<DataFileLinkEntity>>
 
     @Query("select * from data_file_link where id = :id")
     suspend fun getDataFileLinkById(id: UUID): DataFileLinkEntity?

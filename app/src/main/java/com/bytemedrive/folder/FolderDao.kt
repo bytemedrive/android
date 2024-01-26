@@ -21,6 +21,9 @@ interface FolderDao {
     @Query("SELECT * FROM folder")
     suspend fun getAll(): List<FolderEntity>
 
+    @Query("select * from folder where starred = :starred")
+    fun getAllFlow(starred: Boolean): Flow<List<FolderEntity>>
+
     @Query("select * from folder where id = :id")
     suspend fun getById(id: UUID): FolderEntity?
 

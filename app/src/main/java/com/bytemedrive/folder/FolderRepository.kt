@@ -12,6 +12,8 @@ class FolderRepository(
 
     suspend fun getAllFolders() = folderDao.getAll().map(::Folder)
 
+    fun getAllFoldersFlow(starred: Boolean = false) = folderDao.getAllFlow(starred = starred).map { it.map(::Folder) }
+
     suspend fun getFolderById(id: UUID) = folderDao.getById(id)?.let(::Folder)
 
     suspend fun getFoldersByIds(id: List<UUID>) = folderDao.getByIds(id).map(::Folder)

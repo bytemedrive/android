@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.os.IBinder
 import android.util.Log
 import androidx.media3.common.MimeTypes
+import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.root.UploadChunk
 import com.bytemedrive.file.shared.FileManager
@@ -30,14 +31,15 @@ class ServiceThumbnailCreate : Service() {
 
     private val fileManager: FileManager by inject()
 
+    private val dataFileRepository: DataFileRepository by inject()
+
     private val resolutions: List<Resolution> = listOf(Resolution.P360, Resolution.P1280)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         serviceScope.launch {
             while (true) {
                 withContext(Dispatchers.IO) {
-
-                    AppState.customer?.dataFiles?.value?.forEach { dataFile ->
+                    dataFileRepository.getAllDataFiles().forEach {dataFile ->
                         val chunkViewIds = dataFile.chunks.map(UploadChunk::viewId)
                         Log.i(TAG, "File chunk view ids=$chunkViewIds has ${dataFile.thumbnails.size} thumbnails.")
 

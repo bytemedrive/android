@@ -8,8 +8,8 @@ import androidx.media3.common.MimeTypes
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.datafile.control.DataFileRepository
-import com.bytemedrive.datafile.entity.DataFileEntity
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.FilePagingSource
 import com.bytemedrive.file.root.FileRepository
@@ -19,8 +19,8 @@ import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.file.shared.preview.FilePreview
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.FolderManager
+import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.navigation.AppNavigator
-import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -37,7 +37,9 @@ class StarredViewModel(
     private val fileRepository: FileRepository,
     private val fileManager: FileManager,
     private val folderManager: FolderManager,
-    private val dataFileRepository: DataFileRepository
+    private val dataFileRepository: DataFileRepository,
+    private val folderRepository: FolderRepository,
+    private val customerRepository: CustomerRepository
 ) : ViewModel() {
 
     var list = MutableStateFlow(listOf<Item>())
@@ -67,7 +69,7 @@ class StarredViewModel(
                     viewModelScope.launch {
                         dataFileRepository.getDataFileLinkById(item.id)?.let { dataFileLink ->
                             val dataFile = dataFileRepository.getDataFileById(dataFileLink.dataFileId)
-                            val dataFileIdsStarred = dataFileRepository.getAllDataFileLinks(starred = true).map { it.dataFileId }
+                            val dataFileIdsStarred = dataFileRepository.getDataFileLinksStarred(starred = true).map { it.dataFileId }
 
                             if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
                                 dataFilePreview.update { FilePreview(dataFile, dataFileIdsStarred) }
@@ -91,34 +93,35 @@ class StarredViewModel(
     fun clearSelectedItems() = itemsSelected.update { emptyList() }
 
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
-        /*val dataFileLinks = AppState.customer!!.dataFilesLinks
-        val folders = AppState.customer!!.folders
+        val dataFileLinks = dataFileRepository.getAllDataFileLinks()
+        val folders = folderRepository.getAllFolders()
 
-        AppState.customer?.wallet?.let { walletId ->
-            dataFileLinks.value.filter { ids.contains(it.id) }.map { file ->
-                val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id }
+        // TODO: Check the file is removed
+        customerRepository.getCustomer()?.let { customer ->
+            dataFileLinks.filter { ids.contains(it.id) }.map { file ->
+                val physicalFileRemovable = dataFileLinks.none { it.id == file.id }
 
-                if (physicalFileRemovable) {
-                    fileRepository.remove(walletId, file.id)
+                if (physicalFileRemovable && customer.walletId != null) {
+                    fileRepository.remove(customer.walletId, file.id)
                 }
 
                 file.id
             }.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
 
-            folders.value.filter { ids.contains(it.id) }.map { folder ->
-                fileManager.findAllFilesRecursively(folder.id, folders.value, dataFileLinks.value).map { file ->
-                    val physicalFileRemovable = dataFileLinks.value.none { it.id == file.id }
+            folders.filter { ids.contains(it.id) }.map { folder ->
+                fileManager.findAllFilesRecursively(folder.id, folders, dataFileLinks).map { file ->
+                    val physicalFileRemovable = dataFileLinks.none { it.id == file.id }
 
-                    if (physicalFileRemovable) {
-                        fileRepository.remove(walletId, file.id)
+                    if (physicalFileRemovable && customer.walletId != null) {
+                        fileRepository.remove(customer.walletId, file.id)
                     }
 
                     file.id
                 }.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
 
-                (folderManager.findAllFoldersRecursively(folder.id, folders.value) + folder).map { it.id }
+                (folderManager.findAllFoldersRecursively(folder.id, folders) + folder).map { it.id }
             }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFolderDeleted(foldersToRemove)) }
-        }*/
+        }
     }
 
     fun getStarredFilesPages(): Flow<PagingData<Item>> =
@@ -142,14 +145,9 @@ class StarredViewModel(
 
     private fun watchItems() {
         watchJob = viewModelScope.launch {
-            combine(AppState.customer!!.folders, AppState.customer!!.dataFilesLinks) { folders, dataFileLinks ->
-                val tempFolders = folders
-                    .filter { it.starred }
-                    .map { Item(it.id, it.name, ItemType.FOLDER, it.starred, false) }
-
-                val tempFileLinks = dataFileLinks
-                    .filter { it.starred }
-                    .map { Item(it.id, it.name, ItemType.FILE, it.starred, false) }
+            combine(folderRepository.getAllFoldersFlow(starred = true), dataFileRepository.getDataFileLinksStarredFlow(starred = true)) { folders, dataFileLinks ->
+                val tempFolders = folders.map { Item(it.id, it.name, ItemType.FOLDER, it.starred, false) }
+                val tempFileLinks = dataFileLinks.map { Item(it.id, it.name, ItemType.FILE, it.starred, false) }
 
                 tempFolders + tempFileLinks
             }.collectLatest { items ->

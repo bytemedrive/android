@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import androidx.media3.common.MimeTypes
+import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.root.UploadChunk
@@ -28,6 +29,8 @@ class ServiceThumbnailDownload : Service() {
 
     private val fileManager: FileManager by inject()
 
+    private val dataFileRepository: DataFileRepository by inject()
+
     private val resolutions: List<Resolution> = listOf(Resolution.P360, Resolution.P1280)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -36,7 +39,7 @@ class ServiceThumbnailDownload : Service() {
                 withContext(Dispatchers.IO) {
                     val fileList = applicationContext.fileList()
 
-                    AppState.customer?.dataFiles?.value?.filter { it.uploadStatus == UploadStatus.COMPLETED }?.forEach { dataFile ->
+                    dataFileRepository.getDataFilesByUploadStatus(UploadStatus.COMPLETED).forEach { dataFile ->
                         resolutions.forEach { resolution ->
                             val thumbnailName = FileManager.getThumbnailName(dataFile.id, resolution)
 

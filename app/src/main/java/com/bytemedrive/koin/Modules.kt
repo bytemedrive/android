@@ -50,9 +50,9 @@ val DefaultDispatcher = "DefaultDispatcher"
 
 val viewModelsModule = module {
     single { FileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    single { StarredViewModel(get(), get(), get(), get(), get(), get()) }
+    single { StarredViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { AppNavigationViewModel(get(), get()) }
-    viewModel { TerminateAccountViewModel(get(), get()) }
+    viewModel { TerminateAccountViewModel(get(), get(), get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
     viewModel { FileBottomSheetContextFolderViewModel(get()) }
     viewModel { FileBottomSheetContextFileViewModel(get()) }
@@ -64,14 +64,14 @@ val viewModelsModule = module {
     viewModel { UploadViewModel(get(), get(), get()) }
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
-    viewModel { PaymentMethodCreditCardViewModel(get()) }
-    viewModel { PaymentMethodCreditCodeViewModel(get(), get(), get()) }
+    viewModel { PaymentMethodCreditCardViewModel(get(), get()) }
+    viewModel { PaymentMethodCreditCodeViewModel(get(), get(), get(), get()) }
     viewModel { PaymentMethodCryptoAmountViewModel(get()) }
-    viewModel { PaymentMethodCryptoPaymentViewModel(get()) }
+    viewModel { PaymentMethodCryptoPaymentViewModel(get(), get()) }
 }
 
 val databaseModule = module {
-    single { ByteMeDatabase.newInstance(androidContext()) }
+    single { ByteMeDatabase.getInstance(androidContext()) }
     single { get<ByteMeDatabase>().fileDownloadDao() }
     single { get<ByteMeDatabase>().fileUploadDao() }
     single { get<ByteMeDatabase>().eventDao() }

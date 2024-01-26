@@ -15,11 +15,13 @@ class AppNavigationViewModel(
 ): ViewModel() {
     var username by mutableStateOf("")
     var usedStorage by mutableStateOf("")
+    var balanceGbm by mutableStateOf(0L)
 
     init {
         viewModelScope.launch {
             customerRepository.getCustomer()?.let { customer ->
                 username = customer.username
+                balanceGbm = customer.balanceGbm ?: 0L
             }
 
             usedStorage = dataFileRepository.getUsedStorage()
