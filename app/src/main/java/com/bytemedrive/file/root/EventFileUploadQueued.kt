@@ -1,6 +1,7 @@
 package com.bytemedrive.file.root
 
 import com.bytemedrive.database.ByteMeDatabase
+import com.bytemedrive.database.FileUpload
 import com.bytemedrive.datafile.entity.DataFileEntity
 import com.bytemedrive.datafile.entity.DataFileLinkEntity
 import com.bytemedrive.datafile.entity.UploadStatus
@@ -14,6 +15,7 @@ data class EventFileUploadQueued(
     val sizeBytes: Long,
     val dataFileLinkId: UUID,
     val queuedAt: ZonedDateTime,
+    val filePath: String,
     val folderId: UUID?,
 ) : Convertable {
 
@@ -25,5 +27,7 @@ data class EventFileUploadQueued(
 
         val dataFileLinkEntity = DataFileLinkEntity(dataFileLinkId, dataFileId, name, folderId, true, false)
         dao.add(dataFileLinkEntity)
+
+        database.fileUploadDao().add(FileUploadEntity(dataFileId, name, filePath, folderId, queuedAt))
     }
 }
