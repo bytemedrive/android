@@ -94,14 +94,14 @@ val accountModule = module {
     single { QueueFileDownloadRepository(get()) }
     single { FileManager(androidApplication(), get(), get(), get(), get()) }
     single { FileRepository(get(named(IODispatcher))) }
-    single { FolderRepository( get()) }
+    single { FolderRepository(get()) }
     single { QueueFileUploadRepository(get()) }
     single { FolderManager() }
-    single { PricesRepository() }
+    single { PricesRepository(get(named(IODispatcher))) }
     single { ServiceManager() }
-    single { SignUpRepository() }
+    single { SignUpRepository(get(named(IODispatcher))) }
     single { SignInManager(get(), get(), get(), get(), get()) }
-    single { SignInRepository() }
+    single { SignInRepository(get(named(IODispatcher))) }
     single { StoreRepository(get(named(IODispatcher))) }
     single { WalletRepository(get(named(IODispatcher))) }
 }

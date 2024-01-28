@@ -45,7 +45,8 @@ class SignInManager(
 
         if (username != null && credentialsSha3 != null && eventsSecretKey != null) {
             Log.i(TAG, "Try autologin for username: $username")
-            signInSuccess(username, credentialsSha3, eventsSecretKey, context)
+            setUserPreferences(username, credentialsSha3, eventsSecretKey)
+            signInSuccess(context)
         } else {
             Log.i(TAG, "Autologin not possible")
             signOut(context)
@@ -67,12 +68,9 @@ class SignInManager(
                 val eventsSecretKey = privateKeys[0]
                 val secretKeyAsBytes =
                     AesService.decryptWithPassword(Base64.getDecoder().decode(eventsSecretKey.keyBase64), password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
-                signInSuccess(
-                    username,
-                    credentialsSha3,
-                    EventsSecretKey(eventsSecretKey.id, eventsSecretKey.algorithm, Base64.getEncoder().encodeToString(secretKeyAsBytes)),
-                    context
-                )
+
+                setUserPreferences(username, credentialsSha3, EventsSecretKey(eventsSecretKey.id, eventsSecretKey.algorithm, Base64.getEncoder().encodeToString(secretKeyAsBytes)))
+                signInSuccess(context)
 
                 true
             }
@@ -84,12 +82,8 @@ class SignInManager(
         }
     }
 
-    fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey, context: Context) {
+    fun signInSuccess(context: Context) {
         try {
-            encryptedSharedPreferences.username = username
-            encryptedSharedPreferences.credentialsSha3 = credentialsSha3
-            encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
-
             AppState.authorized.update { true }
             startEventAutoSync()
             startPollingData()
@@ -107,6 +101,12 @@ class SignInManager(
         database.clearAllTables()
         encryptedSharedPreferences.clean()
         serviceManager.stopServices(context)
+    }
+
+    fun setUserPreferences(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey) {
+        encryptedSharedPreferences.username = username
+        encryptedSharedPreferences.credentialsSha3 = credentialsSha3
+        encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
     }
 
     private fun startEventAutoSync() {
