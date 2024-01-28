@@ -7,12 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.signin.SignInManager
-import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EncryptedSecretKey
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventsSecretKey
 import com.bytemedrive.wallet.root.WalletRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -42,7 +43,7 @@ class SignUpViewModel(
 
     val loading = MutableStateFlow(false)
 
-    fun signUp(context: Context, onFailure: () -> Job) = viewModelScope.launch {
+    fun signUp(context: Context, onFailure: () -> Job) = CoroutineScope(Dispatchers.IO).launch {
         loading.update { true }
 
         val username = username.value.trim()
