@@ -170,5 +170,5 @@ private fun getMenuItems(
         context.getString(R.string.common_sign_out),
         AppNavigator.NavTarget.SIGN_IN,
         Icons.Default.Logout
-    ) { signInManager.signOut() },
+    ) { signInManager.signOut(context) },
 )

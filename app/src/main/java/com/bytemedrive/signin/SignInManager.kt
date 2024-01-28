@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.application.networkStatus
-import com.bytemedrive.customer.entity.CustomerEntity
 import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
@@ -49,7 +48,7 @@ class SignInManager(
             signInSuccess(username, credentialsSha3, eventsSecretKey, context)
         } else {
             Log.i(TAG, "Autologin not possible")
-            signOut()
+            signOut(context)
         }
     }
 
@@ -60,7 +59,7 @@ class SignInManager(
             val privateKeys = signInRepository.getPrivateKeys(usernameSha3, credentialsSha3)
 
             return if (privateKeys.isEmpty()) {
-                signOut()
+                signOut(context)
 
                 false
             } else {
@@ -79,7 +78,7 @@ class SignInManager(
             }
         } catch (exception: Exception) {
             Log.e(TAG, "Sign in failed for username: $username", exception)
-            signOut()
+            signOut(context)
 
             return false
         }
@@ -97,16 +96,17 @@ class SignInManager(
             serviceManager.startServices(context)
         } catch (e: Exception) {
             Log.e(TAG, "")
-            signOut()
+            signOut(context)
         }
     }
 
-    fun signOut() = CoroutineScope(Dispatchers.IO).launch {
+    fun signOut(context: Context) = CoroutineScope(Dispatchers.IO).launch {
         jobSync?.cancel()
         jobPolling?.cancel()
         AppState.authorized.update { false }
         database.clearAllTables()
         encryptedSharedPreferences.clean()
+        serviceManager.stopServices(context)
     }
 
     private fun startEventAutoSync() {
