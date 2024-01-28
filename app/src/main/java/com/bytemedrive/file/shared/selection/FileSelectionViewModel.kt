@@ -43,7 +43,7 @@ class FileSelectionViewModel(
 
     var selectedFolder by mutableStateOf<Folder?>(null)
 
-    private var fileAndFolderList = MutableStateFlow(listOf<Item>())
+    var fileAndFolderList by mutableStateOf(listOf<Item>())
 
     private val history = MutableStateFlow(emptyList<UUID>())
 
@@ -69,10 +69,10 @@ class FileSelectionViewModel(
         }
     }
 
-    fun getFilesPages(): Flow<PagingData<Item>> =
+    fun getFilesPages(items: List<Item>): Flow<PagingData<Item>> =
         Pager(
             config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { FilePagingSource(fileAndFolderList.value) }
+            pagingSourceFactory = { FilePagingSource(items) }
         ).flow.cachedIn(viewModelScope)
 
     // TODO: Rework with use of recursive function to have single iteration
@@ -126,7 +126,7 @@ class FileSelectionViewModel(
 
         val items = tempFolders + tempFileLinks
 
-        fileAndFolderList.update { items }
+        fileAndFolderList = items
     }
 
     private suspend fun copyFolders(currentFolderId: UUID, newFolderId: UUID) {
