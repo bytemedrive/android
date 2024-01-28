@@ -59,7 +59,7 @@ fun FileSelectionDialog(
 ) {
     val action by fileViewModel.action.collectAsState()
     val selectedFolder = fileSelectionViewModel.selectedFolder
-    val fileAndFolderListPaging = fileSelectionViewModel.getFilesPages().collectAsLazyPagingItems()
+    val fileAndFolderListPaging = fileSelectionViewModel.getFilesPages(fileSelectionViewModel.fileAndFolderList).collectAsLazyPagingItems()
     val title = selectedFolder?.name ?: "My drive"
     val closeDialog = {
         fileViewModel.fileSelectionDialogOpened.update { false }
