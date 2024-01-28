@@ -22,10 +22,6 @@ object JsonConfig {
             disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             setTimeZone(TimeZone.getTimeZone("UTC"))
             setDateFormat(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
-            //configure(SerializationFeature.INDENT_OUTPUT, true)
-            //setDefaultPrettyPrinter(DefaultPrettyPrinter().apply {
-            //    indentArraysWith(DefaultPrettyPrinter.FixedSpaceIndenter.instance)
-            //})
         }
     }
 }
