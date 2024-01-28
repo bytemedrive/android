@@ -66,7 +66,7 @@ fun TerminateAccountScreen(
 
     if (terminated) {
         val onConfirmation = {
-            signInManager.signOut()
+            signInManager.signOut(context)
             terminateAccountViewModel.alertDialogAccountTerminated.update { false }
         }
         AlertDialogAccountTerminated(onConfirmation = onConfirmation)
