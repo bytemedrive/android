@@ -1,6 +1,8 @@
 package com.bytemedrive.navigation
 
+import android.Manifest
 import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -23,6 +25,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,15 +41,16 @@ import androidx.navigation.NavHostController
 import com.bytemedrive.BuildConfig
 import com.bytemedrive.R
 import com.bytemedrive.signin.SignInManager
-import com.bytemedrive.store.AppState
 import com.google.accompanist.navigation.material.BottomSheetNavigator
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.text.DecimalFormat
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialNavigationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialNavigationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun AppNavigation(
     navHostController: NavHostController,
@@ -55,6 +59,14 @@ fun AppNavigation(
     signInManager: SignInManager = koinInject(),
     appNavigator: AppNavigator = koinInject(),
 ) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val screenPermissionsState = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
+
+        LaunchedEffect(Unit) {
+            screenPermissionsState.launchPermissionRequest()
+        }
+    }   
+
     val startDestination = AppNavigator.NavTarget.FILE
     val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
