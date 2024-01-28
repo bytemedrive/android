@@ -131,7 +131,7 @@ private fun getMenuItems(
     context: Context,
     signInManager: SignInManager,
     appNavigator: AppNavigator,
-    usedStorage: String,
+    usedStorage: Double,
     balanceGbm: Long
 ): List<MenuItem> = listOf(
     MenuItem.Navigation(
