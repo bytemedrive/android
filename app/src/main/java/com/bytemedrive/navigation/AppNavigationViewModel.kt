@@ -18,14 +18,13 @@ class AppNavigationViewModel(
     var usedStorage by mutableStateOf(0.0)
     var balanceGbm by mutableStateOf(0L)
 
-    init {
-        viewModelScope.launch {
-            customerRepository.getCustomer()?.let { customer ->
-                username = customer.username
-                balanceGbm = customer.balanceGbm ?: 0L
-            }
-
-            usedStorage = dataFileRepository.getUsedStorage()?.toDouble() ?: 0.0
+    fun getMenuData() = viewModelScope.launch {
+        customerRepository.getCustomer()?.let { customer ->
+            username = customer.username
+            balanceGbm = customer.balanceGbm ?: 0L
         }
+
+        usedStorage = dataFileRepository.getUsedStorage()?.toDouble() ?: 0.0
     }
+
 }
