@@ -38,7 +38,7 @@ fun AppNavHost(
     startDestination: AppNavigator.NavTarget,
     appNavigator: AppNavigator = koinInject()
 ) {
-    LaunchedEffect("navigation") {
+    LaunchedEffect(Unit) {
         appNavigator.sharedFlow.onEach {
             when (it) {
                 AppNavigator.NavTarget.BACK.label -> navHostController.popBackStack()

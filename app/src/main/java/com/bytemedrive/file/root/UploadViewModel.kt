@@ -26,7 +26,7 @@ class UploadViewModel(
     private val eventPublisher: EventPublisher,
     private val folderRepository: FolderRepository,
     private val dataFileRepository: DataFileRepository,
-    ) : ViewModel() {
+) : ViewModel() {
 
     var folders by mutableStateOf(emptyList<Folder>())
 

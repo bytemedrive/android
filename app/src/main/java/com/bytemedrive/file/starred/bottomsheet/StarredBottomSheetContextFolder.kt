@@ -49,13 +49,20 @@ fun StarredBottomSheetContextFolder(
 
         val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.STARRED) }
 
-        val toggleStarred = { fileViewModel.toggleStarredFolder(folder.id, folder.starred) { navigateBack() } }
+        val toggleStarred = {
+            fileViewModel.toggleStarredFolder(folder.id, folder.starred)
+            navigateBack()
+        }
 
         if (alertDialogDeleteOpened) {
             AlertDialogRemove(
                 "Delete folder?",
                 "Are you sure you want to permanently delete folder \"${folder.name}\"?",
-                { fileViewModel.removeFolder(folder.id) { navigateBack() } }) { alertDialogDeleteOpened = false }
+                {
+                    fileViewModel.removeFolder(folder.id)
+                    alertDialogDeleteOpened = false
+                    navigateBack()
+                }) { alertDialogDeleteOpened = false }
         }
 
         Column(
@@ -103,5 +110,4 @@ fun StarredBottomSheetContextFolder(
             )
         }
     } ?: Loader()
-
 }

@@ -47,7 +47,8 @@ fun CreateFolder(
 
     val confirmName = {
         dialogNewFolderOpened = false
-        createFolderViewModel.createFolder(folderId) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) }
+        createFolderViewModel.createFolder(folderId)
+        appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
     if (dialogNewFolderOpened) {

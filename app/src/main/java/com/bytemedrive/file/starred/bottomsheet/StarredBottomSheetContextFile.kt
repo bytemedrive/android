@@ -55,13 +55,20 @@ fun StarredBottomSheetContextFile(
 
         val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.STARRED) }
 
-        val toggleStarred = { fileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred) { navigateBack() } }
+        val toggleStarred = {
+            fileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred)
+            navigateBack()
+        }
 
         if (alertDialogDeleteOpened) {
             AlertDialogRemove(
                 "Delete file?",
                 "Are you sure you want to permanently delete file \"${dataFileLink.name}\"?",
-                { fileViewModel.removeFile(dataFileLink.id) { navigateBack() } }) { alertDialogDeleteOpened = false }
+                {
+                    fileViewModel.removeFile(dataFileLink.id)
+                    alertDialogDeleteOpened = false
+                    navigateBack()
+                }) { alertDialogDeleteOpened = false }
         }
 
         val downloadFile = {
