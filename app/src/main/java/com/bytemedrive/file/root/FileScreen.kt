@@ -1,9 +1,5 @@
 package com.bytemedrive.file.root
 
-import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -45,8 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
@@ -58,8 +52,6 @@ import com.bytemedrive.store.AppState
 import kotlinx.coroutines.flow.update
 import org.koin.compose.koinInject
 import java.util.UUID
-
-private const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 1001
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -79,8 +71,6 @@ fun FileScreen(
     val fileSelectionDialogOpened by fileViewModel.fileSelectionDialogOpened.collectAsState()
 
     LaunchedEffect(Unit) {
-        requestPermissions(context)
-
         AppState.topBarComposable.update { { toggleNav -> TopBarFile(folderId, toggleNav) } }
 
         fileViewModel.initialize(context, folderId)
@@ -224,13 +214,5 @@ private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
                 )
             }
         }
-    }
-}
-
-private fun requestPermissions(context: Context) {
-    val activity = context as Activity
-
-    if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_CODE_WRITE_EXTERNAL_STORAGE)
     }
 }
