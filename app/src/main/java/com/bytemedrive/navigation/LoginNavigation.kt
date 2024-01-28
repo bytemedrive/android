@@ -23,7 +23,7 @@ fun LoginNavigation(
     snackbarHostState: SnackbarHostState,
     appNavigator: AppNavigator = koinInject(),
 ) {
-    LaunchedEffect("navigation") {
+    LaunchedEffect(Unit) {
         appNavigator.sharedFlow.onEach {
             navHostController.navigate(it)
         }.launchIn(this)

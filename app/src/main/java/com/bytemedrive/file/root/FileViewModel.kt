@@ -27,6 +27,7 @@ import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.EventPublisher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -41,6 +42,7 @@ import java.io.File
 import java.util.UUID
 
 class FileViewModel(
+    private val externalScope: CoroutineScope,
     private val fileRepository: FileRepository,
     private val eventPublisher: EventPublisher,
     private val appNavigator: AppNavigator,
@@ -149,7 +151,7 @@ class FileViewModel(
         }
     }
 
-    fun removeFile(dataFileLinkId: UUID, onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
+    fun removeFile(dataFileLinkId: UUID) = externalScope.launch {
         // TODO: Check the file is removed
         customerRepository.getCustomer()?.let { customer ->
             dataFileRepository.getDataFileLinkById(dataFileLinkId)?.let { dataFileLink ->
@@ -160,13 +162,11 @@ class FileViewModel(
                 if (physicalFileRemovable && customer.walletId != null) {
                     fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
                 }
-
-                onSuccess?.invoke()
             }
         }
     }
 
-    fun removeFolder(id: UUID, onSuccess: (() -> Unit)? = null) = viewModelScope.launch {
+    fun removeFolder(id: UUID) = externalScope.launch {
         val dataFileLinks = dataFileRepository.getAllDataFileLinks()
         val folders = folderRepository.getAllFolders()
 
@@ -184,28 +184,22 @@ class FileViewModel(
                 (folderManager.findAllFoldersRecursively(id, folders) + folder).forEach {
                     eventPublisher.publishEvent(EventFolderDeleted(listOf(it.id)))
                 }
-
-                onSuccess?.invoke()
             }
         }
     }
 
-    fun toggleStarredFile(id: UUID, value: Boolean, onSuccess: () -> Unit) = viewModelScope.launch {
+    fun toggleStarredFile(id: UUID, value: Boolean) = externalScope.launch {
         when (value) {
             true -> eventPublisher.publishEvent(EventFileStarRemoved(id))
             false -> eventPublisher.publishEvent(EventFileStarAdded(id))
         }
-
-        onSuccess()
     }
 
-    fun toggleStarredFolder(id: UUID, value: Boolean, onSuccess: () -> Unit) = viewModelScope.launch {
+    fun toggleStarredFolder(id: UUID, value: Boolean) = externalScope.launch {
         when (value) {
             true -> eventPublisher.publishEvent(EventFolderStarRemoved(id))
             false -> eventPublisher.publishEvent(EventFolderStarAdded(id))
         }
-
-        onSuccess()
     }
 
     fun getItemsPages(items: List<Item>): Flow<PagingData<Item>> =
