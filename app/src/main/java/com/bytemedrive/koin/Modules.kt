@@ -39,7 +39,10 @@ import com.bytemedrive.wallet.payment.creditcode.PaymentMethodCreditCodeViewMode
 import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoAmountViewModel
 import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoPaymentViewModel
 import com.bytemedrive.wallet.root.WalletRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -48,6 +51,7 @@ import org.koin.dsl.module
 
 val IODispatcher = "IODispatcher"
 val DefaultDispatcher = "DefaultDispatcher"
+val ExternaScope = "ExternalScope"
 
 val viewModelsModule = module {
     single { FileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
@@ -62,7 +66,7 @@ val viewModelsModule = module {
     viewModel { FilePreviewViewModel(get()) }
     viewModel { FileSelectionViewModel(get(), get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
-    viewModel { UploadViewModel(get(), get(), get()) }
+    viewModel { UploadViewModel(get(named(ExternaScope)), get(), get(), get()) }
     viewModel { CreateFolderViewModel(get()) }
     viewModel { AddCreditMethodViewModel() }
     viewModel { PaymentMethodCreditCardViewModel(get(), get()) }
@@ -88,6 +92,7 @@ val networkModule = module {
 val accountModule = module {
     single(named(IODispatcher)) { Dispatchers.IO }
     single(named(DefaultDispatcher)) { Dispatchers.Default }
+    single(named(ExternaScope)) { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
     single { AppNavigator() }
     single { CustomerRepository(get()) }
     single { DataFileRepository(get()) }

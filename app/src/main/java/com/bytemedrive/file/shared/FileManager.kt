@@ -14,7 +14,6 @@ import com.bytemedrive.database.FileUpload
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.DataFileLink
 import com.bytemedrive.file.root.Chunk
-import com.bytemedrive.file.root.EventFileCopied
 import com.bytemedrive.file.root.EventFileUploadCompleted
 import com.bytemedrive.file.root.EventFileUploadStarted
 import com.bytemedrive.file.root.EventThumbnailCompleted
@@ -74,47 +73,39 @@ class FileManager(
 
     suspend fun uploadFile(fileUpload: FileUpload, tmpFolder: File, file: File) = withContext(Dispatchers.IO) {
         val dataFileId = fileUpload.id
-        val folder = fileUpload.folderId
-
         val tmpOriginalFile = File(file.path)
 
         val checksum = ShaService.checksum(tmpOriginalFile.inputStream())
-        val sameDataFile = dataFileRepository.getDataFileByChecksum(checksum)
+        val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
 
-        if (sameDataFile != null) {
-            eventPublisher.publishEvent(EventFileCopied(sameDataFile.id, UUID.randomUUID(), folder, "Copy of ${sameDataFile.name}"))
-        } else {
-            val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
+        val secretKey = AesService.generateNewFileSecretKey()
+        AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey, tmpOriginalFile.length())
 
-            val secretKey = AesService.generateNewFileSecretKey()
-            AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey, tmpOriginalFile.length())
+        val chunks = getChunks(tmpEncryptedFile, tmpFolder)
+        val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
+        val exifOrientation = if (contentType.contains("image"))
+            ExifInterface(file.path).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL) else
+            null
 
-            val chunks = getChunks(tmpEncryptedFile, tmpFolder)
-            val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
-            val exifOrientation = if (contentType.contains("image"))
-                ExifInterface(file.path).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL) else
-                null
+        Log.i(TAG, "File ${file.name} split into ${chunks.size} chunks")
 
-            Log.i(TAG, "File ${file.name} split into ${chunks.size} chunks")
-
-            customerRepository.getCustomer()?.let { customer ->
-                eventPublisher.publishEvent(
-                    EventFileUploadStarted(
-                        dataFileId,
-                        chunks.map { UploadChunk(it.id, it.viewId, it.file.length()) },
-                        checksum,
-                        contentType,
-                        Base64.getEncoder().encodeToString(secretKey.encoded),
-                        ZonedDateTime.now(),
-                        exifOrientation
-                    )
+        customerRepository.getCustomer()?.let { customer ->
+            eventPublisher.publishEvent(
+                EventFileUploadStarted(
+                    dataFileId,
+                    chunks.map { UploadChunk(it.id, it.viewId, it.file.length()) },
+                    checksum,
+                    contentType,
+                    Base64.getEncoder().encodeToString(secretKey.encoded),
+                    ZonedDateTime.now(),
+                    exifOrientation
                 )
-                customer.walletId?.let { fileRepository.upload(it, chunks) }
-                eventPublisher.publishEvent(EventFileUploadCompleted(dataFileId, ZonedDateTime.now()))
-                tmpOriginalFile.delete()
-                tmpEncryptedFile.delete()
-                chunks.forEach { it.file.delete() }
-            }
+            )
+            customer.walletId?.let { fileRepository.upload(it, chunks) }
+            eventPublisher.publishEvent(EventFileUploadCompleted(dataFileId, ZonedDateTime.now()))
+            tmpOriginalFile.delete()
+            tmpEncryptedFile.delete()
+            chunks.forEach { it.file.delete() }
         }
     }
 
