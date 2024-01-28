@@ -23,7 +23,7 @@ import java.util.UUID
 class UploadViewModel(
     private val queueFileUploadRepository: QueueFileUploadRepository,
     private val eventPublisher: EventPublisher,
-    private val folderRepository: FolderRepository
+    private val folderRepository: FolderRepository,
 ) : ViewModel() {
 
     var folders by mutableStateOf(emptyList<Folder>())
@@ -37,16 +37,16 @@ class UploadViewModel(
     fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: UUID?) = viewModelScope.launch {
         val dataFileId = UUID.randomUUID()
         val tmpOriginalFile = withContext(Dispatchers.IO) {
-            File.createTempFile(dataFileId.toString(), ".${documentFile.name?.split(".")?.last() ?: "bin"}", cacheDir)
+            val tmpOriginalFile = File.createTempFile(dataFileId.toString(), ".${documentFile.name?.split(".")?.last() ?: "bin"}", cacheDir)
+
+            tmpOriginalFile.outputStream().use { outputStream ->
+                inputStream.use { inputStream -> inputStream.copyTo(outputStream, FileManager.BUFFER_SIZE_DEFAULT) }
+            }
+
+            tmpOriginalFile
         }
 
-        tmpOriginalFile.outputStream().use { outputStream ->
-            inputStream.use { inputStream -> inputStream.copyTo(outputStream, FileManager.BUFFER_SIZE_DEFAULT) }
-        }
-
-        runBlocking {
-            eventPublisher.publishEvent(EventFileUploadQueued(dataFileId, documentFile.name.orEmpty(), documentFile.length(), UUID.randomUUID(), ZonedDateTime.now(), folderId))
-            queueFileUploadRepository.addFile(FileUpload(dataFileId, documentFile.name.orEmpty(), tmpOriginalFile.absolutePath, folderId))
-        }
+        eventPublisher.publishEvent(EventFileUploadQueued(dataFileId, documentFile.name.orEmpty(), documentFile.length(), UUID.randomUUID(), ZonedDateTime.now(), folderId))
+        queueFileUploadRepository.addFile(FileUpload(dataFileId, documentFile.name.orEmpty(), tmpOriginalFile.absolutePath, folderId))
     }
 }

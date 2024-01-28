@@ -14,13 +14,17 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.streams.asInput
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
-class FileRepository {
+class FileRepository(
+    private val ioDispatcher: CoroutineDispatcher,
+) {
 
     private val TAG = FileRepository::class.qualifiedName
 
-    suspend fun upload(walletId: UUID, chunks: List<Chunk>) {
+    suspend fun upload(walletId: UUID, chunks: List<Chunk>) = withContext(ioDispatcher) {
         chunks.forEachIndexed { index, chunk ->
             Log.i(TAG, "Uploading chunk view id=${chunk.viewId} num=$index")
             httpClient.submitFormWithBinaryData(
@@ -42,8 +46,8 @@ class FileRepository {
         }
     }
 
-    suspend fun download(id: UUID): HttpResponse? {
-        return try {
+    suspend fun download(id: UUID): HttpResponse? = withContext(ioDispatcher) {
+        try {
             httpClient.get("files/$id") { header("Accept", "application/octet-stream") }
         } catch (e: RequestFailedException) {
             if (e.response.status == HttpStatusCode.NotFound) {
@@ -55,6 +59,4 @@ class FileRepository {
             }
         }
     }
-
-    suspend fun remove(walletId: UUID, id: UUID) = httpClient.delete("wallets/$walletId/files/$id")
 }

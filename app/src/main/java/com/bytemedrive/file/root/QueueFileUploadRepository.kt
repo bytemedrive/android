@@ -10,15 +10,12 @@ class QueueFileUploadRepository(private val fileUploadDao: FileUploadDao) {
 
     private val TAG = QueueFileUploadRepository::class.qualifiedName
 
-    suspend fun getFiles() = withContext(Dispatchers.IO) {
+    suspend fun getFiles() =
         fileUploadDao.getAll().map { FileUpload(it.id, it.name, it.path, it.folderId) }
-    }
 
-    suspend fun addFile(fileUpload: FileUpload) = withContext(Dispatchers.IO) {
+    suspend fun addFile(fileUpload: FileUpload) =
         fileUploadDao.add(FileUploadEntity(fileUpload.id, fileUpload.name, fileUpload.path, fileUpload.folderId, ZonedDateTime.now()))
-    }
 
-    suspend fun deleteFile(id: UUID) = withContext(Dispatchers.IO) {
+    suspend fun deleteFile(id: UUID) =
         fileUploadDao.delete(id)
-    }
 }

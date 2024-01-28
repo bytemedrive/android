@@ -87,8 +87,8 @@ fun FileScreen(
     }
 
     LaunchedEffect(fileViewModel.selectedFolder) {
-        fileViewModel.selectedFolder?.let {
-            AppState.title.update { it }
+        fileViewModel.selectedFolder?.let { folder ->
+            AppState.title.update { folder.name }
         } ?: AppState.title.update { "My files" }
     }
 
