@@ -9,7 +9,7 @@ data class EventFolderDeleted(val ids: List<UUID>) : Convertable {
 
     @Transaction
     override suspend fun convert(database: ByteMeDatabase) {
-        database.dataFileDao().deleteByFolderIds(ids)
+        database.dataFileDao().deleteDataFileLinksByFolderIds(ids)
         database.folderDao().deleteByIds(ids)
     }
 }
