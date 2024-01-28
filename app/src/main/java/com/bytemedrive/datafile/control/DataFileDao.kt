@@ -75,6 +75,9 @@ interface DataFileDao {
     @Delete
     suspend fun delete(dataFileLink: DataFileLinkEntity)
 
+    @Query("DELETE FROM data_file WHERE id IN(:ids)")
+    suspend fun deleteDataFilesByIds(ids: List<UUID>)
+
     @Query("DELETE FROM data_file_link WHERE id IN(:ids)")
     suspend fun deleteDataFileLinksByIds(ids: List<UUID>)
 

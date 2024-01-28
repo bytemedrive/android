@@ -123,36 +123,35 @@ class FileViewModel(
         val dataFileLinks = dataFileRepository.getAllDataFileLinks()
         val folders = folderRepository.getAllFolders()
 
-        // TODO: Check the file is removed
         customerRepository.getCustomer()?.let { customer ->
-            dataFileLinks.filter { ids.contains(it.id) }.map { file ->
-                val physicalFileRemovable = dataFileLinks.none { it.id == file.id }
+            dataFileLinks.filter { ids.contains(it.id) }.map { dataFileLink ->
+                val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
                 if (physicalFileRemovable && customer.walletId != null) {
-                    fileRepository.remove(customer.walletId, file.id)
+                    fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
                 }
 
-                file.id
-            }.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
+                dataFileLink.id
+            }.takeIf { it.isNotEmpty() }?.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
 
+            // TODO: Remove all data file links and files in deleted folder at once in one EventFolderDeleted
             folders.filter { ids.contains(it.id) }.map { folder ->
-                fileManager.findAllFilesRecursively(folder.id, folders, dataFileLinks).map { file ->
-                    val physicalFileRemovable = dataFileLinks.none { it.id == file.id }
+                fileManager.findAllFilesRecursively(folder.id, folders, dataFileLinks).map { dataFileLink ->
+                    val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
                     if (physicalFileRemovable && customer.walletId != null) {
-                        fileRepository.remove(customer.walletId, file.id)
+                        fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
                     }
 
-                    file.id
-                }.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
+                    dataFileLink.id
+                }.takeIf { it.isNotEmpty() }?.let { filesToRemove -> eventPublisher.publishEvent(EventFileDeleted(filesToRemove)) }
 
                 (folderManager.findAllFoldersRecursively(folder.id, folders) + folder).map { it.id }
-            }.flatten().let { foldersToRemove -> eventPublisher.publishEvent(EventFolderDeleted(foldersToRemove)) }
+            }.flatten().takeIf { it.isNotEmpty() }?.let { foldersToRemove -> eventPublisher.publishEvent(EventFolderDeleted(foldersToRemove)) }
         }
     }
 
     fun removeFile(dataFileLinkId: UUID) = externalScope.launch {
-        // TODO: Check the file is removed
         customerRepository.getCustomer()?.let { customer ->
             dataFileRepository.getDataFileLinkById(dataFileLinkId)?.let { dataFileLink ->
                 eventPublisher.publishEvent(EventFileDeleted(listOf(dataFileLinkId)))
@@ -172,13 +171,13 @@ class FileViewModel(
 
         customerRepository.getCustomer()?.let { customer ->
             folderRepository.getFolderById(id)?.let { folder ->
-                fileManager.findAllFilesRecursively(id, folders, dataFileLinks).forEach { file ->
-                    val physicalFileRemovable = dataFileLinks.none { it.id == file.id }
+                fileManager.findAllFilesRecursively(id, folders, dataFileLinks).forEach { dataFileLink ->
+                    val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
-                    eventPublisher.publishEvent(EventFileDeleted(listOf(file.id)))
+                    eventPublisher.publishEvent(EventFileDeleted(listOf(dataFileLink.id)))
 
                     if (physicalFileRemovable && customer.walletId != null) {
-                        fileRepository.remove(customer.walletId, file.id)
+                        fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
                     }
                 }
                 (folderManager.findAllFoldersRecursively(id, folders) + folder).forEach {

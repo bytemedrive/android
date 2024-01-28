@@ -8,7 +8,18 @@ data class EventFileDeleted(val dataFileLinkIds: List<UUID>) : Convertable {
 
     override suspend fun convert(database: ByteMeDatabase) {
         val dao = database.dataFileDao()
+        val dataFileLinks = dao.getDataFileLinksByIds(dataFileLinkIds)
 
         dao.deleteDataFileLinksByIds(dataFileLinkIds)
+
+        val removableFiles = dataFileLinks.mapNotNull { dataFileLink ->
+            val physicalFileRemovable = dao.getDataFileLinksByDataFileId(dataFileLink.dataFileId).isEmpty()
+
+            if (physicalFileRemovable) dataFileLink.dataFileId else null
+        }
+
+        if (removableFiles.isNotEmpty()) {
+            dao.deleteDataFilesByIds(removableFiles)
+        }
     }
 }
