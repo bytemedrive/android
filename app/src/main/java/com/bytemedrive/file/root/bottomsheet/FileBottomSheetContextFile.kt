@@ -59,7 +59,10 @@ fun FileBottomSheetContextFile(
             AlertDialogRemove(
                 "Delete file?",
                 "Are you sure you want to permanently delete file \"${dataFileLink.name}\"?",
-                { fileViewModel.removeFile(dataFileLink.id) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }) { alertDialogDeleteOpened = false }
+                { fileViewModel.removeFile(dataFileLink.id) {
+                    alertDialogDeleteOpened = false
+                    appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
+                } }) { alertDialogDeleteOpened = false }
         }
 
         val downloadFile = {

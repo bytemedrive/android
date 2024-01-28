@@ -27,6 +27,7 @@ import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.EventPublisher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +36,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
@@ -156,7 +158,7 @@ class FileViewModel(
                 val physicalFileRemovable = dataFileRepository.getDataFileLinksByDataFileId(dataFileLink.dataFileId).isEmpty()
 
                 if (physicalFileRemovable && customer.walletId != null) {
-                    fileRepository.remove(customer.walletId, dataFileLinkId)
+                    fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
                 }
 
                 onSuccess?.invoke()
@@ -260,9 +262,7 @@ class FileViewModel(
         }
 
         viewModelScope.launch {
-            folderId?.let {
-                selectedFolder = folderRepository.getFolderById(it)
-            }
+            selectedFolder = folderId?.let { folderRepository.getFolderById(it) }
         }
     }
 

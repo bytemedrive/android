@@ -39,6 +39,7 @@ import com.bytemedrive.wallet.payment.creditcode.PaymentMethodCreditCodeViewMode
 import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoAmountViewModel
 import com.bytemedrive.wallet.payment.crypto.PaymentMethodCryptoPaymentViewModel
 import com.bytemedrive.wallet.root.WalletRepository
+import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -85,12 +86,14 @@ val networkModule = module {
 }
 
 val accountModule = module {
+    single(named(IODispatcher)) { Dispatchers.IO }
+    single(named(DefaultDispatcher)) { Dispatchers.Default }
     single { AppNavigator() }
     single { CustomerRepository(get()) }
     single { DataFileRepository(get()) }
     single { QueueFileDownloadRepository(get()) }
     single { FileManager(androidApplication(), get(), get(), get(), get()) }
-    single { FileRepository() }
+    single { FileRepository(get(named(IODispatcher))) }
     single { FolderRepository( get()) }
     single { QueueFileUploadRepository(get()) }
     single { FolderManager() }
@@ -99,8 +102,8 @@ val accountModule = module {
     single { SignUpRepository() }
     single { SignInManager(get(), get(), get(), get(), get()) }
     single { SignInRepository() }
-    single { StoreRepository() }
-    single { WalletRepository() }
+    single { StoreRepository(get(named(IODispatcher))) }
+    single { WalletRepository(get(named(IODispatcher))) }
 }
 
 val storeModule = module {
