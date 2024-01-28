@@ -4,23 +4,20 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.signin.SignInManager
-import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EncryptedSecretKey
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.store.EventsSecretKey
 import com.bytemedrive.wallet.root.WalletRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.time.ZonedDateTime
@@ -31,7 +28,7 @@ class SignUpViewModel(
     private val signUpRepository: SignUpRepository,
     private val walletRepository: WalletRepository,
     private val eventPublisher: EventPublisher,
-    private val signInManager: SignInManager,
+    private val signInManager: SignInManager
 ) : ViewModel() {
 
     private val TAG = SignUpViewModel::class.qualifiedName
@@ -46,7 +43,7 @@ class SignUpViewModel(
 
     val loading = MutableStateFlow(false)
 
-    fun signUp(context: Context, onFailure: () -> Job) = viewModelScope.launch {
+    fun signUp(context: Context, onFailure: () -> Job) = CoroutineScope(Dispatchers.IO).launch {
         loading.update { true }
 
         val username = username.value.trim()
@@ -60,14 +57,14 @@ class SignUpViewModel(
             val aesKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.AES256, String(Base64.getEncoder().encode(encryptedEventsSecretKey), StandardCharsets.UTF_8))
             val customerSignUp = CustomerSignUp(credentialsSha3, aesKey)
             val walletId = UUID.randomUUID()
-            val eventSignUp = EventCustomerSignedUp(username, walletId, ZonedDateTime.now())
 
             signUpRepository.signUp(usernameSha3, customerSignUp)
             walletRepository.createWallet(walletId)
-            signInManager.setUserPreferences(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey))
-            eventPublisher.publishEvent(eventSignUp)
+            signInManager.signInSuccess(username, credentialsSha3, EventsSecretKey(aesKey.id, aesKey.algorithm, eventsSecretKey), context)
 
-            signInManager.signInSuccess(context)
+            val eventSignUp = EventCustomerSignedUp(username, walletId, ZonedDateTime.now())
+
+            eventPublisher.publishEvent(eventSignUp)
         } catch (exception: UnknownHostException) {
             throw exception
         } catch (exception: Exception) {
