@@ -33,14 +33,11 @@ interface FolderDao {
     @Query("select * from folder where id = :id")
     fun getByIdAsFlow(id: UUID): Flow<FolderEntity>
 
-    @Query("select * from folder where parent = :id")
+    @Query("select * from folder where parent IS :id")
     fun getByParentIdFlow(id: UUID?): Flow<List<FolderEntity>>
 
-    @Query("SELECT * FROM folder WHERE parent = :id")
-    fun getByParentId(id: UUID?): List<FolderEntity>
-
-    @Query("select * from folder where parent = :id")
-    suspend fun getByParent(id: UUID): List<FolderEntity>
+    @Query("SELECT * FROM folder WHERE parent IS :id")
+    suspend fun getByParentId(id: UUID?): List<FolderEntity>
 
     @Query("delete from folder where id = :id")
     suspend fun delete(id: UUID)

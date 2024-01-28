@@ -15,7 +15,7 @@ class DataFileRepository(
 
     suspend fun getDataFileById(dataFileId: UUID) = dataFileDao.getDataFileById(dataFileId)?.let(::DataFile)
 
-    suspend fun getDataFileByChecksum(checksum: String) = dataFileDao.getDataFileByChecksum(checksum)?.let(::DataFile)
+    suspend fun getDataFileByChecksum(checksum: String?) = dataFileDao.getDataFileByChecksum(checksum)?.let(::DataFile)
 
     suspend fun getDataFilesByIds(dataFileIds: List<UUID>) = dataFileDao.getDataFilesByIds(dataFileIds).map(::DataFile)
 
@@ -31,7 +31,7 @@ class DataFileRepository(
 
     suspend fun getDataFileLinksByDataFileId(dataFileId: UUID) = dataFileDao.getDataFileLinksByDataFileId(dataFileId).map(::DataFileLink)
 
-    suspend fun getDataFileLinksStarredFlow(starred: Boolean = false)  = dataFileDao.getDataFileLinksStarredFlow(starred = starred).map { it.map(::DataFileLink) }
+    fun getDataFileLinksStarredFlow(starred: Boolean = false)  = dataFileDao.getDataFileLinksStarredFlow(starred = starred).map { it.map(::DataFileLink) }
 
     suspend fun getAllDataFiles()  = dataFileDao.getAllDataFiles().map(::DataFile)
 

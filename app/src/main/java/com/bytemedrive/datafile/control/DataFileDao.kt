@@ -30,8 +30,8 @@ interface DataFileDao {
     @Query("select * from data_file where id = :id")
     suspend fun getDataFileById(id: UUID): DataFileEntity?
 
-    @Query("SELECT * FROM data_file WHERE checksum = :checksum")
-    suspend fun getDataFileByChecksum(checksum: String): DataFileEntity?
+    @Query("SELECT * FROM data_file WHERE checksum IS :checksum")
+    suspend fun getDataFileByChecksum(checksum: String?): DataFileEntity?
 
     @Query("select * from data_file where id IN(:ids)")
     suspend fun getDataFilesByIds(ids: List<UUID>): List<DataFileEntity>
@@ -57,10 +57,10 @@ interface DataFileDao {
     @Query("select * from data_file_link where dataFileId= :dataFileId")
     suspend fun getDataFileLinksByDataFileId(dataFileId: UUID): List<DataFileLinkEntity>
 
-    @Query("select * from data_file_link where folderId = :folderId")
+    @Query("select * from data_file_link where folderId IS :folderId")
     fun getDataFileLinksByFolderIdFlow(folderId: UUID?): Flow<List<DataFileLinkEntity>>
 
-    @Query("select * from data_file_link where folderId = :folderId")
+    @Query("select * from data_file_link where folderId IS :folderId")
     suspend fun getDataFileLinksByFolderId(folderId: UUID?): List<DataFileLinkEntity>
 
     @Update

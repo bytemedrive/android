@@ -18,7 +18,7 @@ class FolderRepository(
 
     suspend fun getFoldersByIds(id: List<UUID>) = folderDao.getByIds(id).map(::Folder)
 
-    fun getFoldersByParentId(id: UUID?) = folderDao.getByParentId(id).map(::Folder)
+    suspend fun getFoldersByParentId(id: UUID?) = folderDao.getByParentId(id).map(::Folder)
 
     fun getFoldersByParentIdFlow(id: UUID?) = folderDao.getByParentIdFlow(id).map { it.map(::Folder) }
 }
