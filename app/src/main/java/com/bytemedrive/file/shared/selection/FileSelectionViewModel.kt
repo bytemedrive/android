@@ -115,7 +115,6 @@ class FileSelectionViewModel(
 
         clearFileSelection()
         closeDialog()
-
     }
 
     private fun refreshFileAndFolderList(selectedFolder: Folder?) = viewModelScope.launch {

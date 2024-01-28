@@ -251,8 +251,8 @@ class FileViewModel(
                 val tempFiles = files.map { Item(it.id, it.name, ItemType.FILE, it.starred, it.uploading, it.folderId) }
 
                 tempFolders + tempFiles
-            }.collectLatest {
-                items.update { it }
+            }.collectLatest { items_ ->
+                items.update { items_ }
 
                 // TODO: I do not think this is a good way, try to find better
                 getThumbnails(context)

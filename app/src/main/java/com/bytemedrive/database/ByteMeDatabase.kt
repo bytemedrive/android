@@ -55,7 +55,7 @@ abstract class ByteMeDatabase : RoomDatabase() {
 
         private fun buildDatabase(context: Context): ByteMeDatabase =
             Room.databaseBuilder(context, ByteMeDatabase::class.java, DATABASE_NAME)
-                .openHelperFactory(SupportOpenHelperFactory(encryptedSharedPreferences.getDbPassword()))
+//                .openHelperFactory(SupportOpenHelperFactory(encryptedSharedPreferences.getDbPassword()))
                 .build()
     }
 }
