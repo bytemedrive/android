@@ -17,4 +17,7 @@ interface CustomerDao {
 
     @Query(value = "select * from customer where username = :username")
     suspend fun getByUsername(username: String): CustomerEntity?
+
+    @Query(value = "select * from customer")
+    suspend fun getAll(): List<CustomerEntity>
 }

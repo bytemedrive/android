@@ -85,13 +85,11 @@ class SignInManager(
         }
     }
 
-    suspend fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey, context: Context) {
+    fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey, context: Context) {
         try {
             encryptedSharedPreferences.username = username
             encryptedSharedPreferences.credentialsSha3 = credentialsSha3
             encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
-
-            database.customerDao().add(CustomerEntity(username, null, null, null))
 
             AppState.authorized.update { true }
             startEventAutoSync()

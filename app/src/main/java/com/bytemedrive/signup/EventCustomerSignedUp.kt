@@ -13,6 +13,6 @@ data class EventCustomerSignedUp(
 ) : Convertable {
 
     override suspend fun convert(database: ByteMeDatabase) {
-        database.customerDao().update(CustomerEntity(username, wallet, signedUpAt, null))
+        database.customerDao().add(CustomerEntity(username, wallet, signedUpAt, null))
     }
 }

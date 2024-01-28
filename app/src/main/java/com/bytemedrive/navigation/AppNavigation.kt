@@ -121,7 +121,10 @@ fun AppNavigation(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AppLayout(navHostController, bottomSheetNavigator, startDestination) { drawerState.open() }
+                AppLayout(navHostController, bottomSheetNavigator, startDestination) {
+                    appNavigationViewModel.getMenuData()
+                    drawerState.open()
+                }
             }
         }
     )
