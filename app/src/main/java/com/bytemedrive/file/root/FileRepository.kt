@@ -59,4 +59,8 @@ class FileRepository(
             }
         }
     }
+
+    suspend fun remove(walletId: UUID, id: UUID) = withContext(ioDispatcher) {
+        httpClient.delete("wallets/$walletId/files/$id")
+    }
 }
