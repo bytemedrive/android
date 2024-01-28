@@ -51,7 +51,7 @@ interface DataFileDao {
     @Query("select * from data_file_link where id = :id")
     suspend fun getDataFileLinkById(id: UUID): DataFileLinkEntity?
 
-    @Query("select * from data_file_link where dataFileId IN (:dataFileLinkIds)")
+    @Query("select * from data_file_link where id IN (:dataFileLinkIds)")
     suspend fun getDataFileLinksByIds(dataFileLinkIds: List<UUID>): List<DataFileLinkEntity>
 
     @Query("select * from data_file_link where dataFileId= :dataFileId")
@@ -76,8 +76,8 @@ interface DataFileDao {
     suspend fun delete(dataFileLink: DataFileLinkEntity)
 
     @Query("DELETE FROM data_file_link WHERE id IN(:ids)")
-    suspend fun deleteByIds(ids: List<UUID>)
+    suspend fun deleteDataFileLinksByIds(ids: List<UUID>)
 
     @Query("delete from data_file_link where folderId IN(:folderIds)")
-    suspend fun deleteByFolderIds(folderIds: List<UUID>)
+    suspend fun deleteDataFileLinksByFolderIds(folderIds: List<UUID>)
 }
