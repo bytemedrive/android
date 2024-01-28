@@ -4,12 +4,12 @@ import android.content.Context
 import android.util.Log
 import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.application.networkStatus
-import com.bytemedrive.database.DatabaseManager
+import com.bytemedrive.customer.entity.CustomerEntity
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.service.ServiceManager
 import com.bytemedrive.store.AppState
-import com.bytemedrive.store.CustomerAggregate
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventSyncService
 import com.bytemedrive.store.EventsSecretKey
@@ -30,7 +30,7 @@ class SignInManager(
     private val signInRepository: SignInRepository,
     private val walletRepository: WalletRepository,
     private val eventSyncService: EventSyncService,
-    private val databaseManager: DatabaseManager,
+    private val database: ByteMeDatabase,
     private val serviceManager: ServiceManager
 ) {
 
@@ -85,20 +85,15 @@ class SignInManager(
         }
     }
 
-    fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey, context: Context) {
+    suspend fun signInSuccess(username: String, credentialsSha3: String, eventsSecretKey: EventsSecretKey, context: Context) {
         try {
             encryptedSharedPreferences.username = username
             encryptedSharedPreferences.credentialsSha3 = credentialsSha3
             encryptedSharedPreferences.storeEventsSecretKey(eventsSecretKey)
 
-            val events = encryptedSharedPreferences.getEvents()
+            database.customerDao().add(CustomerEntity(username, null, null, null))
 
-            if (events.isNotEmpty()) {
-                val customer = CustomerAggregate()
-                events.stream().forEach { it.data.convert(customer) }
-                AppState.customer = customer
-                AppState.authorized.update { true }
-            }
+            AppState.authorized.update { true }
             startEventAutoSync()
             startPollingData()
             serviceManager.startServices(context)
@@ -111,14 +106,13 @@ class SignInManager(
     fun signOut() = CoroutineScope(Dispatchers.IO).launch {
         jobSync?.cancel()
         jobPolling?.cancel()
-        AppState.customer = null
         AppState.authorized.update { false }
+        database.clearAllTables()
         encryptedSharedPreferences.clean()
-        databaseManager.clearCollections()
     }
 
     private fun startEventAutoSync() {
-        jobSync = CoroutineScope(Dispatchers.Default).launch {
+        jobSync = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 if (!networkStatus.connected.value) {
                     continue
@@ -131,13 +125,24 @@ class SignInManager(
     }
 
     private fun startPollingData() {
-        jobPolling = CoroutineScope(Dispatchers.Default).launch {
+        jobPolling = CoroutineScope(Dispatchers.IO).launch {
+            val username: String? = encryptedSharedPreferences.username
+
             while (isActive) {
                 if (!networkStatus.connected.value) {
                     continue
                 }
 
-                AppState.customer?.let { it.balanceGbm = walletRepository.getWallet(it.wallet!!).balanceGbm }
+                val customer = username?.let { database.customerDao().getByUsername(it) }
+
+                if (customer != null) {
+                    val balance = customer.walletId?.let { walletRepository.getWallet(it) }?.balanceGbm
+
+                    if (customer.balanceGbm != balance) {
+                        database.customerDao().update(customer.copy(balanceGbm = balance))
+                    }
+                }
+
                 delay(1.minutes)
             }
         }

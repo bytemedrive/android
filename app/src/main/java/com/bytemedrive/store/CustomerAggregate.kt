@@ -1,8 +1,8 @@
 package com.bytemedrive.store
 
-import com.bytemedrive.file.root.DataFile
-import com.bytemedrive.file.root.DataFileLink
-import com.bytemedrive.folder.Folder
+import com.bytemedrive.datafile.entity.DataFileEntity
+import com.bytemedrive.datafile.entity.DataFileLinkEntity
+import com.bytemedrive.folder.FolderEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,11 +19,11 @@ class CustomerAggregate {
         _username.update { username }
     }
 
-    var dataFiles = MutableStateFlow<List<DataFile>>(emptyList())
+    var dataFiles = MutableStateFlow<List<DataFileEntity>>(emptyList())
 
-    var dataFilesLinks = MutableStateFlow<List<DataFileLink>>(emptyList())
+    var dataFilesLinks = MutableStateFlow<List<DataFileLinkEntity>>(emptyList())
 
-    var folders = MutableStateFlow<List<Folder>>(emptyList())
+    var folders = MutableStateFlow<List<FolderEntity>>(emptyList())
 
     var wallet: UUID? = null
 

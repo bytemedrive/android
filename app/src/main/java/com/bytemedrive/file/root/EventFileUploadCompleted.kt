@@ -1,9 +1,9 @@
 package com.bytemedrive.file.root
 
-import com.bytemedrive.kotlin.updateIf
+import android.util.Log
+import com.bytemedrive.database.ByteMeDatabase
+import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -11,14 +11,23 @@ data class EventFileUploadCompleted(
     val dataFileId: UUID,
     val completedAt: ZonedDateTime,
 ) : Convertable {
+    private val TAG = EventFileUploadCompleted::class.qualifiedName
 
-    override fun convert(customer: CustomerAggregate) {
-        customer.dataFiles.update { dataFile -> dataFile.updateIf({ it.id == dataFileId }, { it.copy(uploadStatus = DataFile.UploadStatus.COMPLETED) }) }
-        customer.dataFilesLinks.update { dataFileLinks ->
-            dataFileLinks.updateIf(
-                { it.dataFileId == dataFileId },
-                { it.copy(uploading = false) }
-            )
+    override suspend fun convert(database: ByteMeDatabase) {
+        val dao = database.dataFileDao()
+
+        val dataFileEntity = dao.getDataFileById(dataFileId)
+
+        if (dataFileEntity == null) {
+            Log.w(TAG, "Trying to get non existing data file id=$dataFileId")
+
+            return
         }
+
+        dao.update(dataFileEntity.ofUploadStatus(UploadStatus.COMPLETED))
+
+        val dataFileLinkEntities = dao.getDataFileLinksByDataFileId(dataFileId).map { it.ofUploading(false) }.toTypedArray()
+
+        dao.update(*dataFileLinkEntities)
     }
 }

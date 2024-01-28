@@ -1,19 +1,24 @@
 package com.bytemedrive.file.root
 
+import android.util.Log
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.util.UUID
 
 data class EventFileStarAdded(val dataFileLinkId: UUID) : Convertable {
+    private val TAG = EventFileStarAdded::class.qualifiedName
 
-    override fun convert(customer: CustomerAggregate) {
-        customer.dataFilesLinks.update { dataFileLink ->
-            dataFileLink.map {
-                if (it.id == dataFileLinkId) {
-                    it.copy(starred = true)
-                } else it
-            }
+    override suspend fun convert(database: ByteMeDatabase) {
+        val dao = database.dataFileDao()
+
+        val dataFileLinkEntity = dao.getDataFileLinkById(dataFileLinkId)
+
+        if (dataFileLinkEntity == null) {
+            Log.w(TAG, "Trying to get non existing data file link id=$dataFileLinkId")
+
+            return
         }
+
+        dao.update(dataFileLinkEntity.copy(starred = true))
     }
 }

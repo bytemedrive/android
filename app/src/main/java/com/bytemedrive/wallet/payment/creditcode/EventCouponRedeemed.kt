@@ -1,7 +1,7 @@
 package com.bytemedrive.wallet.payment.creditcode
 
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
 import java.util.UUID
 
 data class EventCouponRedeemed(
@@ -9,7 +9,6 @@ data class EventCouponRedeemed(
     val code: String
 ) : Convertable {
 
-    override fun convert(customer: CustomerAggregate) {
-
+    override suspend fun convert(database: ByteMeDatabase) {
     }
 }

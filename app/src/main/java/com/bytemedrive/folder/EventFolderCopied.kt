@@ -1,20 +1,26 @@
 package com.bytemedrive.folder
 
+import android.util.Log
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.util.UUID
 
-data class EventFolderCopied(val currentId: UUID, val newId: UUID? = null, val parentId: UUID? = null) : Convertable {
+data class EventFolderCopied(val sourceFolderId: UUID, val targetFolderId: UUID? = null, val parentId: UUID? = null) : Convertable {
+    private val TAG = EventFolderCopied::class.qualifiedName
 
-    override fun convert(customer: CustomerAggregate) {
-        customer.folders.update { folders ->
-            folders.find { it.id == currentId }?.let { folder ->
-                val id = newId ?: folder.id
-                val newFolder = folder.copy(id = id, parent = parentId)
+    override suspend fun convert(database: ByteMeDatabase) {
+        val dao = database.folderDao()
 
-                folders + newFolder
-            } ?: folders
+        val sourceFolderEntity = dao.getById(sourceFolderId)
+
+        if (sourceFolderEntity == null) {
+            Log.w(TAG, "Trying to get non existing folder id=$sourceFolderId")
+
+            return
         }
+
+        val id = targetFolderId ?: sourceFolderEntity.id
+
+        dao.add(FolderEntity(id, sourceFolderEntity.name, false, parentId))
     }
 }

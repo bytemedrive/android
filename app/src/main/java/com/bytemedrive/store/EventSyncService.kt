@@ -2,16 +2,17 @@ package com.bytemedrive.store
 
 import android.util.Log
 import com.bytemedrive.application.encryptedSharedPreferences
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.network.JsonConfig.mapper
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.wallet.root.WalletRepository
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.Base64
 import kotlin.streams.toList
 
-class EventSyncService(private val storeRepository: StoreRepository, private val walletRepository: WalletRepository) {
+class EventSyncService(private val storeRepository: StoreRepository, private val walletRepository: WalletRepository, private val database: ByteMeDatabase) {
 
     private val TAG = EventSyncService::class.qualifiedName
 
@@ -20,7 +21,7 @@ class EventSyncService(private val storeRepository: StoreRepository, private val
 
         val credentialsSha3 = encryptedSharedPreferences.credentialsSha3
         val usernameSha3 = encryptedSharedPreferences.username?.let { ShaService.hashSha3(it) }
-        val offset = encryptedSharedPreferences.eventsCount
+        val offset = database.eventDao().getEventsCount()
 
         if (credentialsSha3 != null && usernameSha3 != null) {
             Log.d(TAG, "Events sync for usernameSha3: $usernameSha3")
@@ -41,24 +42,13 @@ class EventSyncService(private val storeRepository: StoreRepository, private val
         }
     }
 
-    suspend fun addEvents(vararg events: EventObjectWrapper) {
-        val allEvents = encryptedSharedPreferences.storeEvent(*events)
+    suspend fun addEvents(vararg events: EventObjectWrapper) = withContext(Dispatchers.IO) {
+        database.eventDao().add(*events.map {
+            EventEntity(it.id, it.eventType, it.publishedAt, mapper.writeValueAsString(it.data))
+        }.toTypedArray())
 
-        if (allEvents.isNotEmpty() && AppState.customer == null) {
-            Log.i(TAG, "Recreating CustomerAggregate with ${allEvents.size} events.")
-            val customer = CustomerAggregate()
-
-            allEvents.stream().forEach { it.data.convert(customer) }
-            customer.balanceGbm = walletRepository.getWallet(customer.wallet!!).balanceGbm
-
-            Log.i(TAG, "Customer recreated.")
-            AppState.customer = customer
-            AppState.authorized.update { true }
-        } else if(events.isNotEmpty() && AppState.customer != null) {
-            Log.i(TAG, "Adding up to existing CustomerAggregate instance ${events.size} events.")
-            events.toList().stream().forEach{ it.data.convert(AppState.customer!!) }
-            AppState.customer!!.balanceGbm = walletRepository.getWallet(AppState.customer!!.wallet!!).balanceGbm
-            Log.i(TAG, "Customer updated.")
+        for (event in events) {
+            event.data.convert(database)
         }
     }
 }

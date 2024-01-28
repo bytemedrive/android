@@ -80,19 +80,16 @@ fun FileScreen(
 
     LaunchedEffect(Unit) {
         requestPermissions(context)
-        fileViewModel.selectedFolder.update { AppState.customer!!.folders.value.find { it.id == folderId } }
 
         AppState.topBarComposable.update { { toggleNav -> TopBarFile(folderId, toggleNav) } }
 
-        if (folderId == null) {
-            AppState.title.update { "My files" }
-        } else {
-            fileViewModel.singleFolder(folderId)?.let { folder ->
-                AppState.title.update { folder.name }
-            }
-        }
+        fileViewModel.initialize(context, folderId)
+    }
 
-        fileViewModel.init(context)
+    LaunchedEffect(fileViewModel.selectedFolder) {
+        fileViewModel.selectedFolder?.let {
+            AppState.title.update { it }
+        } ?: AppState.title.update { "My files" }
     }
 
     DisposableEffect(Unit) {
@@ -107,11 +104,7 @@ fun FileScreen(
     }
 
     dataFilePreview?.let { dataFilePreview_ ->
-        val dataFileIds = AppState.customer!!.dataFilesLinks.value
-            .filter { dataFileLink -> dataFileLink.folderId == folderId }
-            .map { it.dataFileId }
-
-        FilePreviewDialog(dataFilePreview_, dataFileIds, { fileViewModel.dataFilePreview.update { null } })
+        FilePreviewDialog(dataFilePreview_, { fileViewModel.dataFilePreview.update { null } })
     }
 
     if (fileSelectionDialogOpened) {
@@ -197,7 +190,6 @@ fun FileScreen(
     }
 }
 
-
 @Composable
 private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
     Box(
@@ -211,9 +203,11 @@ private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
                     tint = Color.Black,
                 )
             }
+
             item.uploading -> {
                 CircularProgressIndicator()
             }
+
             item.type == ItemType.FILE -> {
                 image?.let { Image(bitmap = it.asImageBitmap(), contentDescription = "Thumbnail ${item.name}", contentScale = ContentScale.Crop) } ?: Icon(
                     imageVector = Icons.Outlined.Description,
@@ -221,6 +215,7 @@ private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
                     tint = Color.Black,
                 )
             }
+
             else -> {
                 Icon(
                     imageVector = Icons.Default.Folder,

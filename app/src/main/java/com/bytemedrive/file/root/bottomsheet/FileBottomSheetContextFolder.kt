@@ -16,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +27,8 @@ import androidx.compose.ui.graphics.Color
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.ui.component.AlertDialogRemove
+import com.bytemedrive.ui.component.Loader
+import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.util.UUID
 
@@ -34,10 +37,14 @@ import java.util.UUID
 fun FileBottomSheetContextFolder(
     folderId: UUID,
     fileViewModel: FileViewModel = koinInject(),
+    fileBottomSheetContextFolderViewModel: FileBottomSheetContextFolderViewModel = koinViewModel(),
     appNavigator: AppNavigator = koinInject()
-) =
-    fileViewModel.singleFolder(folderId)?.let { folder ->
+) {
+    LaunchedEffect(Unit) {
+        fileBottomSheetContextFolderViewModel.initialize(folderId)
+    }
 
+    fileBottomSheetContextFolderViewModel.folder?.let { folder ->
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
         val toggleStarred = { fileViewModel.toggleStarredFolder(folder.id, folder.starred) { appNavigator.navigateTo(AppNavigator.NavTarget.BACK) } }
@@ -119,5 +126,5 @@ fun FileBottomSheetContextFolder(
                 headlineText = { Text(text = "Remove") },
             )
         }
-
-    }
+    } ?: Loader()
+}

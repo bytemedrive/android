@@ -5,12 +5,15 @@ buildscript {
         ktor_version = '2.2.3'
         koin_version = '3.4.3'
         accompaniest_version = '0.30.1'
+        room_version = '2.5.2'
+        sqlcipher_version = '4.5.5'
     }
 }
 
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -27,6 +30,12 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
+        }
+
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/schemas")
+            }
         }
 
         buildConfigField "String", "STRIPE_PUBLISHABLE_KEY_TEST", "\"pk_test_51N7wTaL2hkomI7ZgL9WwjYWPcJV5UIUpCyRsBgsj1kzzeaOKBuwZzDO5V6Ejwdgln7udEGIFK4sT8l3dt09zIHJ900HOjKJ74S\""
@@ -101,8 +110,14 @@ dependencies {
 
     implementation 'androidx.compose.material3:material3:1.0.1'
 
-    // Couchbase
-    implementation 'com.couchbase.lite:couchbase-lite-android-ee-ktx:3.1.1'
+
+    // Room
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-paging:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "net.zetetic:sqlcipher-android:$sqlcipher_version@aar"
 
     implementation 'androidx.documentfile:documentfile:1.0.1'
 

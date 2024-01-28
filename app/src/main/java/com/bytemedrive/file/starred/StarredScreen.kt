@@ -74,11 +74,7 @@ fun StarredScreen(
     }
 
     dataFilePreview?.let { dataFilePreview_ ->
-        val dataFileIds = AppState.customer!!.dataFilesLinks.value
-            .filter { dataFileLink -> dataFileLink.starred }
-            .map { it.dataFileId }
-
-        FilePreviewDialog(dataFilePreview_, dataFileIds, { starredViewModel.dataFilePreview.update { null } })
+        FilePreviewDialog(dataFilePreview_, { starredViewModel.dataFilePreview.update { null } })
     }
 
     Scaffold(

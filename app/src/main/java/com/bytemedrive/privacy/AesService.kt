@@ -6,6 +6,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.security.SecureRandom
+import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -84,6 +85,11 @@ object AesService {
         val cipher = Cipher.getInstance(ENCRYPT_ALGO)
         cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
         return cipher.doFinal(cipherText)
+    }
+
+    fun secretKey(secretKeyBase64: String): SecretKey {
+        val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
+        return SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
     }
 
     fun decryptWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey, fileSizeBytes: Long) {

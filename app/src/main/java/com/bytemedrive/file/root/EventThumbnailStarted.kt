@@ -1,13 +1,12 @@
 package com.bytemedrive.file.root
 
-import com.bytemedrive.kotlin.updateIf
+import android.util.Log
+import com.bytemedrive.database.ByteMeDatabase
+import com.bytemedrive.datafile.entity.Thumbnail
+import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.time.ZonedDateTime
-import java.util.Base64
 import java.util.UUID
-import javax.crypto.spec.SecretKeySpec
 
 data class EventThumbnailStarted(
     val sourceDataFileId: UUID,
@@ -19,19 +18,21 @@ data class EventThumbnailStarted(
     val resolution: Resolution,
     val startedAt: ZonedDateTime,
 ) : Convertable {
+    private val TAG = EventThumbnailStarted::class.qualifiedName
 
-    override fun convert(customer: CustomerAggregate) {
-        val keyBytes = Base64.getDecoder().decode(secretKeyBase64)
-        val secretKey = SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
+    override suspend fun convert(database: ByteMeDatabase) {
+        val dao = database.dataFileDao()
 
-        customer.dataFiles.update { dataFiles ->
-            dataFiles.updateIf(
-                { it.id == sourceDataFileId },
-                {
-                    val thumbnail = DataFile.Thumbnail(resolution, chunks, sizeBytes, contentType, secretKey, DataFile.UploadStatus.STARTED)
-                    it.copy(thumbnails = it.thumbnails + thumbnail)
-                }
-            )
+        val dataFileEntity = dao.getDataFileById(sourceDataFileId)
+
+        if (dataFileEntity == null) {
+            Log.w(TAG, "Trying to get non existing data file id=$sourceDataFileId")
+
+            return
         }
+
+        val thumbnails = dataFileEntity.thumbnails + Thumbnail(resolution, chunks, sizeBytes, contentType, secretKeyBase64, UploadStatus.STARTED)
+
+        dao.update(dataFileEntity.copy(thumbnails = thumbnails))
     }
 }

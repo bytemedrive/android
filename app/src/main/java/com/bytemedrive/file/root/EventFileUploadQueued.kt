@@ -1,8 +1,10 @@
 package com.bytemedrive.file.root
 
+import com.bytemedrive.database.ByteMeDatabase
+import com.bytemedrive.datafile.entity.DataFileEntity
+import com.bytemedrive.datafile.entity.DataFileLinkEntity
+import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -15,11 +17,13 @@ data class EventFileUploadQueued(
     val folderId: UUID?,
 ) : Convertable {
 
-    override fun convert(customer: CustomerAggregate) {
-        val dataFile = DataFile(dataFileId, name, sizeBytes, DataFile.UploadStatus.QUEUED)
-        val dataFileLink = DataFileLink(dataFileLinkId, dataFileId, name, folderId, true)
+    override suspend fun convert(database: ByteMeDatabase) {
+        val dao = database.dataFileDao()
 
-        customer.dataFiles.update { it + dataFile }
-        customer.dataFilesLinks.update { it + dataFileLink }
+        val dataFileEntity = DataFileEntity(dataFileId, name, sizeBytes, UploadStatus.QUEUED)
+        dao.add(dataFileEntity)
+
+        val dataFileLinkEntity = DataFileLinkEntity(dataFileLinkId, dataFileId, name, folderId, true, false)
+        dao.add(dataFileLinkEntity)
     }
 }

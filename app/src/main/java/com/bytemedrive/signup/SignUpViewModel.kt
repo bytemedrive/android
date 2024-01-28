@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.signin.SignInManager
+import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EncryptedSecretKey
 import com.bytemedrive.store.EncryptionAlgorithm
 import com.bytemedrive.store.EventPublisher

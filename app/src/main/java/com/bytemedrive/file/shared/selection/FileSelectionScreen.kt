@@ -58,7 +58,7 @@ fun FileSelectionDialog(
     appNavigator: AppNavigator = koinInject(),
 ) {
     val action by fileViewModel.action.collectAsState()
-    val selectedFolder by fileSelectionViewModel.selectedFolder.collectAsState()
+    val selectedFolder = fileSelectionViewModel.selectedFolder
     val fileAndFolderListPaging = fileSelectionViewModel.getFilesPages().collectAsLazyPagingItems()
     val title = selectedFolder?.name ?: "My drive"
     val closeDialog = {

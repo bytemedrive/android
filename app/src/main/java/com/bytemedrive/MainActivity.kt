@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        System.loadLibrary("sqlcipher")
         Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler)
 
         setContent {

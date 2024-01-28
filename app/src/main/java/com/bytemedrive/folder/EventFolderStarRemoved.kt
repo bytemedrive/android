@@ -1,19 +1,24 @@
 package com.bytemedrive.folder
 
+import android.util.Log
+import com.bytemedrive.database.ByteMeDatabase
 import com.bytemedrive.store.Convertable
-import com.bytemedrive.store.CustomerAggregate
-import kotlinx.coroutines.flow.update
 import java.util.UUID
 
 data class EventFolderStarRemoved(val id: UUID) : Convertable {
+    private val TAG = EventFolderStarRemoved::class.qualifiedName
 
-    override fun convert(customer: CustomerAggregate) {
-        customer.folders.update { folders ->
-            folders.map {
-                if (it.id == id) {
-                    it.copy(starred = false)
-                } else it
-            }
+    override suspend fun convert(database: ByteMeDatabase) {
+        val dao = database.folderDao()
+
+        val folder = dao.getById(id)
+
+        if (folder == null) {
+            Log.w(TAG, "Trying to get non existing folder id=$id")
+
+            return
         }
+
+        dao.update(folder.copy(starred = false))
     }
 }
