@@ -28,7 +28,6 @@ import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +36,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
@@ -72,7 +70,9 @@ class FileViewModel(
 
     val dataFilePreview = MutableStateFlow<FilePreview?>(null)
 
-    private var watchJob: Job? = null
+    private var watchItems: Job? = null
+
+    private var watchThumbnails: Job? = null
 
     fun clickFileAndFolder(item: Item) {
         val anyFileSelected = itemsSelected.value.isNotEmpty()
@@ -232,11 +232,12 @@ class FileViewModel(
     }
 
     fun cancelJobs() {
-        watchJob?.cancel()
+        watchItems?.cancel()
+        watchThumbnails?.cancel()
     }
 
     fun initialize(context: Context, folderId: UUID?) {
-        watchJob = viewModelScope.launch {
+        watchItems = viewModelScope.launch {
             combine(
                 folderRepository.getFoldersByParentIdFlow(folderId),
                 dataFileRepository.getDataFileLinksByFolderIdFlow(folderId)
@@ -248,47 +249,45 @@ class FileViewModel(
                 tempFolders + tempFiles
             }.collectLatest { items_ ->
                 items.update { items_ }
-
-                // TODO: I do not think this is a good way, try to find better
-                getThumbnails(context)
             }
         }
 
         viewModelScope.launch {
             selectedFolder = folderId?.let { folderRepository.getFolderById(it) }
         }
+
+        watchThumbnails(context)
     }
 
-    private fun getThumbnails(context: Context) = viewModelScope.launch {
-        val dataFilesLinks = dataFileRepository.getAllDataFileLinks()
-
-        // TODO: There must be optimization
-        thumbnails.update {
-            dataFilesLinks.mapNotNull { dataFileLink ->
-                findThumbnailForDataFileLink(dataFileLink, context)?.let { thumbnail ->
-                    dataFileLink.id to thumbnail
+    private fun watchThumbnails(context: Context) {
+        watchThumbnails = viewModelScope.launch {
+            dataFileRepository.getAllDataFileFlow().collectLatest { dataFiles ->
+                thumbnails.update {
+                    dataFileRepository.getAllDataFileLinks()
+                        .mapNotNull { dataFileLink -> findThumbnailForDataFileLink(dataFileLink, dataFiles, context)?.let { thumbnail -> dataFileLink.id to thumbnail } }
+                        .toMap()
                 }
-            }.toMap()
+            }
         }
     }
 
-    private suspend fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, context: Context): Bitmap? =
-        dataFileRepository.getDataFileById(dataFileLink.dataFileId)?.let { dataFile ->
-            val thumbnail = dataFile.thumbnails.find { thumbnail -> thumbnail.resolution == Resolution.P360 }
-
-            return thumbnail?.let {
-                val thumbnailName = FileManager.getThumbnailName(dataFile.id, thumbnail.resolution)
+    private fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, dataFiles: List<DataFile>, context: Context): Bitmap? =
+        dataFiles
+            .find { it.id == dataFileLink.dataFileId }
+            ?.thumbnails
+            ?.find { it.resolution == Resolution.P360 }
+            ?.let {
+                val thumbnailName = FileManager.getThumbnailName(dataFileLink.dataFileId, it.resolution)
                 val filePath = "${context.filesDir}/$thumbnailName"
                 val file = File(filePath)
 
                 if (file.exists()) BitmapFactory.decodeFile("${context.filesDir}/$thumbnailName") else null
             }
-        }
-}
 
-data class Action(val ids: List<UUID>, val type: Type, val folderId: UUID?) {
-    enum class Type(type: String) {
-        COPY_ITEMS("copyItems"),
-        MOVE_ITEMS("moveItems")
+    data class Action(val ids: List<UUID>, val type: Type, val folderId: UUID?) {
+        enum class Type(type: String) {
+            COPY_ITEMS("copyItems"),
+            MOVE_ITEMS("moveItems")
+        }
     }
 }

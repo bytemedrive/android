@@ -16,7 +16,6 @@ import com.bytemedrive.datafile.entity.DataFileLink
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.EventFileUploadCompleted
 import com.bytemedrive.file.root.EventFileUploadStarted
-import com.bytemedrive.file.root.EventThumbnailCompleted
 import com.bytemedrive.file.root.EventThumbnailStarted
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.root.Resolution
@@ -167,7 +166,6 @@ class FileManager(
             )
 
             customer.walletId?.let { fileRepository.upload(it, chunks) }
-            eventPublisher.publishEvent(EventThumbnailCompleted(sourceDataFileId, resolution, ZonedDateTime.now()))
         }
     }
 

@@ -42,6 +42,9 @@ interface DataFileDao {
     @Query("SELECT * FROM data_file_link")
     suspend fun getAllDataFileLinks(): List<DataFileLinkEntity>
 
+    @Query("SELECT * FROM data_file")
+    fun getAllDataFileFlow(): Flow<List<DataFileEntity>>
+
     @Query("SELECT * FROM data_file_link WHERE starred = :starred")
     suspend fun getDataFileLinksStarred(starred: Boolean): List<DataFileLinkEntity>
 
