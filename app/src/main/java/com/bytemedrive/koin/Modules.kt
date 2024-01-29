@@ -12,6 +12,7 @@ import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFileViewModel
 import com.bytemedrive.file.root.bottomsheet.FileBottomSheetContextFolderViewModel
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.file.shared.control.FileListItemRepository
 import com.bytemedrive.file.shared.preview.FilePreviewViewModel
 import com.bytemedrive.file.shared.selection.FileSelectionViewModel
 import com.bytemedrive.file.starred.StarredViewModel
@@ -53,8 +54,8 @@ val DefaultDispatcher = "DefaultDispatcher"
 val ExternalScope = "ExternalScope"
 
 val viewModelsModule = module {
-    single { FileViewModel(get(named(ExternalScope)), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    single { StarredViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { FileViewModel(get(named(ExternalScope)), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { StarredViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { AppNavigationViewModel(get(), get()) }
     viewModel { TerminateAccountViewModel(get(), get(), get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
@@ -63,7 +64,7 @@ val viewModelsModule = module {
     viewModel { StarredBottomSheetContextFolderViewModel(get()) }
     viewModel { StarredBottomSheetContextFileViewModel(get()) }
     viewModel { FilePreviewViewModel(get()) }
-    viewModel { FileSelectionViewModel(get(), get(), get(), get()) }
+    viewModel { FileSelectionViewModel(get(), get(), get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(named(ExternalScope)), get(), get(), get()) }
     viewModel { CreateFolderViewModel(get(named(ExternalScope)), get()) }
@@ -81,6 +82,7 @@ val databaseModule = module {
     single { get<ByteMeDatabase>().eventDao() }
     single { get<ByteMeDatabase>().customerDao() }
     single { get<ByteMeDatabase>().dataFileDao() }
+    single { get<ByteMeDatabase>().fileListItemDao() }
     single { get<ByteMeDatabase>().folderDao() }
 }
 
@@ -99,6 +101,7 @@ val accountModule = module {
     single { FileManager(androidApplication(), get(), get(), get(), get()) }
     single { FileRepository(get(named(IODispatcher))) }
     single { FolderRepository(get()) }
+    single { FileListItemRepository(get()) }
     single { QueueFileUploadRepository(get()) }
     single { FolderManager() }
     single { PricesRepository(get(named(IODispatcher))) }

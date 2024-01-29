@@ -9,6 +9,7 @@ import java.util.UUID
 class DataFileRepository(
     private val dataFileDao: DataFileDao
 ) {
+
     suspend fun getUsedStorage() = dataFileDao.getUsedStorage()
 
     fun getDataFileLinksByFolderIdFlow(folderId: UUID?) = dataFileDao.getDataFileLinksByFolderIdFlow(folderId).map { it.map(::DataFileLink) }
@@ -25,17 +26,17 @@ class DataFileRepository(
 
     suspend fun getDataFileLinksByIds(dataFileLinkIds: List<UUID>) = dataFileDao.getDataFileLinksByIds(dataFileLinkIds).map(::DataFileLink)
 
-    suspend fun getDataFileLinksStarred(starred: Boolean = false)  = dataFileDao.getDataFileLinksStarred(starred).map(::DataFileLink)
+    suspend fun getDataFileLinksStarred(starred: Boolean = false) = dataFileDao.getDataFileLinksStarred(starred).map(::DataFileLink)
 
     suspend fun getDataFileLinksByFolderId(folderId: UUID?) = dataFileDao.getDataFileLinksByFolderId(folderId).map(::DataFileLink)
 
     suspend fun getDataFileLinksByDataFileId(dataFileId: UUID) = dataFileDao.getDataFileLinksByDataFileId(dataFileId).map(::DataFileLink)
 
-    fun getDataFileLinksStarredFlow(starred: Boolean = false)  = dataFileDao.getDataFileLinksStarredFlow(starred = starred).map { it.map(::DataFileLink) }
+    fun getDataFileLinksStarredFlow(starred: Boolean = false) = dataFileDao.getDataFileLinksStarredFlow(starred = starred).map { it.map(::DataFileLink) }
 
-    suspend fun getAllDataFiles()  = dataFileDao.getAllDataFiles().map(::DataFile)
+    suspend fun getAllDataFiles() = dataFileDao.getAllDataFiles().map(::DataFile)
 
-    suspend fun getAllDataFileLinks()  = dataFileDao.getAllDataFileLinks().map(::DataFileLink)
+    suspend fun getAllDataFileLinks() = dataFileDao.getAllDataFileLinks().map(::DataFileLink)
 
     fun getAllDataFileFlow()  = dataFileDao.getAllDataFileFlow().map { it.map(::DataFile) }
 }

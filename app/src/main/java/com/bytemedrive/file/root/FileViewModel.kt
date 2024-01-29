@@ -18,6 +18,9 @@ import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.DataFile
 import com.bytemedrive.datafile.entity.DataFileLink
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.file.shared.control.FileListItemRepository
+import com.bytemedrive.file.shared.entity.FileListItem
+import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.file.shared.preview.FilePreview
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.EventFolderStarAdded
@@ -33,7 +36,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -49,7 +51,8 @@ class FileViewModel(
     private val queueFileDownloadRepository: QueueFileDownloadRepository,
     private val folderRepository: FolderRepository,
     private val dataFileRepository: DataFileRepository,
-    private val customerRepository: CustomerRepository
+    private val customerRepository: CustomerRepository,
+    private val itemRepository: FileListItemRepository
 ) : ViewModel() {
 
     private val TAG = FileViewModel::class.qualifiedName
@@ -58,11 +61,11 @@ class FileViewModel(
 
     var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
 
-    var items = MutableStateFlow(listOf<Item>())
+    var items by mutableStateOf(emptyList<FileListItem>())
 
-    val itemsSelected = MutableStateFlow(emptyList<Item>())
+    var fileListItems = itemRepository.getAllPaged()
 
-    var itemsUploading: Flow<List<Item>> = emptyFlow()
+    val itemsSelected = MutableStateFlow(emptyList<FileListItem>())
 
     val fileSelectionDialogOpened = MutableStateFlow(false)
 
@@ -74,7 +77,31 @@ class FileViewModel(
 
     private var watchThumbnails: Job? = null
 
-    fun clickFileAndFolder(item: Item) {
+    fun initialize(context: Context, folderId: UUID?) {
+        fileListItems = itemRepository.getAllPaged(folderId)
+
+        watchItems = viewModelScope.launch {
+            combine(
+                folderRepository.getFoldersByParentIdFlow(folderId),
+                dataFileRepository.getDataFileLinksByFolderIdFlow(folderId)
+            ) { folders, files ->
+                val tempFolders = folders.map { FileListItem(it.id, it.name, ItemType.FOLDER, it.starred, false) }
+                val tempFiles = files.map { FileListItem(it.id, it.name, ItemType.FILE, it.starred, it.uploading, it.folderId) }
+
+                tempFolders + tempFiles
+            }.collectLatest { items_ ->
+                items = items_
+            }
+        }
+
+        viewModelScope.launch {
+            selectedFolder = folderId?.let { folderRepository.getFolderById(it) }
+        }
+
+        watchThumbnails(context)
+    }
+
+    fun clickFileAndFolder(item: FileListItem) {
         val anyFileSelected = itemsSelected.value.isNotEmpty()
 
         if (anyFileSelected) {
@@ -99,7 +126,7 @@ class FileViewModel(
         }
     }
 
-    fun longClickFileAndFolder(item: Item) =
+    fun longClickFileAndFolder(item: FileListItem) =
         itemsSelected.update {
             if (it.contains(item)) {
                 it - item
@@ -109,11 +136,11 @@ class FileViewModel(
         }
 
     fun toggleAllItems(context: Context) {
-        if (itemsSelected.value.size == items.value.size) {
+        if (itemsSelected.value.size == items.size) {
             itemsSelected.update { emptyList() }
         } else {
-            itemsSelected.update { items.value }
-            Toast.makeText(context, "${items.value.size} items selected", Toast.LENGTH_SHORT).show()
+            itemsSelected.update { items }
+            Toast.makeText(context, "${items.size} items selected", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -201,12 +228,6 @@ class FileViewModel(
         }
     }
 
-    fun getItemsPages(items: List<Item>): Flow<PagingData<Item>> =
-        Pager(
-            config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { FilePagingSource(items) }
-        ).flow
-
     fun useSelectionScreenToMoveItems(id: UUID, folderId: UUID?) = useSelectionScreenToMoveItems(listOf(id), folderId)
 
     fun useSelectionScreenToMoveItems(ids: List<UUID>, folderId: UUID?) {
@@ -234,29 +255,6 @@ class FileViewModel(
     fun cancelJobs() {
         watchItems?.cancel()
         watchThumbnails?.cancel()
-    }
-
-    fun initialize(context: Context, folderId: UUID?) {
-        watchItems = viewModelScope.launch {
-            combine(
-                folderRepository.getFoldersByParentIdFlow(folderId),
-                dataFileRepository.getDataFileLinksByFolderIdFlow(folderId)
-            ) { folders, files ->
-                val tempFolders = folders.map { Item(it.id, it.name, ItemType.FOLDER, it.starred, false) }
-
-                val tempFiles = files.map { Item(it.id, it.name, ItemType.FILE, it.starred, it.uploading, it.folderId) }
-
-                tempFolders + tempFiles
-            }.collectLatest { items_ ->
-                items.update { items_ }
-            }
-        }
-
-        viewModelScope.launch {
-            selectedFolder = folderId?.let { folderRepository.getFolderById(it) }
-        }
-
-        watchThumbnails(context)
     }
 
     private fun watchThumbnails(context: Context) {

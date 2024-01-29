@@ -50,6 +50,8 @@ import androidx.core.content.ContextCompat
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
+import com.bytemedrive.file.shared.entity.FileListItem
+import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
 import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.file.shared.selection.FileSelectionDialog
@@ -67,10 +69,7 @@ fun FileScreen(
     appNavigator: AppNavigator = koinInject(),
 ) {
     val context = LocalContext.current
-    val items by fileViewModel.items.collectAsState()
-    val itemsUploading by fileViewModel.itemsUploading.collectAsState(emptyList())
-    val itemsUploadingByFolderId = itemsUploading.filter { it.folderId?.equals(folderId) ?: true }
-    val itemsPaged = fileViewModel.getItemsPages(itemsUploadingByFolderId + items).collectAsLazyPagingItems()
+    val fileListItems = fileViewModel.fileListItems.collectAsLazyPagingItems()
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
     val thumbnails by fileViewModel.thumbnails.collectAsState()
     val dataFilePreview by fileViewModel.dataFilePreview.collectAsState()
@@ -111,7 +110,7 @@ fun FileScreen(
         floatingActionButton = { FloatingActionButtonCreate(folderId) },
     ) { paddingValues ->
 
-        if (items.isEmpty()) {
+        if (fileListItems.itemCount == 0) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(text = stringResource(id = R.string.common_no_data))
             }
@@ -126,7 +125,7 @@ fun FileScreen(
                         .fillMaxSize()
                         .padding(horizontal = 16.dp, vertical = 32.dp)
                 ) {
-                    items(items = itemsPaged) { fileAndFolder ->
+                    items(items = fileListItems) { fileAndFolder ->
                         fileAndFolder?.let { item ->
                             val itemSelected = itemsSelected.contains(item)
 
@@ -187,7 +186,7 @@ fun FileScreen(
 }
 
 @Composable
-private fun FileImage(itemSelected: Boolean, item: Item, image: Bitmap?) {
+private fun FileImage(itemSelected: Boolean, item: FileListItem, image: Bitmap?) {
     Box(
         modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center
     ) {
