@@ -36,4 +36,6 @@ class DataFileRepository(
     suspend fun getAllDataFiles()  = dataFileDao.getAllDataFiles().map(::DataFile)
 
     suspend fun getAllDataFileLinks()  = dataFileDao.getAllDataFileLinks().map(::DataFileLink)
+
+    fun getAllDataFileFlow()  = dataFileDao.getAllDataFileFlow().map { it.map(::DataFile) }
 }

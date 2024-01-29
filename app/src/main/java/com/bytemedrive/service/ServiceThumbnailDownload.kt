@@ -8,17 +8,20 @@ import android.util.Log
 import androidx.media3.common.MimeTypes
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.UploadStatus
+import com.bytemedrive.file.root.EventThumbnailCompleted
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.root.UploadChunk
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.privacy.AesService
 import com.bytemedrive.store.AppState
+import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 class ServiceThumbnailDownload : Service() {
@@ -30,6 +33,7 @@ class ServiceThumbnailDownload : Service() {
     private val fileManager: FileManager by inject()
 
     private val dataFileRepository: DataFileRepository by inject()
+    private val eventPublisher: EventPublisher by inject()
 
     private val resolutions: List<Resolution> = listOf(Resolution.P360, Resolution.P1280)
 
@@ -64,6 +68,8 @@ class ServiceThumbnailDownload : Service() {
                                             val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), AesService.secretKey(thumbnail.secretKeyBase64))
 
                                             applicationContext.openFileOutput(thumbnailName, Context.MODE_PRIVATE).use { it.write(fileDecrypted) }
+
+                                            eventPublisher.publishEvent(EventThumbnailCompleted(dataFile.id, resolution, ZonedDateTime.now()))
                                         }
                                     }
                             }
