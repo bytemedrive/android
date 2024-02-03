@@ -101,6 +101,7 @@ fun PaymentMethodCreditCardScreen(
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Decimal),
             keyboardActions = KeyboardActions(onDone = { paymentMethodCreditCardViewModel.makePayment() }),
+            singleLine = true
         )
 
         ButtonLoading(

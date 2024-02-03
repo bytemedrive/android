@@ -62,6 +62,7 @@ fun PaymentMethodCryptoAmountScreen(
                 label = { Text(text = "Storage amount (GBM)") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Number),
                 keyboardActions = KeyboardActions(onDone = { submitForm() }),
+                singleLine = true
             )
             Text(text = "~ ${if (prices != null && amount != null) amount!!.times(prices!!.gbmPriceInXmr).toString() else "0"} XMR", modifier = Modifier.weight(1f))
         }
