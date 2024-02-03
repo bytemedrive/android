@@ -42,7 +42,6 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
-import com.bytemedrive.file.root.Action
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.navigation.AppNavigator
@@ -115,14 +114,14 @@ fun FileSelectionDialog(
                     }
 
                     when (action?.type) {
-                        Action.Type.COPY_ITEMS -> {
+                        FileViewModel.Action.Type.COPY_ITEMS -> {
                             Button(onClick = {
                                 action?.let { action_ ->
                                     fileSelectionViewModel.copyItem(action_, selectedFolder?.id, closeDialog)
                                 }
                             }) { Text(text = "Copy here") }
                         }
-                        Action.Type.MOVE_ITEMS -> {
+                        FileViewModel.Action.Type.MOVE_ITEMS -> {
                             val moveToRootFolder = selectedFolder?.id == null && action?.folderId != null
                             val moveToDifferentFolder = selectedFolder?.id != action?.folderId
                             val moveEnabled = moveToRootFolder || moveToDifferentFolder
