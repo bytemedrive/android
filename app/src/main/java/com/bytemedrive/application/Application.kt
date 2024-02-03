@@ -1,5 +1,6 @@
 package com.bytemedrive.application
 
+import androidx.security.crypto.MasterKey
 import androidx.security.crypto.MasterKeys
 import com.bytemedrive.BuildConfig
 import com.bytemedrive.koin.accountModule
@@ -65,7 +66,7 @@ class Application : android.app.Application() {
         networkStatus = NetworkStatus.init(this)
         httpClient = com.bytemedrive.network.HttpClient().client
         sharedPreferences = ByteMeSharedPreferences(applicationContext)
-        encryptedSharedPreferences = EncryptedPrefs(applicationContext, MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC))
+        encryptedSharedPreferences = EncryptedPrefs(applicationContext, MasterKey.Builder(this).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build())
 
         val stripePublishableKey =
             if (sharedPreferences?.backendUrl?.startsWith("https://api.bytemedrive.com") == true)
