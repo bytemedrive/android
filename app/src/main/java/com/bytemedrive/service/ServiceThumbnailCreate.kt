@@ -41,7 +41,6 @@ class ServiceThumbnailCreate : Service() {
                 withContext(Dispatchers.IO) {
                     dataFileRepository.getAllDataFiles().forEach {dataFile ->
                         val chunkViewIds = dataFile.chunks.map(UploadChunk::viewId)
-                        Log.i(TAG, "File chunk view ids=$chunkViewIds has ${dataFile.thumbnails.size} thumbnails.")
 
                         resolutions.forEach { resolution ->
                             if (dataFile.contentType == MimeTypes.IMAGE_JPEG && dataFile.thumbnails.find { it.resolution == resolution } == null) {
