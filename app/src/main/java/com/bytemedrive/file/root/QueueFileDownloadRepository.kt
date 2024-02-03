@@ -17,6 +17,8 @@ class QueueFileDownloadRepository(private val fileDownloadDao: FileDownloadDao) 
         fileDownloadDao.add(FileDownloadEntity(dataFileLinkId, ZonedDateTime.now()))
     }
 
+    suspend fun addFiles(dataFileLinkIds: List<UUID>) = fileDownloadDao.add(*dataFileLinkIds.map { FileDownloadEntity(it, ZonedDateTime.now()) }.toTypedArray())
+
     suspend fun deleteFile(id: UUID) = withContext(Dispatchers.IO) {
         fileDownloadDao.delete(id)
     }

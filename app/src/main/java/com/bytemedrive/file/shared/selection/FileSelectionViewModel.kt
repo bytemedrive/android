@@ -11,10 +11,10 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.datafile.control.DataFileRepository
-import com.bytemedrive.file.root.Action
 import com.bytemedrive.file.root.EventFileCopied
 import com.bytemedrive.file.root.EventFileMoved
 import com.bytemedrive.file.root.FilePagingSource
+import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.root.Item
 import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.folder.EventFolderCopied
@@ -76,7 +76,7 @@ class FileSelectionViewModel(
         ).flow.cachedIn(viewModelScope)
 
     // TODO: Rework with use of recursive function to have single iteration
-    fun copyItem(action: Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
+    fun copyItem(action: FileViewModel.Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
         val folders = folderRepository.getFoldersByIds(action.ids)
 
         folders.forEach { folder ->
@@ -106,7 +106,7 @@ class FileSelectionViewModel(
         closeDialog()
     }
 
-    fun moveItems(action: Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
+    fun moveItems(action: FileViewModel.Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
         val selectedFolders = folderRepository.getFoldersByIds(action.ids)
         val selectedFileLinks = dataFileRepository.getDataFileLinksByIds(action.ids)
 
