@@ -35,7 +35,6 @@ import java.util.UUID
 fun StarredBottomSheetContextFolder(
     folderId: UUID,
     starredBottomSheetContextFolderViewModel: StarredBottomSheetContextFolderViewModel = koinViewModel(),
-    fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) {
 
@@ -50,7 +49,7 @@ fun StarredBottomSheetContextFolder(
         val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.STARRED) }
 
         val toggleStarred = {
-            fileViewModel.toggleStarredFolder(folder.id, folder.starred)
+            starredBottomSheetContextFolderViewModel.toggleStarredFolder(folder.id, folder.starred)
             navigateBack()
         }
 
@@ -59,7 +58,7 @@ fun StarredBottomSheetContextFolder(
                 "Delete folder?",
                 "Are you sure you want to permanently delete folder \"${folder.name}\"?",
                 {
-                    fileViewModel.removeFolder(folder.id)
+                    starredBottomSheetContextFolderViewModel.removeFolder(folder.id)
                     alertDialogDeleteOpened = false
                     navigateBack()
                 }) { alertDialogDeleteOpened = false }

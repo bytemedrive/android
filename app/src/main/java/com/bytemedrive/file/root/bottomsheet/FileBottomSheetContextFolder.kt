@@ -48,7 +48,7 @@ fun FileBottomSheetContextFolder(
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
         val toggleStarred = {
-            fileViewModel.toggleStarredFolder(folder.id, folder.starred)
+            fileBottomSheetContextFolderViewModel.toggleStarredFolder(folder.id, folder.starred)
             appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
         }
 
@@ -57,7 +57,7 @@ fun FileBottomSheetContextFolder(
                 "Delete folder?",
                 "Are you sure you want to permanently delete folder \"${folder.name}\"?",
                 {
-                    fileViewModel.removeFolder(folder.id)
+                    fileBottomSheetContextFolderViewModel.removeFolder(folder.id)
                     alertDialogDeleteOpened = false
                     appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
                 }) { alertDialogDeleteOpened = false }

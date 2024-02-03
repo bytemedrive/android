@@ -40,7 +40,6 @@ import java.util.UUID
 fun StarredBottomSheetContextFile(
     dataFileLinkId: UUID,
     starredBottomSheetContextFileViewModel: StarredBottomSheetContextFileViewModel = koinViewModel(),
-    fileViewModel: FileViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) {
 
@@ -56,7 +55,7 @@ fun StarredBottomSheetContextFile(
         val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.STARRED) }
 
         val toggleStarred = {
-            fileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred)
+            starredBottomSheetContextFileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred)
             navigateBack()
         }
 
@@ -65,16 +64,16 @@ fun StarredBottomSheetContextFile(
                 "Delete file?",
                 "Are you sure you want to permanently delete file \"${dataFileLink.name}\"?",
                 {
-                    fileViewModel.removeFile(dataFileLink.id)
+                    starredBottomSheetContextFileViewModel.removeFile(dataFileLink.id)
                     alertDialogDeleteOpened = false
                     navigateBack()
                 }) { alertDialogDeleteOpened = false }
         }
 
         val downloadFile = {
-            fileViewModel.downloadFile(dataFileLink.id)
-
+            starredBottomSheetContextFileViewModel.downloadFile(dataFileLink.id)
             Toast.makeText(context, "One item will be downloaded. See notification for details", Toast.LENGTH_SHORT).show()
+            appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
         }
 
         Column(

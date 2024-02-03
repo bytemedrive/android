@@ -58,10 +58,10 @@ val viewModelsModule = module {
     viewModel { AppNavigationViewModel(get(), get()) }
     viewModel { TerminateAccountViewModel(get(), get(), get(), get()) }
     viewModel { SignUpViewModel(get(), get(), get(), get()) }
-    viewModel { FileBottomSheetContextFolderViewModel(get()) }
-    viewModel { FileBottomSheetContextFileViewModel(get()) }
-    viewModel { StarredBottomSheetContextFolderViewModel(get()) }
-    viewModel { StarredBottomSheetContextFileViewModel(get()) }
+    viewModel { FileBottomSheetContextFolderViewModel(get(named(ExternalScope)), get(), get(), get()) }
+    viewModel { FileBottomSheetContextFileViewModel(get(named(ExternalScope)), get(), get(), get(), get()) }
+    viewModel { StarredBottomSheetContextFolderViewModel(get(named(ExternalScope)), get(), get(), get()) }
+    viewModel { StarredBottomSheetContextFileViewModel(get(named(ExternalScope)), get(), get(), get(), get()) }
     viewModel { FilePreviewViewModel(get()) }
     viewModel { FileSelectionViewModel(get(), get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
@@ -100,7 +100,7 @@ val accountModule = module {
     single { FileRepository(get(named(IODispatcher))) }
     single { FolderRepository(get()) }
     single { QueueFileUploadRepository(get()) }
-    single { FolderManager() }
+    single { FolderManager(get(named(ExternalScope)), get(), get(), get(), get(), get(), get(), get()) }
     single { PricesRepository(get(named(IODispatcher))) }
     single { ServiceManager() }
     single { SignUpRepository(get(named(IODispatcher))) }

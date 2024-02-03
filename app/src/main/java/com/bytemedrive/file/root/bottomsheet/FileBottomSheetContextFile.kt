@@ -54,7 +54,7 @@ fun FileBottomSheetContextFile(
         var alertDialogDeleteOpened by remember { mutableStateOf(false) }
 
         val toggleStarred = {
-            fileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred)
+            fileBottomSheetContextFileViewModel.toggleStarredFile(dataFileLink.id, dataFileLink.starred)
             appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
         }
 
@@ -63,16 +63,16 @@ fun FileBottomSheetContextFile(
                 "Delete file?",
                 "Are you sure you want to permanently delete file \"${dataFileLink.name}\"?",
                 {
-                    fileViewModel.removeFile(dataFileLink.id)
+                    fileBottomSheetContextFileViewModel.removeFile(dataFileLink.id)
                     alertDialogDeleteOpened = false
                     appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
                 }) { alertDialogDeleteOpened = false }
         }
 
         val downloadFile = {
-            fileViewModel.downloadFile(dataFileLink.id)
-
+            fileBottomSheetContextFileViewModel.downloadFile(dataFileLink.id)
             Toast.makeText(context, "One item will be downloaded. See notification for details", Toast.LENGTH_SHORT).show()
+            appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
         }
 
         Column(

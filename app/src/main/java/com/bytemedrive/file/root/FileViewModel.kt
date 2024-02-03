@@ -151,20 +151,6 @@ class FileViewModel(
         }
     }
 
-    fun removeFile(dataFileLinkId: UUID) = externalScope.launch {
-        customerRepository.getCustomer()?.let { customer ->
-            dataFileRepository.getDataFileLinkById(dataFileLinkId)?.let { dataFileLink ->
-                eventPublisher.publishEvent(EventFileDeleted(listOf(dataFileLinkId)))
-
-                val physicalFileRemovable = dataFileRepository.getDataFileLinksByDataFileId(dataFileLink.dataFileId).isEmpty()
-
-                if (physicalFileRemovable && customer.walletId != null) {
-                    fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
-                }
-            }
-        }
-    }
-
     fun removeFolder(id: UUID) = externalScope.launch {
         val dataFileLinks = dataFileRepository.getAllDataFileLinks()
         val folders = folderRepository.getAllFolders()
@@ -187,6 +173,7 @@ class FileViewModel(
         }
     }
 
+<<<<<<< Updated upstream
     fun toggleStarredFile(id: UUID, value: Boolean) = externalScope.launch {
         when (value) {
             true -> eventPublisher.publishEvent(EventFileStarRemoved(id))
@@ -207,6 +194,8 @@ class FileViewModel(
             pagingSourceFactory = { FilePagingSource(items) }
         ).flow
 
+=======
+>>>>>>> Stashed changes
     fun useSelectionScreenToMoveItems(id: UUID, folderId: UUID?) = useSelectionScreenToMoveItems(listOf(id), folderId)
 
     fun useSelectionScreenToMoveItems(ids: List<UUID>, folderId: UUID?) {
@@ -223,11 +212,6 @@ class FileViewModel(
 
     fun downloadFiles(ids: List<UUID>) = viewModelScope.launch {
         ids.forEach { queueFileDownloadRepository.addFile(it) }
-        appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
-    }
-
-    fun downloadFile(id: UUID) = viewModelScope.launch {
-        queueFileDownloadRepository.addFile(id)
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 

@@ -14,6 +14,7 @@ import com.bytemedrive.database.FileUpload
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.DataFileLink
 import com.bytemedrive.file.root.Chunk
+import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.EventFileUploadCompleted
 import com.bytemedrive.file.root.EventFileUploadStarted
 import com.bytemedrive.file.root.EventThumbnailStarted
@@ -26,7 +27,9 @@ import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.EventPublisher
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.jvm.javaio.toInputStream
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.ZonedDateTime
@@ -107,6 +110,20 @@ class FileManager(
             chunks.forEach { it.file.delete() }
         }
     }
+
+    suspend fun removeFile(dataFileLinkId: UUID) =
+        customerRepository.getCustomer()?.let { customer ->
+            dataFileRepository.getDataFileLinkById(dataFileLinkId)?.let { dataFileLink ->
+                eventPublisher.publishEvent(EventFileDeleted(listOf(dataFileLinkId)))
+
+                val physicalFileRemovable = dataFileRepository.getDataFileLinksByDataFileId(dataFileLink.dataFileId).isEmpty()
+
+                if (physicalFileRemovable && customer.walletId != null) {
+                    fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                }
+            }
+        }
+
 
     fun findAllFilesRecursively(folderId: UUID, allFolders: List<Folder>, allFiles: List<DataFileLink>): List<DataFileLink> {
         val filesToRemove = allFiles.filter { it.folderId == folderId }
