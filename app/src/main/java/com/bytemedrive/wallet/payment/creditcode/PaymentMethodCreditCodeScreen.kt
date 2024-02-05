@@ -90,6 +90,7 @@ fun PaymentMethodCreditCodeScreen(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { paymentMethodCreditCodeViewModel.redeemCoupon() }),
                 isError = formState.error == PaymentMethodCreditCodeFormState.ErrorCode.NOT_FOUND,
+                singleLine = true
             )
             Text(
                 modifier = Modifier.padding(top = 100.dp),

@@ -44,6 +44,7 @@ fun SecretSettings(onCloseModal: () -> Unit) {
                     onValueChange = { backendUrl = it },
                     label = { Text(stringResource(R.string.secret_settings_field_backend_url_label)) },
                     modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),

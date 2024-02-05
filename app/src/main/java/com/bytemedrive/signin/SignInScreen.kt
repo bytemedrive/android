@@ -126,6 +126,7 @@ fun SignInScreen(
                     imeAction = ImeAction.Next,
                     keyboardType = KeyboardType.Email
                 ),
+                singleLine = true
             )
             FieldPassword(
                 value = password,
