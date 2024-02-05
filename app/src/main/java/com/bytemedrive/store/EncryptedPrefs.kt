@@ -4,13 +4,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.bytemedrive.network.JsonConfig.mapper
 import java.security.SecureRandom
 import java.util.Base64
 import java.util.UUID
 import java.util.stream.Collectors
 
-class EncryptedPrefs(context: Context, masterKeyAlias: String) {
+class EncryptedPrefs(context: Context, masterKey: MasterKey) {
 
     private val TAG = EncryptedPrefs::class.qualifiedName
 
@@ -108,9 +109,9 @@ class EncryptedPrefs(context: Context, masterKeyAlias: String) {
 
     init {
         this.encryptedSharedPreferences = EncryptedSharedPreferences.create(
-            FILE_NAME,
-            masterKeyAlias,
             context,
+            FILE_NAME,
+            masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
