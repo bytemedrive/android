@@ -43,7 +43,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.file.root.FileViewModel
-import com.bytemedrive.file.root.ItemType
+import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.navigation.AppNavigator
 import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
@@ -58,7 +58,7 @@ fun FileSelectionDialog(
 ) {
     val action by fileViewModel.action.collectAsState()
     val selectedFolder = fileSelectionViewModel.selectedFolder
-    val fileAndFolderListPaging = fileSelectionViewModel.getFilesPages(fileSelectionViewModel.fileAndFolderList).collectAsLazyPagingItems()
+    val fileListItems = fileSelectionViewModel.fileListItems.collectAsLazyPagingItems()
     val title = selectedFolder?.name ?: "My drive"
     val closeDialog = {
         fileViewModel.fileSelectionDialogOpened.update { false }
@@ -143,13 +143,13 @@ fun FileSelectionDialog(
         ) { paddingValues ->
             Surface(modifier = Modifier.padding(paddingValues)) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    if (fileAndFolderListPaging.itemCount == 0) {
+                    if (fileListItems.itemCount == 0) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             Text(text = stringResource(id = R.string.common_no_data))
                         }
                     } else {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            items(items = fileAndFolderListPaging) {
+                            items(items = fileListItems) {
                                 it?.let { item ->
                                     val selectedItem = action?.ids?.contains(item.id) == true
                                     val clickable = item.type == ItemType.FOLDER && !selectedItem

@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
-import com.bytemedrive.file.root.ItemType
+import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
 import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.navigation.AppNavigator
@@ -51,7 +51,7 @@ fun StarredScreen(
     starredViewModel: StarredViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) {
-    val items = starredViewModel.getStarredFilesPages().collectAsLazyPagingItems()
+    val fileListItems = starredViewModel.fileListItems.collectAsLazyPagingItems()
     val dataFilePreview by starredViewModel.dataFilePreview.collectAsState()
     val fileAndFolderSelected by starredViewModel.itemsSelected.collectAsState()
 
@@ -81,7 +81,7 @@ fun StarredScreen(
         floatingActionButton = { FloatingActionButtonCreate() },
     ) { paddingValues ->
 
-        if (items.itemCount == 0) {
+        if (fileListItems.itemCount == 0) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text(text = stringResource(id = R.string.common_no_data))
             }
@@ -97,7 +97,7 @@ fun StarredScreen(
                         .fillMaxSize()
                         .padding(horizontal = 16.dp, vertical = 32.dp)
                 ) {
-                    items(items = items) {
+                    items(items = fileListItems) {
                         it?.let { item ->
                             val itemSelected = fileAndFolderSelected.contains(item)
 

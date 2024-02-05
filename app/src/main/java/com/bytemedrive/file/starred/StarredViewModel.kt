@@ -5,17 +5,14 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.file.root.EventFileDeleted
-import com.bytemedrive.file.root.FilePagingSource
 import com.bytemedrive.file.root.FileRepository
-import com.bytemedrive.file.root.Item
-import com.bytemedrive.file.root.ItemType
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.file.shared.control.FileListItemRepository
+import com.bytemedrive.file.shared.entity.FileListItem
+import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.file.shared.preview.FilePreview
 import com.bytemedrive.folder.EventFolderDeleted
 import com.bytemedrive.folder.FolderManager
@@ -23,7 +20,6 @@ import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -39,14 +35,15 @@ class StarredViewModel(
     private val folderManager: FolderManager,
     private val dataFileRepository: DataFileRepository,
     private val folderRepository: FolderRepository,
-    private val customerRepository: CustomerRepository
+    private val customerRepository: CustomerRepository,
+    private val fileListItemRepository: FileListItemRepository
 ) : ViewModel() {
 
-    var list = MutableStateFlow(listOf<Item>())
+    var fileListItems = fileListItemRepository.getAllStaredPaged()
 
-    var starred = MutableStateFlow(listOf<Item>())
+    var starred = MutableStateFlow(listOf<FileListItem>())
 
-    val itemsSelected = MutableStateFlow(emptyList<Item>())
+    val itemsSelected = MutableStateFlow(emptyList<FileListItem>())
 
     val dataFilePreview = MutableStateFlow<FilePreview?>(null)
 
@@ -56,7 +53,7 @@ class StarredViewModel(
         watchItems()
     }
 
-    fun clickFileAndFolder(item: Item) {
+    fun clickFileAndFolder(item: FileListItem) {
         val anyFileSelected = itemsSelected.value.isNotEmpty()
 
         if (anyFileSelected) {
@@ -81,7 +78,7 @@ class StarredViewModel(
         }
     }
 
-    fun longClickFileAndFolder(item: Item) =
+    fun longClickFileAndFolder(item: FileListItem) =
         itemsSelected.update {
             if (it.contains(item)) {
                 itemsSelected.value - item
@@ -124,12 +121,6 @@ class StarredViewModel(
         }
     }
 
-    fun getStarredFilesPages(): Flow<PagingData<Item>> =
-        Pager(
-            config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { FilePagingSource(starred.value) }
-        ).flow
-
     fun toggleAllItems(context: Context) {
         if (itemsSelected.value.size == starred.value.size) {
             itemsSelected.update { emptyList() }
@@ -146,8 +137,8 @@ class StarredViewModel(
     private fun watchItems() {
         watchJob = viewModelScope.launch {
             combine(folderRepository.getAllFoldersFlow(starred = true), dataFileRepository.getDataFileLinksStarredFlow(starred = true)) { folders, dataFileLinks ->
-                val tempFolders = folders.map { Item(it.id, it.name, ItemType.FOLDER, it.starred, false) }
-                val tempFileLinks = dataFileLinks.map { Item(it.id, it.name, ItemType.FILE, it.starred, false) }
+                val tempFolders = folders.map { FileListItem(it.id, it.name, ItemType.FOLDER, it.starred, false) }
+                val tempFileLinks = dataFileLinks.map { FileListItem(it.id, it.name, ItemType.FILE, it.starred, false) }
 
                 tempFolders + tempFileLinks
             }.collectLatest { items ->

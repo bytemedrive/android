@@ -5,29 +5,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.file.root.EventFileCopied
 import com.bytemedrive.file.root.EventFileMoved
-import com.bytemedrive.file.root.FilePagingSource
 import com.bytemedrive.file.root.FileViewModel
-import com.bytemedrive.file.root.Item
-import com.bytemedrive.file.root.ItemType
+import com.bytemedrive.file.shared.control.FileListItemRepository
 import com.bytemedrive.folder.EventFolderCopied
 import com.bytemedrive.folder.EventFolderMoved
 import com.bytemedrive.folder.Folder
-import com.bytemedrive.folder.FolderEntity
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.folder.FolderRepository
-import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -37,23 +26,24 @@ class FileSelectionViewModel(
     private val eventPublisher: EventPublisher,
     private val folderManager: FolderManager,
     private val folderRepository: FolderRepository,
-    private val dataFileRepository: DataFileRepository
+    private val dataFileRepository: DataFileRepository,
+    private val fileListItemRepository: FileListItemRepository
 ) : ViewModel() {
 
-    var selectedFolder by mutableStateOf<Folder?>(null)
+    var fileListItems = fileListItemRepository.getAllPaged()
 
-    var fileAndFolderList by mutableStateOf(listOf<Item>())
+    var selectedFolder by mutableStateOf<Folder?>(null)
 
     private val history = MutableStateFlow(emptyList<UUID>())
 
     init {
-        refreshFileAndFolderList(null)
+        refreshFileListItems(null)
     }
 
     fun openFolder(id: UUID?) = viewModelScope.launch {
         selectedFolder = id?.let { folderRepository.getFolderById(id) }
 
-        refreshFileAndFolderList(selectedFolder)
+        refreshFileListItems(selectedFolder)
     }
 
     fun addToHistory(id: UUID) =
@@ -67,12 +57,6 @@ class FileSelectionViewModel(
             openFolder(history.value.lastOrNull())
         }
     }
-
-    fun getFilesPages(items: List<Item>): Flow<PagingData<Item>> =
-        Pager(
-            config = PagingConfig(pageSize = 20),
-            pagingSourceFactory = { FilePagingSource(items) }
-        ).flow.cachedIn(viewModelScope)
 
     // TODO: Rework with use of recursive function to have single iteration
     fun copyItem(action: FileViewModel.Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
@@ -116,16 +100,8 @@ class FileSelectionViewModel(
         closeDialog()
     }
 
-    private fun refreshFileAndFolderList(selectedFolder: Folder?) = viewModelScope.launch {
-        val folders = folderRepository.getFoldersByParentId(selectedFolder?.id)
-        val dataFileLinks = dataFileRepository.getDataFileLinksByFolderId(selectedFolder?.id)
-
-        val tempFolders = folders.map { Item(it.id, it.name, ItemType.FOLDER, it.starred, false) }
-        val tempFileLinks = dataFileLinks.map { Item(it.id, it.name, ItemType.FILE, it.starred, false) }
-
-        val items = tempFolders + tempFileLinks
-
-        fileAndFolderList = items
+    private fun refreshFileListItems(selectedFolder: Folder?) = viewModelScope.launch {
+        fileListItems = fileListItemRepository.getAllPaged(selectedFolder?.id)
     }
 
     private suspend fun copyFolders(currentFolderId: UUID, newFolderId: UUID) {
