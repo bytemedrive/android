@@ -49,7 +49,7 @@ class FileManager(
 
     suspend fun downloadFile(dataFileLinkId: UUID) =
         dataFileRepository.getDataFileLinkById(dataFileLinkId)?.let { dataFileLink ->
-            dataFileRepository.getDataFileById(dataFileLink.id)?.let { dataFile ->
+            dataFileRepository.getDataFileById(dataFileLink.dataFileId)?.let { dataFile ->
                 val contentResolver = context.contentResolver
                 val contentValues = ContentValues().apply {
                     put(MediaStore.Downloads.DISPLAY_NAME, dataFileLink.name)
