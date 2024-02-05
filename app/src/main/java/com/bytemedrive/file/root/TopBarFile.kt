@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
+import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.navigation.TopBarAppContent
 import com.bytemedrive.navigation.TopBarAppContentBack
 import org.koin.compose.koinInject
