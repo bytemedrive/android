@@ -14,8 +14,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bytemedrive.file.root.bottomsheet.CreateFolderViewModel
 import com.bytemedrive.navigation.AppNavigator
-import kotlinx.coroutines.flow.update
 import java.util.UUID
 
 @Composable
@@ -40,15 +39,18 @@ fun CreateFolder(
     createFolderViewModel: CreateFolderViewModel,
     appNavigator: AppNavigator
 ) {
-    val name by createFolderViewModel.name.collectAsState()
-
     var dialogNewFolderOpened by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
-    val confirmName = {
+    val createFolder = {
         dialogNewFolderOpened = false
         createFolderViewModel.createFolder(folderId)
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
+    }
+
+    val dismissDialog = {
+        createFolderViewModel.name = ""
+        dialogNewFolderOpened = false
     }
 
     if (dialogNewFolderOpened) {
@@ -57,25 +59,25 @@ fun CreateFolder(
         }
 
         AlertDialog(
-            onDismissRequest = { dialogNewFolderOpened = false },
+            onDismissRequest = dismissDialog,
             title = { Text(text = "New folder") },
             text = {
                 OutlinedTextField(
                     modifier = Modifier.focusRequester(focusRequester),
-                    value = name,
-                    onValueChange = { value -> createFolderViewModel.name.update { value } },
+                    value = createFolderViewModel.name,
+                    onValueChange = { createFolderViewModel.name = it },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { confirmName() }),
+                    keyboardActions = KeyboardActions(onDone = { createFolder() }),
                 )
             },
             confirmButton = {
                 TextButton(
-                    onClick = { confirmName() }
+                    onClick = createFolder
                 ) { Text("Create") }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { dialogNewFolderOpened = false }
+                    onClick = dismissDialog
                 ) { Text("Cancel") }
             }
         )
