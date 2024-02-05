@@ -35,8 +35,9 @@ fun TopBarFile(
     val context = LocalContext.current
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
 
+    val selectedItemsAreOnlyFiles = itemsSelected.all { it.type == ItemType.FILE }
+
     val downloadFile = {
-        // TODO: Find also files in selected folders
         fileViewModel.downloadFiles(itemsSelected.map { it.id })
         fileViewModel.clearSelectedItems()
 
@@ -89,11 +90,13 @@ fun TopBarFile(
                             contentDescription = "Item delete"
                         )
                     }
-                    IconButton(onClick = downloadFile) {
-                        Icon(
-                            imageVector = Icons.Filled.FileDownload,
-                            contentDescription = "Item download"
-                        )
+                    if (selectedItemsAreOnlyFiles) {
+                        IconButton(onClick = downloadFile) {
+                            Icon(
+                                imageVector = Icons.Filled.FileDownload,
+                                contentDescription = "Item download"
+                            )
+                        }
                     }
                     IconButton(onClick = { fileViewModel.toggleAllItems(context) }) {
                         Icon(

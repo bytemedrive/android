@@ -222,7 +222,7 @@ class FileViewModel(
     }
 
     fun downloadFiles(ids: List<UUID>) = viewModelScope.launch {
-        ids.forEach { queueFileDownloadRepository.addFile(it) }
+        queueFileDownloadRepository.addFiles(ids)
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
