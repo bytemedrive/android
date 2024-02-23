@@ -56,7 +56,7 @@ class FileViewModel(
 
     var selectedFolder by mutableStateOf<Folder?>(null)
 
-    var thumbnails = MutableStateFlow(mapOf<UUID, Bitmap?>())
+    var thumbnails = MutableStateFlow(mapOf<UUID, File?>())
 
     var items by mutableStateOf(emptyList<FileListItem>())
 
@@ -275,7 +275,7 @@ class FileViewModel(
         }
     }
 
-    private fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, dataFiles: List<DataFile>, context: Context): Bitmap? =
+    private fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, dataFiles: List<DataFile>, context: Context): File? =
         dataFiles
             .find { it.id == dataFileLink.dataFileId }
             ?.thumbnails
@@ -285,7 +285,7 @@ class FileViewModel(
                 val filePath = "${context.filesDir}/$thumbnailName"
                 val file = File(filePath)
 
-                if (file.exists()) BitmapFactory.decodeFile("${context.filesDir}/$thumbnailName") else null
+                if (file.exists()) file else null
             }
 
     data class Action(val ids: List<UUID>, val type: Type, val folderId: UUID?) {
