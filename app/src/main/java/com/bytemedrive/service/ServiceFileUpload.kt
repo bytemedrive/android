@@ -12,8 +12,11 @@ import androidx.core.app.NotificationCompat
 import com.bytemedrive.MainActivity
 import com.bytemedrive.R
 import com.bytemedrive.database.FileUpload
+import com.bytemedrive.datafile.entity.UploadStatus
+import com.bytemedrive.file.root.EventFileUploadFailed
 import com.bytemedrive.file.root.QueueFileUploadRepository
 import com.bytemedrive.file.shared.FileManager
+import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -21,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.io.File
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 class ServiceFileUpload : Service() {
@@ -29,6 +33,7 @@ class ServiceFileUpload : Service() {
 
     private val queueFileUploadRepository: QueueFileUploadRepository by inject()
     private val fileManager: FileManager by inject()
+    private val eventPublisher: EventPublisher by inject()
     private val serviceScope = CoroutineScope(Dispatchers.Default)
 
     private val notificationManager: NotificationManager by lazy {
@@ -75,8 +80,9 @@ class ServiceFileUpload : Service() {
             try {
                 fileManager.uploadFile(fileUpload, applicationContext.cacheDir, file)
             } catch (exception: Exception) {
-                Log.e(TAG, "File upload failed! File path=${file.path}.")
+                Log.e(TAG, "File upload failed! File path=${file.path}.", exception)
                 queueFileUploadRepository.deleteFile(fileUpload.id)
+                eventPublisher.publishEvent(EventFileUploadFailed(fileUpload.id, ZonedDateTime.now()))
             }
         } else {
             Log.w(TAG, "File upload canceled. File ${file.path} could not be found.")

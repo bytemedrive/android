@@ -1,6 +1,7 @@
 package com.bytemedrive.file.shared.entity
 
 import androidx.room.PrimaryKey
+import com.bytemedrive.datafile.entity.UploadStatus
 import java.util.UUID
 
 data class FileListItem(
@@ -9,7 +10,7 @@ data class FileListItem(
     val name: String,
     val type: ItemType,
     val starred: Boolean,
-    val uploading: Boolean,
+    val uploadStatus: UploadStatus,
     val folderId: UUID? = null
 ) {
     constructor(itemEntity: FileListItemEntity): this(
@@ -17,7 +18,7 @@ data class FileListItem(
         itemEntity.name,
         itemEntity.type,
         itemEntity.starred,
-        itemEntity.uploading,
+        itemEntity.uploadStatus,
         itemEntity.folderId
     )
 }

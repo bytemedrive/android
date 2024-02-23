@@ -6,6 +6,7 @@ import com.bytemedrive.file.root.EventFileMoved
 import com.bytemedrive.file.root.EventFileStarAdded
 import com.bytemedrive.file.root.EventFileStarRemoved
 import com.bytemedrive.file.root.EventFileUploadCompleted
+import com.bytemedrive.file.root.EventFileUploadFailed
 import com.bytemedrive.file.root.EventFileUploadQueued
 import com.bytemedrive.file.root.EventFileUploadStarted
 import com.bytemedrive.file.root.EventThumbnailCompleted
@@ -31,6 +32,7 @@ enum class EventType(@JsonValue val code: String, val clazz: Class<*>) {
     FILE_UPLOADED_QUEUED("file-upload-queued", EventFileUploadQueued::class.java),
     FILE_UPLOADED_STARTED("file-upload-started", EventFileUploadStarted::class.java),
     FILE_UPLOADED_COMPLETED("file-upload-completed", EventFileUploadCompleted::class.java),
+    FILE_UPLOADED_FAILED("file-upload-failed", EventFileUploadFailed::class.java),
     FILE_THUMBNAIL_STARTED("file-thumbnail-started", EventThumbnailStarted::class.java),
     FILE_THUMBNAIL_COMPLETED("file-thumbnail-completed", EventThumbnailCompleted::class.java),
     FOLDER_COPIED("folder-copied", EventFolderCopied::class.java),

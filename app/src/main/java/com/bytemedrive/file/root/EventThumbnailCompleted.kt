@@ -17,7 +17,7 @@ data class EventThumbnailCompleted(
 
     override suspend fun convert(database: ByteMeDatabase) {
         val dao = database.dataFileDao()
-        val dataFileEntity = dao.getDataFileById(sourceDataFileId)
+        val dataFileEntity = dao.findDataFileById(sourceDataFileId)
 
         if (dataFileEntity == null) {
             Log.w(TAG, "Trying to get non existing data file id=$sourceDataFileId")

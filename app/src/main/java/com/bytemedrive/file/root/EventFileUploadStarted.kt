@@ -21,7 +21,7 @@ data class EventFileUploadStarted(
     override suspend fun convert(database: ByteMeDatabase) {
         val dao = database.dataFileDao()
 
-        val dataFileEntity = dao.getDataFileById(dataFileId)
+        val dataFileEntity = dao.findDataFileById(dataFileId)
 
         if (dataFileEntity == null) {
             Log.w(TAG, "Trying to get non existing data file id=$dataFileId")

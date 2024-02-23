@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,6 +51,7 @@ import androidx.core.content.ContextCompat
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
+import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.file.shared.entity.FileListItem
 import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
@@ -146,16 +148,18 @@ fun FileScreen(
                                         .weight(1f)
                                 ) {
                                     Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight(500))
-                                    Row() {
-                                        if (item.uploading) {
-                                            Text(text = "Uploading")
-                                        } else if (item.starred) {
-                                            Icon(
-                                                modifier = Modifier.size(16.dp),
-                                                imageVector = Icons.Rounded.Star,
-                                                contentDescription = "Starred",
-                                                tint = Color.Black,
-                                            )
+                                    Row {
+                                        when {
+                                            item.uploadStatus == UploadStatus.STARTED -> Text(text = "Uploading")
+                                            item.uploadStatus == UploadStatus.FAILED -> Text(text = "Failed")
+                                            item.starred -> {
+                                                Icon(
+                                                    modifier = Modifier.size(16.dp),
+                                                    imageVector = Icons.Rounded.Star,
+                                                    contentDescription = "Starred",
+                                                    tint = Color.Black
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -199,8 +203,14 @@ private fun FileImage(itemSelected: Boolean, item: FileListItem, image: Bitmap?)
                 )
             }
 
-            item.uploading -> {
-                CircularProgressIndicator()
+            listOf(UploadStatus.STARTED, UploadStatus.QUEUED).contains(item.uploadStatus) -> CircularProgressIndicator()
+
+            item.uploadStatus == UploadStatus.FAILED -> {
+                Icon(
+                    imageVector = Icons.Outlined.ErrorOutline,
+                    contentDescription = "Checked",
+                    tint = Color.Red,
+                )
             }
 
             item.type == ItemType.FILE -> {

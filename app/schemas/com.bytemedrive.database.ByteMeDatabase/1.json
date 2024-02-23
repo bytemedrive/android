@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "8ccc990924e9b69a08653f0d02d379d4",
+    "identityHash": "5c3f2e2ca7cfdbaa1e4c228b56744c60",
     "entities": [
       {
         "tableName": "file_download",
@@ -226,7 +226,7 @@
       },
       {
         "tableName": "data_file_link",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `dataFileId` BLOB NOT NULL, `name` TEXT NOT NULL, `folderId` BLOB, `uploading` INTEGER NOT NULL, `starred` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `dataFileId` BLOB NOT NULL, `name` TEXT NOT NULL, `folderId` BLOB, `uploadStatus` TEXT NOT NULL, `starred` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -253,9 +253,9 @@
             "notNull": false
           },
           {
-            "fieldPath": "uploading",
-            "columnName": "uploading",
-            "affinity": "INTEGER",
+            "fieldPath": "uploadStatus",
+            "columnName": "uploadStatus",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -345,7 +345,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8ccc990924e9b69a08653f0d02d379d4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5c3f2e2ca7cfdbaa1e4c228b56744c60')"
     ]
   }
 }
