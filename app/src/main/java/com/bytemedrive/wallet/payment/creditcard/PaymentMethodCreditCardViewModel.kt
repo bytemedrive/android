@@ -1,10 +1,14 @@
 package com.bytemedrive.wallet.payment.creditcard
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.customer.control.CustomerRepository
-import com.bytemedrive.store.AppState
+import com.bytemedrive.price.Prices
+import com.bytemedrive.price.PricesRepository
 import com.bytemedrive.wallet.root.StripePaymentRequest
 import com.bytemedrive.wallet.root.WalletRepository
 import com.stripe.android.model.ConfirmPaymentIntentParams
@@ -15,37 +19,46 @@ import kotlinx.coroutines.launch
 
 class PaymentMethodCreditCardViewModel(
     private val walletRepository: WalletRepository,
-    private val customerRepository: CustomerRepository
+    private val customerRepository: CustomerRepository,
+    private val pricesRepository: PricesRepository
 ) : ViewModel() {
 
     private val TAG = PaymentMethodCreditCardViewModel::class.qualifiedName
 
-    val clientSecret = MutableStateFlow<String?>(null)
+    var clientSecret by mutableStateOf<String?>(null)
 
-    val gbm = MutableStateFlow("")
+    var amount by mutableStateOf<Long?>(null)
 
-    private val confirmPaymentParams = MutableStateFlow<ConfirmPaymentIntentParams?>(null)
+    var prices by mutableStateOf<Prices?>(null)
 
-    val loading = MutableStateFlow(false)
+    var loading by mutableStateOf(false)
+
+    init {
+        viewModelScope.launch {
+            loading = true
+
+            prices = pricesRepository.getPrices()
+
+            loading = false
+        }
+    }
 
     fun makePayment() = viewModelScope.launch {
-        loading.update { true }
+        loading = true
 
         customerRepository.getCustomer()?.let { customer ->
             customer.walletId?.let { walletId ->
-                Log.i(TAG, "Creating payment intent for wallet id=${walletId} and gbm=${gbm.value.toLong()}")
-                val paymentIntent = walletRepository.stripePayment(walletId, StripePaymentRequest(gbm.value.toLong()))
+                amount?.let { amount ->
+                    Log.i(TAG, "Creating payment intent for wallet id=${walletId} and gbm=${amount}")
+                    val paymentIntent = walletRepository.stripePayment(walletId, StripePaymentRequest(amount))
 
-                Log.i(TAG, "Payment intent created. Price eur=${paymentIntent.priceEur}, client secret isEmpty=${paymentIntent.clientSecret.isEmpty()}")
-                clientSecret.update { paymentIntent.clientSecret }
+                    Log.i(TAG, "Payment intent created. Price eur=${paymentIntent.priceEur}, client secret isEmpty=${paymentIntent.clientSecret.isEmpty()}")
+                    clientSecret = paymentIntent.clientSecret
+                }
             }
         }
 
-        loading.update { false }
-    }
-
-    fun onPaymentLaunched() {
-        confirmPaymentParams.update { null }
+        loading = false
     }
 
     fun handlePaymentResult(result: PaymentSheetResult, onCompleted: () -> Unit, onFailed: () -> Unit) {
@@ -56,4 +69,6 @@ class PaymentMethodCreditCardViewModel(
             else -> onFailed()
         }
     }
+
+    fun priceConversion(): Double = prices?.let { prices -> amount?.times(prices.gbmPriceInEur) } ?: 0.0
 }

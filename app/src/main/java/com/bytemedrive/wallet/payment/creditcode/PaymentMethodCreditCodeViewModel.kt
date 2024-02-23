@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.network.RequestFailedException
-import com.bytemedrive.store.AppState
 import com.bytemedrive.store.EventPublisher
 import com.bytemedrive.wallet.root.WalletRepository
 import io.ktor.http.HttpStatusCode

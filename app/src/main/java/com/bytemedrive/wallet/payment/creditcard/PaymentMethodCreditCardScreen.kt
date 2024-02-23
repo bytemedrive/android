@@ -6,19 +6,19 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
@@ -28,14 +28,12 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.store.AppState
 import com.bytemedrive.ui.component.ButtonLoading
+import com.bytemedrive.ui.component.FieldNumber
 import com.stripe.android.paymentsheet.PaymentSheetContract
 import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
-val REGEX_NUMBER_DECIMAL = "\\d*".toRegex()
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentMethodCreditCardScreen(
     paymentMethodCreditCardViewModel: PaymentMethodCreditCardViewModel = koinViewModel(),
@@ -43,8 +41,6 @@ fun PaymentMethodCreditCardScreen(
 ) {
     val context = LocalContext.current
     val activity = LocalContext.current as Activity
-    val clientSecret by paymentMethodCreditCardViewModel.clientSecret.collectAsState()
-    val loading by paymentMethodCreditCardViewModel.loading.collectAsState()
 
     val stripeLauncher = rememberLauncherForActivityResult(
         contract = PaymentSheetContract(), // when using non-deprecated way via rememberPaymentSheet(), there is infinite loop issue (when onSuccess and onFailed functions are
@@ -63,13 +59,10 @@ fun PaymentMethodCreditCardScreen(
             )
         }
     )
-    clientSecret?.let {
+    paymentMethodCreditCardViewModel.clientSecret?.let {
         val args = PaymentSheetContract.Args.createPaymentIntentArgs(it)
         stripeLauncher.launch(args)
-        paymentMethodCreditCardViewModel.onPaymentLaunched()
     }
-
-    val gbm by paymentMethodCreditCardViewModel.gbm.collectAsState()
 
     LaunchedEffect(Unit) {
         activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -90,27 +83,36 @@ fun PaymentMethodCreditCardScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        OutlinedTextField(
-            value = gbm,
-            onValueChange = { value ->
-                if (REGEX_NUMBER_DECIMAL.matches(value)) {
-                    paymentMethodCreditCardViewModel.gbm.update { value }
-                }
-            },
-            label = { Text("Gigabytes per month (GBM)") },
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Decimal),
-            keyboardActions = KeyboardActions(onDone = { paymentMethodCreditCardViewModel.makePayment() }),
-            singleLine = true
-        )
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FieldNumber(
+                modifier = Modifier
+                    .weight(2f)
+                    .padding(end = 8.dp),
+                value = paymentMethodCreditCardViewModel.amount,
+                type = Long::class.java,
+                onValueChange = { value ->
+                    paymentMethodCreditCardViewModel.amount = value
+                },
+                label = { Text("Gigabytes per month (GBM)") },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Decimal),
+                keyboardActions = KeyboardActions(onDone = { paymentMethodCreditCardViewModel.makePayment() }),
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "~ ${paymentMethodCreditCardViewModel.priceConversion()} EUR"
+            )
+        }
 
         ButtonLoading(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
             onClick = { paymentMethodCreditCardViewModel.makePayment() },
-            enabled = gbm.isNotEmpty() && !loading,
-            loading = loading
+            enabled = paymentMethodCreditCardViewModel.amount != null && !paymentMethodCreditCardViewModel.loading,
+            loading = paymentMethodCreditCardViewModel.loading
         ) {
             Text(text = "Create payment")
         }
