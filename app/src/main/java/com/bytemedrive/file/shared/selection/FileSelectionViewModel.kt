@@ -89,7 +89,7 @@ class FileSelectionViewModel(
         closeDialog()
     }
 
-    fun moveItems(action: FileViewModel.Action, folderId: UUID, closeDialog: () -> Unit) = viewModelScope.launch {
+    fun moveItems(action: FileViewModel.Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
         val selectedFolders = folderRepository.getFoldersByIds(action.ids)
         val selectedFileLinks = dataFileRepository.getDataFileLinksByIds(action.ids)
 

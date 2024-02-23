@@ -109,7 +109,7 @@ fun FileBottomSheetContextFolder(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(folder.id, folderId) }),
+                    .clickable(onClick = { fileViewModel.useSelectionScreenToMoveItems(folder.id, folder.parent) }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.DriveFileMove,
