@@ -47,14 +47,18 @@ class ServiceFileDownload : Service() {
                     val filesToDownload = queueFileDownloadRepository.getFiles()
 
                     if (filesToDownload.isNotEmpty()) {
-                        startForeground(NOTIFICATION_ID, notification.build())
+                        withContext(Dispatchers.Main) {
+                            startForeground(NOTIFICATION_ID, notification.build())
+                        }
 
                         filesToDownload.forEachIndexed { index, file ->
                             downloadFile(file)
                             updateNotification(notification, "${index + 1} / ${filesToDownload.size} is being downloaded")
                         }
 
-                        stopForeground(STOP_FOREGROUND_DETACH)
+                        withContext(Dispatchers.Main) {
+                            stopForeground(STOP_FOREGROUND_DETACH)
+                        }
                     }
 
                     TimeUnit.SECONDS.sleep(10)

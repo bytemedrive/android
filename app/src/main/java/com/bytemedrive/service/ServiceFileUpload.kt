@@ -48,14 +48,18 @@ class ServiceFileUpload : Service() {
                     val filesToUpload = queueFileUploadRepository.getFiles()
 
                     if (filesToUpload.isNotEmpty()) {
-                        startForeground(NOTIFICATION_ID, notification.build())
+                        withContext(Dispatchers.Main) {
+                            startForeground(NOTIFICATION_ID, notification.build())
+                        }
 
                         filesToUpload.forEachIndexed { index, fileUpload ->
                             uploadFile(fileUpload)
                             updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
                         }
 
-                        stopForeground(STOP_FOREGROUND_DETACH)
+                        withContext(Dispatchers.Main) {
+                            stopForeground(STOP_FOREGROUND_DETACH)
+                        }
                     }
 
                     TimeUnit.SECONDS.sleep(10)
