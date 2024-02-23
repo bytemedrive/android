@@ -1,10 +1,5 @@
 package com.bytemedrive.file.root
 
-import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -46,10 +41,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import coil.size.Size
 import com.bytemedrive.R
 import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.file.shared.entity.FileListItem
@@ -61,6 +57,7 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import kotlinx.coroutines.flow.update
 import org.koin.compose.koinInject
+import java.io.File
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -152,6 +149,7 @@ fun FileScreen(
                                         when {
                                             item.uploadStatus == UploadStatus.STARTED -> Text(text = "Uploading")
                                             item.uploadStatus == UploadStatus.FAILED -> Text(text = "Failed")
+
                                             item.starred -> {
                                                 Icon(
                                                     modifier = Modifier.size(16.dp),
@@ -190,7 +188,7 @@ fun FileScreen(
 }
 
 @Composable
-private fun FileImage(itemSelected: Boolean, item: FileListItem, image: Bitmap?) {
+private fun FileImage(itemSelected: Boolean, item: FileListItem, file: File?) {
     Box(
         modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center
     ) {
@@ -214,7 +212,19 @@ private fun FileImage(itemSelected: Boolean, item: FileListItem, image: Bitmap?)
             }
 
             item.type == ItemType.FILE -> {
-                image?.let { Image(bitmap = it.asImageBitmap(), contentDescription = "Thumbnail ${item.name}", contentScale = ContentScale.Crop) } ?: Icon(
+                file?.let {
+                    Image(
+                        painter = rememberAsyncImagePainter(ImageRequest
+                            .Builder(LocalContext.current)
+                            .data(File(it.path))
+                            .size(Size.ORIGINAL)
+                            .crossfade(true)
+                            .build()
+                        ),
+                        contentDescription = "Thumbnail ${item.name}",
+                        contentScale = ContentScale.Crop
+                    )
+                } ?: Icon(
                     imageVector = Icons.Outlined.Description,
                     contentDescription = "File",
                     tint = Color.Black,
