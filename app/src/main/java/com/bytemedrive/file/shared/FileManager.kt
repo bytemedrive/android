@@ -251,6 +251,10 @@ class FileManager(
         const val UNKNOWN_MIME_TYPE = "unknown"
 
         fun computeBufferSize(fileSize: Long): Int {
+            if (fileSize < BUFFER_SIZE_DEFAULT) {
+                return BUFFER_SIZE_DEFAULT
+            }
+
             var newSize = BUFFER_SIZE_DEFAULT
 
             while ((fileSize % newSize) < (newSize / 2.0)) {
