@@ -8,14 +8,13 @@ import androidx.lifecycle.viewModelScope
 import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.datafile.control.DataFileRepository
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
 
 class AppNavigationViewModel(
     private val customerRepository: CustomerRepository,
     private val dataFileRepository: DataFileRepository
 ): ViewModel() {
     var username by mutableStateOf("")
-    var usedStorage by mutableStateOf(0.0)
+    var usedStorageGB by mutableStateOf(0.0)
     var balanceGbm by mutableStateOf(0L)
 
     fun getMenuData() = viewModelScope.launch {
@@ -24,7 +23,7 @@ class AppNavigationViewModel(
             balanceGbm = customer.balanceGbm ?: 0L
         }
 
-        usedStorage = dataFileRepository.getUsedStorage()?.toDouble() ?: 0.0
+        usedStorageGB = dataFileRepository.getUsedStorageGB()
     }
 
 }

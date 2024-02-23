@@ -13,7 +13,13 @@ class DataFileRepository(
         dataFile.chunks.map { it.id } + dataFile.thumbnails.flatMap { it.chunks.map { uploadChunk -> uploadChunk.id } }
     } ?: emptyList()
 
-    suspend fun getUsedStorage() = dataFileDao.getUsedStorage()
+    suspend fun getUsedStorageGB() =
+        dataFileDao.getAllDataFiles().sumOf {
+            val totalSizeBytesChunks = it.chunks.sumOf { chunk -> chunk.sizeBytes }
+            val totalSizeBytesThumbnails = it.thumbnails.sumOf { thumbnail -> thumbnail.sizeBytes }
+
+            totalSizeBytesChunks + totalSizeBytesThumbnails
+        } / GB_IN_BYTES
 
     fun getDataFileLinksByFolderIdFlow(folderId: UUID?) = dataFileDao.getDataFileLinksByFolderIdFlow(folderId).map { it.map(::DataFileLink) }
 
@@ -42,4 +48,8 @@ class DataFileRepository(
     suspend fun getAllDataFileLinks() = dataFileDao.getAllDataFileLinks().map(::DataFileLink)
 
     fun getAllDataFileFlow()  = dataFileDao.getAllDataFileFlow().map { it.map(::DataFile) }
+
+    companion object {
+        const val GB_IN_BYTES = 1073741824.0
+    }
 }
