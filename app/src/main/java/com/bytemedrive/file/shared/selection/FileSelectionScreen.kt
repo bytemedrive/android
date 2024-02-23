@@ -122,17 +122,13 @@ fun FileSelectionDialog(
                             }) { Text(text = "Copy here") }
                         }
                         FileViewModel.Action.Type.MOVE_ITEMS -> {
-                            val moveToRootFolder = selectedFolder?.id == null && action?.folderId != null
                             val moveToDifferentFolder = selectedFolder?.id != action?.folderId
-                            val moveEnabled = moveToRootFolder || moveToDifferentFolder
 
                             Button(onClick = {
                                 action?.let { action_ ->
-                                    selectedFolder?.id?.let { selectedFolderId_ ->
-                                        fileSelectionViewModel.moveItems(action_, selectedFolderId_, closeDialog)
-                                    }
+                                    fileSelectionViewModel.moveItems(action_, selectedFolder?.id, closeDialog)
                                 }
-                            }, enabled = moveEnabled) { Text(text = "Move here") }
+                            }, enabled = moveToDifferentFolder) { Text(text = "Move here") }
                         }
                         else -> {
                             Log.w("FileSelectionDialog", "Action type ${action?.type} should be implemented")
