@@ -21,9 +21,6 @@ interface DataFileDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(vararg dataFile: DataFileLinkEntity)
 
-    @Query("SELECT SUM(sizeBytes) / 1073741824.0 as usedStorage FROM data_file")
-    suspend fun getUsedStorage(): String?
-
     @Query("SELECT * FROM data_file")
     suspend fun getAllDataFiles(): List<DataFileEntity>
 

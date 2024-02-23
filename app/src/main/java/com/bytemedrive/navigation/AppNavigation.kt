@@ -71,7 +71,7 @@ fun AppNavigation(
     val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val navItems = getMenuItems(context, signInManager, appNavigator, appNavigationViewModel.usedStorage, appNavigationViewModel.balanceGbm)
+    val navItems = getMenuItems(context, signInManager, appNavigator, appNavigationViewModel.usedStorageGB, appNavigationViewModel.balanceGbm)
     val scrollState = rememberScrollState()
 
     val selectedItemDefault = remember { navItems.find { it is MenuItem.Navigation && it.route == startDestination } as MenuItem.Navigation? }
