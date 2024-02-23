@@ -59,7 +59,7 @@ fun PaymentMethodCryptoPaymentScreen(
         Loader()
     } else {
         Column(
-            modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 24.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp),
         ) {
             Text(
                 text = "Storage amount:",
@@ -121,8 +121,8 @@ fun PaymentMethodCryptoPaymentScreen(
             )
 
             Row(
-                modifier = Modifier.fillMaxSize().padding(bottom = 16.dp, start = 24.dp, end = 24.dp),
-                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.Bottom
             ) {
                 Button(

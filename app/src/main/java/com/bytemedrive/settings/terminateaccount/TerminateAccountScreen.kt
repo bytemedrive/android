@@ -2,9 +2,11 @@ package com.bytemedrive.settings.terminateaccount
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -72,43 +74,49 @@ fun TerminateAccountScreen(
         AlertDialogAccountTerminated(onConfirmation = onConfirmation)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        Text("Please enter your credentials again to confirm that you are terminating your ByteMe Drive account.", style = MaterialTheme.typography.bodyMedium)
-        OutlinedTextField(
-            value = username,
-            onValueChange = { value -> terminateAccountViewModel.username.update { value } },
-            label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.Email
-            ),
-            singleLine = true
-        )
-        FieldPassword(
-            value = password,
-            onValueChange = { value -> terminateAccountViewModel.password.update { value } },
-            label = "Password",
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.clearFocus()
-                terminateAccountViewModel.terminateAccount(showToastInvalidCredentials)
-            })
-        )
-        Text("You are about to terminate your account. This action is irreversible. After confirmation, your files will be permanently deleted and you will lose access to any remaining credit.", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-        Button(
-            onClick = { terminateAccountViewModel.terminateAccount(showToastInvalidCredentials) },
-            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)
+    Box(Modifier.imePadding()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text(text = "Terminate account", color = Color.White)
+            Text("Please enter your credentials again to confirm that you are terminating your ByteMe Drive account.", style = MaterialTheme.typography.bodyMedium)
+            OutlinedTextField(
+                value = username,
+                onValueChange = { value -> terminateAccountViewModel.username.update { value } },
+                label = { Text("Username") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Email
+                ),
+                singleLine = true
+            )
+            FieldPassword(
+                value = password,
+                onValueChange = { value -> terminateAccountViewModel.password.update { value } },
+                label = "Password",
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                    terminateAccountViewModel.terminateAccount(showToastInvalidCredentials)
+                })
+            )
+            Text(
+                "You are about to terminate your account. This action is irreversible. After confirmation, your files will be permanently deleted and you will lose access to any remaining credit.",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Button(
+                onClick = { terminateAccountViewModel.terminateAccount(showToastInvalidCredentials) },
+                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)
+            ) {
+                Text(text = "Terminate account", color = Color.White)
+            }
         }
     }
 }

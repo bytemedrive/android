@@ -41,7 +41,9 @@ fun PaymentMethodCryptoAmountScreen(
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(start = 24.dp, end = 36.dp)) {
+        .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -65,13 +67,7 @@ fun PaymentMethodCryptoAmountScreen(
             )
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 16.dp, start = 24.dp, end = 24.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Bottom
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             ButtonLoading(
                 onClick = submitForm,
                 enabled = paymentMethodCryptoAmountViewModel.amount != null && !paymentMethodCryptoAmountViewModel.loading,
