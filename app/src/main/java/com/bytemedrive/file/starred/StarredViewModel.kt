@@ -99,7 +99,9 @@ class StarredViewModel(
                 val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
                 if (physicalFileRemovable && customer.walletId != null) {
-                    fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                    val fileChunkIdsToRemove = dataFileRepository.getFileChunksToRemove(dataFileLink.dataFileId)
+
+                    fileRepository.remove(customer.walletId, fileChunkIdsToRemove)
                 }
 
                 dataFileLink.id
@@ -111,7 +113,9 @@ class StarredViewModel(
                     val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
                     if (physicalFileRemovable && customer.walletId != null) {
-                        fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                        val fileChunkIdsToRemove = dataFileRepository.getFileChunksToRemove(dataFileLink.dataFileId)
+
+                        fileRepository.remove(customer.walletId, fileChunkIdsToRemove)
                     }
 
                     dataFileLink.id

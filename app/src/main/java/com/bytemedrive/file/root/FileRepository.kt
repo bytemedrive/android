@@ -9,6 +9,7 @@ import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
@@ -60,7 +61,11 @@ class FileRepository(
         }
     }
 
-    suspend fun remove(walletId: UUID, id: UUID) = withContext(ioDispatcher) {
-        httpClient.delete("wallets/$walletId/files/$id")
+    suspend fun remove(walletId: UUID, ids: List<UUID>) = withContext(ioDispatcher) {
+        httpClient.delete("wallets/$walletId/files") {
+            setBody(object {
+                val ids = ids
+            })
+        }
     }
 }

@@ -9,6 +9,9 @@ import java.util.UUID
 class DataFileRepository(
     private val dataFileDao: DataFileDao
 ) {
+    suspend fun getFileChunksToRemove(id: UUID) = dataFileDao.findDataFileById(id)?.let(::DataFile)?.let { dataFile ->
+        dataFile.chunks.map { it.id } + dataFile.thumbnails.flatMap { it.chunks.map { uploadChunk -> uploadChunk.id } }
+    } ?: emptyList()
 
     suspend fun getUsedStorage() = dataFileDao.getUsedStorage()
 
