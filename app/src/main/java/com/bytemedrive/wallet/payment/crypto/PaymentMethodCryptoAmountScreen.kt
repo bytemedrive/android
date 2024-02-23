@@ -60,11 +60,8 @@ fun PaymentMethodCryptoAmountScreen(
                 keyboardActions = KeyboardActions(onDone = { submitForm() }),
             )
             Text(
-                text = "~ ${
-                    if (paymentMethodCryptoAmountViewModel.prices != null && paymentMethodCryptoAmountViewModel.amount != null) paymentMethodCryptoAmountViewModel.amount!!.times(
-                        paymentMethodCryptoAmountViewModel.prices!!.gbmPriceInXmr
-                    ).toString() else "0"
-                } XMR", modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                text = "~ ${paymentMethodCryptoAmountViewModel.priceConversion()} XMR"
             )
         }
 

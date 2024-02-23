@@ -69,4 +69,6 @@ class PaymentMethodCreditCardViewModel(
             else -> onFailed()
         }
     }
+
+    fun priceConversion(): Double = prices?.let { prices -> amount?.times(prices.gbmPriceInEur) } ?: 0.0
 }

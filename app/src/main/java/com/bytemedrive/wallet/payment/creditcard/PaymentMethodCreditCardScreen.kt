@@ -102,11 +102,7 @@ fun PaymentMethodCreditCardScreen(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = "~ ${
-                    if (paymentMethodCreditCardViewModel.prices != null && paymentMethodCreditCardViewModel.amount != null) paymentMethodCreditCardViewModel.amount!!.times(
-                        paymentMethodCreditCardViewModel.prices!!.gbmPriceInEur
-                    ).toString() else "0"
-                } EUR",
+                text = "~ ${paymentMethodCreditCardViewModel.priceConversion()} EUR"
             )
         }
 

@@ -26,4 +26,6 @@ class PaymentMethodCryptoAmountViewModel(private val pricesRepository: PricesRep
             loading = false
         }
     }
+
+    fun priceConversion(): Double = prices?.let { prices -> amount?.times(prices.gbmPriceInXmr) } ?: 0.0
 }
