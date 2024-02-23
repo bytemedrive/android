@@ -15,9 +15,9 @@ data class DataFileLinkEntity(
     val dataFileId: UUID,
     val name: String,
     val folderId: UUID?,
-    val uploading: Boolean,
+    val uploadStatus: UploadStatus,
     val starred: Boolean,
 ) {
 
-    fun ofUploading(uploading: Boolean): DataFileLinkEntity = DataFileLinkEntity(id, dataFileId, name, folderId, uploading, starred)
+    fun setUploadStatus(uploadStatus: UploadStatus): DataFileLinkEntity = DataFileLinkEntity(id, dataFileId, name, folderId, uploadStatus, starred)
 }

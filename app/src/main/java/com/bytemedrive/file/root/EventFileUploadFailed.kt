@@ -7,18 +7,18 @@ import com.bytemedrive.store.Convertable
 import java.time.ZonedDateTime
 import java.util.UUID
 
-data class EventFileUploadCompleted(
+data class EventFileUploadFailed(
     val dataFileId: UUID,
-    val completedAt: ZonedDateTime,
+    val failedAt: ZonedDateTime,
 ) : Convertable {
-    private val TAG = EventFileUploadCompleted::class.qualifiedName
+    private val TAG = EventFileUploadFailed::class.qualifiedName
 
     override suspend fun convert(database: ByteMeDatabase) {
         val dao = database.dataFileDao()
 
         dao.findDataFileById(dataFileId)?.let { dataFileEntity ->
-            dao.update(dataFileEntity.ofUploadStatus(UploadStatus.COMPLETED))
-            dao.getDataFileLinksByDataFileId(dataFileId).map { it.setUploadStatus(UploadStatus.COMPLETED) }.toTypedArray().let { dao.update(*it) }
+            dao.update(dataFileEntity.ofUploadStatus(UploadStatus.FAILED))
+            dao.getDataFileLinksByDataFileId(dataFileId).map { it.setUploadStatus(UploadStatus.FAILED) }.toTypedArray().let { dao.update(*it) }
         } ?: Log.w(TAG, "Trying to get non existing data file id=$dataFileId")
     }
 }

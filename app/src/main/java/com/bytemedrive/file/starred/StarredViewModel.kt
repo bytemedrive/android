@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
 import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.datafile.control.DataFileRepository
+import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.shared.FileManager
@@ -137,8 +138,8 @@ class StarredViewModel(
     private fun watchItems() {
         watchJob = viewModelScope.launch {
             combine(folderRepository.getAllFoldersFlow(starred = true), dataFileRepository.getDataFileLinksStarredFlow(starred = true)) { folders, dataFileLinks ->
-                val tempFolders = folders.map { FileListItem(it.id, it.name, ItemType.FOLDER, it.starred, false) }
-                val tempFileLinks = dataFileLinks.map { FileListItem(it.id, it.name, ItemType.FILE, it.starred, false) }
+                val tempFolders = folders.map { FileListItem(it.id, it.name, ItemType.FOLDER, it.starred, UploadStatus.COMPLETED) }
+                val tempFileLinks = dataFileLinks.map { FileListItem(it.id, it.name, ItemType.FILE, it.starred, it.uploadStatus) }
 
                 tempFolders + tempFileLinks
             }.collectLatest { items ->

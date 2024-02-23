@@ -17,6 +17,7 @@ import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.DataFile
 import com.bytemedrive.datafile.entity.DataFileLink
+import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.file.shared.control.FileListItemRepository
 import com.bytemedrive.file.shared.entity.FileListItem
@@ -85,8 +86,8 @@ class FileViewModel(
                 folderRepository.getFoldersByParentIdFlow(folderId),
                 dataFileRepository.getDataFileLinksByFolderIdFlow(folderId)
             ) { folders, files ->
-                val tempFolders = folders.map { FileListItem(it.id, it.name, ItemType.FOLDER, it.starred, false) }
-                val tempFiles = files.map { FileListItem(it.id, it.name, ItemType.FILE, it.starred, it.uploading, it.folderId) }
+                val tempFolders = folders.map { FileListItem(it.id, it.name, ItemType.FOLDER, it.starred, UploadStatus.COMPLETED) }
+                val tempFiles = files.map { FileListItem(it.id, it.name, ItemType.FILE, it.starred, it.uploadStatus, it.folderId) }
 
                 tempFolders + tempFiles
             }.collectLatest { items_ ->

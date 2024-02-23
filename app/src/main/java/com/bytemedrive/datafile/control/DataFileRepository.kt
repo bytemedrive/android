@@ -14,7 +14,7 @@ class DataFileRepository(
 
     fun getDataFileLinksByFolderIdFlow(folderId: UUID?) = dataFileDao.getDataFileLinksByFolderIdFlow(folderId).map { it.map(::DataFileLink) }
 
-    suspend fun getDataFileById(dataFileId: UUID) = dataFileDao.getDataFileById(dataFileId)?.let(::DataFile)
+    suspend fun getDataFileById(dataFileId: UUID) = dataFileDao.findDataFileById(dataFileId)?.let(::DataFile)
 
     suspend fun getDataFileByChecksum(checksum: String?) = dataFileDao.getDataFileByChecksum(checksum)?.let(::DataFile)
 

@@ -1,6 +1,5 @@
 package com.bytemedrive.datafile.control
 
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -29,7 +28,7 @@ interface DataFileDao {
     suspend fun getAllDataFiles(): List<DataFileEntity>
 
     @Query("select * from data_file where id = :id")
-    suspend fun getDataFileById(id: UUID): DataFileEntity?
+    suspend fun findDataFileById(id: UUID): DataFileEntity?
 
     @Query("SELECT * FROM data_file WHERE checksum IS :checksum")
     suspend fun getDataFileByChecksum(checksum: String?): DataFileEntity?
@@ -40,14 +39,14 @@ interface DataFileDao {
     @Query("select * from data_file where uploadStatus = :uploadStatus")
     suspend fun getDataFilesByUploadStatus(uploadStatus: UploadStatus): List<DataFileEntity>
 
-    @Query("SELECT * FROM data_file_link")
-    suspend fun getAllDataFileLinks(): List<DataFileLinkEntity>
-
     @Query("SELECT * FROM data_file")
     fun getAllDataFileFlow(): Flow<List<DataFileEntity>>
 
     @Query("SELECT * FROM data_file_link WHERE starred = :starred")
     suspend fun getDataFileLinksStarred(starred: Boolean): List<DataFileLinkEntity>
+
+    @Query("SELECT * FROM data_file_link")
+    suspend fun getAllDataFileLinks(): List<DataFileLinkEntity>
 
     @Query("SELECT * FROM data_file_link WHERE starred = :starred")
     fun getDataFileLinksStarredFlow(starred: Boolean): Flow<List<DataFileLinkEntity>>

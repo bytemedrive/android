@@ -25,7 +25,7 @@ data class EventFileUploadQueued(
         val dataFileEntity = DataFileEntity(dataFileId, name, sizeBytes, UploadStatus.QUEUED)
         dao.add(dataFileEntity)
 
-        val dataFileLinkEntity = DataFileLinkEntity(dataFileLinkId, dataFileId, name, folderId, true, false)
+        val dataFileLinkEntity = DataFileLinkEntity(dataFileLinkId, dataFileId, name, folderId, UploadStatus.QUEUED, false)
         dao.add(dataFileLinkEntity)
 
         database.fileUploadDao().add(FileUploadEntity(dataFileId, name, filePath, folderId, queuedAt))

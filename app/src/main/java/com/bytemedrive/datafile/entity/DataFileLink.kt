@@ -11,7 +11,7 @@ data class DataFileLink(
     val dataFileId: UUID,
     val name: String,
     val folderId: UUID?,
-    val uploading: Boolean,
+    val uploadStatus: UploadStatus,
     val starred: Boolean,
 ) {
     constructor(dataFileLinkEntity: DataFileLinkEntity): this(
@@ -19,7 +19,7 @@ data class DataFileLink(
         dataFileLinkEntity.dataFileId,
         dataFileLinkEntity.name,
         dataFileLinkEntity.folderId,
-        dataFileLinkEntity.uploading,
+        dataFileLinkEntity.uploadStatus,
         dataFileLinkEntity.starred,
     )
 }
