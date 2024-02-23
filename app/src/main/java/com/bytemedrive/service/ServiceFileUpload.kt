@@ -110,6 +110,7 @@ class ServiceFileUpload : Service() {
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setCategory(NotificationCompat.CATEGORY_PROGRESS)
         .setContentIntent(pendingIntent)
+        .setSilent(true)
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
