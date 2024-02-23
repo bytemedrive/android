@@ -90,16 +90,19 @@ class StarredViewModel(
 
     fun clearSelectedItems() = itemsSelected.update { emptyList() }
 
+    // TODO: do refactor - https://github.com/bytemedrive/android/issues/212
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
         val dataFileLinks = dataFileRepository.getAllDataFileLinks()
         val folders = folderRepository.getAllFolders()
 
         customerRepository.getCustomer()?.let { customer ->
             dataFileLinks.filter { ids.contains(it.id) }.map { dataFileLink ->
-                val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
+                val dataFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
-                if (physicalFileRemovable && customer.walletId != null) {
-                    fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                if (dataFileRemovable && customer.walletId != null) {
+                    val fileChunkIdsToRemove = dataFileRepository.getFileChunkIds(dataFileLink.dataFileId)
+
+                    fileRepository.remove(customer.walletId, fileChunkIdsToRemove)
                 }
 
                 dataFileLink.id
@@ -108,10 +111,12 @@ class StarredViewModel(
             // TODO: Remove all data file links and files in deleted folder at once in one EventFolderDeleted
             folders.filter { ids.contains(it.id) }.map { folder ->
                 fileManager.findAllFilesRecursively(folder.id, folders, dataFileLinks).map { dataFileLink ->
-                    val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
+                    val dataFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
-                    if (physicalFileRemovable && customer.walletId != null) {
-                        fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                    if (dataFileRemovable && customer.walletId != null) {
+                        val fileChunkIdsToRemove = dataFileRepository.getFileChunkIds(dataFileLink.dataFileId)
+
+                        fileRepository.remove(customer.walletId, fileChunkIdsToRemove)
                     }
 
                     dataFileLink.id

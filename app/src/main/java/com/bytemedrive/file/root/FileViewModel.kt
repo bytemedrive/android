@@ -10,9 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.datafile.entity.DataFile
@@ -33,7 +30,6 @@ import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -147,16 +143,19 @@ class FileViewModel(
 
     fun clearSelectedItems() = itemsSelected.update { emptyList() }
 
+    // TODO: do refactor - https://github.com/bytemedrive/android/issues/212
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
         val dataFileLinks = dataFileRepository.getAllDataFileLinks()
         val folders = folderRepository.getAllFolders()
 
         customerRepository.getCustomer()?.let { customer ->
             dataFileLinks.filter { ids.contains(it.id) }.map { dataFileLink ->
-                val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
+                val dataFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
-                if (physicalFileRemovable && customer.walletId != null) {
-                    fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                if (dataFileRemovable && customer.walletId != null) {
+                    val fileChunkIdsToRemove = dataFileRepository.getFileChunkIds(dataFileLink.dataFileId)
+
+                    fileRepository.remove(customer.walletId, fileChunkIdsToRemove)
                 }
 
                 dataFileLink.id
@@ -165,10 +164,12 @@ class FileViewModel(
             // TODO: Remove all data file links and files in deleted folder at once in one EventFolderDeleted
             folders.filter { ids.contains(it.id) }.map { folder ->
                 fileManager.findAllFilesRecursively(folder.id, folders, dataFileLinks).map { dataFileLink ->
-                    val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
+                    val dataFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
-                    if (physicalFileRemovable && customer.walletId != null) {
-                        fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                    if (dataFileRemovable && customer.walletId != null) {
+                        val fileChunkIdsToRemove = dataFileRepository.getFileChunkIds(dataFileLink.dataFileId)
+
+                        fileRepository.remove(customer.walletId, fileChunkIdsToRemove)
                     }
 
                     dataFileLink.id
@@ -184,10 +185,12 @@ class FileViewModel(
             dataFileRepository.getDataFileLinkById(dataFileLinkId)?.let { dataFileLink ->
                 eventPublisher.publishEvent(EventFileDeleted(listOf(dataFileLinkId)))
 
-                val physicalFileRemovable = dataFileRepository.getDataFileLinksByDataFileId(dataFileLink.dataFileId).isEmpty()
+                val dataFileRemovable = dataFileRepository.getDataFileLinksByDataFileId(dataFileLink.dataFileId).isEmpty()
 
-                if (physicalFileRemovable && customer.walletId != null) {
-                    fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                if (dataFileRemovable && customer.walletId != null) {
+                    val fileChunkIdsToRemove = dataFileRepository.getFileChunkIds(dataFileLink.dataFileId)
+
+                    fileRepository.remove(customer.walletId, fileChunkIdsToRemove)
                 }
             }
         }
@@ -200,12 +203,14 @@ class FileViewModel(
         customerRepository.getCustomer()?.let { customer ->
             folderRepository.getFolderById(id)?.let { folder ->
                 fileManager.findAllFilesRecursively(id, folders, dataFileLinks).forEach { dataFileLink ->
-                    val physicalFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
+                    val dataFileRemovable = dataFileLinks.none { it.id == dataFileLink.id }
 
                     eventPublisher.publishEvent(EventFileDeleted(listOf(dataFileLink.id)))
 
-                    if (physicalFileRemovable && customer.walletId != null) {
-                        fileRepository.remove(customer.walletId, dataFileLink.dataFileId)
+                    if (dataFileRemovable && customer.walletId != null) {
+                        val fileChunkIdsToRemove = dataFileRepository.getFileChunkIds(dataFileLink.dataFileId)
+
+                        fileRepository.remove(customer.walletId, fileChunkIdsToRemove)
                     }
                 }
                 (folderManager.findAllFoldersRecursively(id, folders) + folder).forEach {

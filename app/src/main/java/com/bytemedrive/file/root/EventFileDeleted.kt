@@ -13,9 +13,9 @@ data class EventFileDeleted(val dataFileLinkIds: List<UUID>) : Convertable {
         dao.deleteDataFileLinksByIds(dataFileLinkIds)
 
         val removableFileIds = dataFileLinks.mapNotNull { dataFileLink ->
-            val physicalFileRemovable = dao.getDataFileLinksByDataFileId(dataFileLink.dataFileId).isEmpty()
+            val dataFileRemovable = dao.getDataFileLinksByDataFileId(dataFileLink.dataFileId).isEmpty()
 
-            if (physicalFileRemovable) dataFileLink.dataFileId else null
+            if (dataFileRemovable) dataFileLink.dataFileId else null
         }
 
         if (removableFileIds.isNotEmpty()) {
