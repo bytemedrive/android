@@ -12,7 +12,7 @@ class AddCreditMethodViewModel : ViewModel() {
 
         val methodOptions = listOf(
             RadioItem("creditCard", "Credit card", "Add more credits by filling up the credit card number. Save your card for future used."),
-            RadioItem("crypto", "Crypto", "Supports all crypto wallets"),
+            RadioItem("crypto", "Crypto", "Supports Monero and Lightning"),
             RadioItem("creditCode", "Credit code", "Add credits to your account by QR code or coupon code"),
         )
     }

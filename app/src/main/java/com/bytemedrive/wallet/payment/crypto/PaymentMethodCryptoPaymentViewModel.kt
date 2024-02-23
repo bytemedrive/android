@@ -4,7 +4,6 @@ import android.os.CountDownTimer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.customer.control.CustomerRepository
-import com.bytemedrive.store.AppState
 import com.bytemedrive.wallet.root.MoneroPaymentRequest
 import com.bytemedrive.wallet.root.WalletRepository
 import kotlinx.coroutines.flow.MutableStateFlow

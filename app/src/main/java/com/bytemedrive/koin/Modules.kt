@@ -69,7 +69,7 @@ val viewModelsModule = module {
     viewModel { UploadViewModel(get(named(ExternalScope)), get(), get(), get()) }
     viewModel { CreateFolderViewModel(get(named(ExternalScope)), get()) }
     viewModel { AddCreditMethodViewModel() }
-    viewModel { PaymentMethodCreditCardViewModel(get(), get()) }
+    viewModel { PaymentMethodCreditCardViewModel(get(), get(), get()) }
     viewModel { PaymentMethodCreditCodeViewModel(get(), get(), get(), get()) }
     viewModel { PaymentMethodCryptoAmountViewModel(get()) }
     viewModel { PaymentMethodCryptoPaymentViewModel(get(), get()) }
