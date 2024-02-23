@@ -107,9 +107,7 @@ fun PaymentMethodCreditCardScreen(
         }
 
         ButtonLoading(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
+            modifier = Modifier.fillMaxWidth(),
             onClick = { paymentMethodCreditCardViewModel.makePayment() },
             enabled = paymentMethodCreditCardViewModel.amount != null && !paymentMethodCreditCardViewModel.loading,
             loading = paymentMethodCreditCardViewModel.loading

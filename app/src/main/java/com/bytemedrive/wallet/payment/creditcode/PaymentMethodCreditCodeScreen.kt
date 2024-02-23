@@ -1,11 +1,13 @@
 package com.bytemedrive.wallet.payment.creditcode
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -53,76 +55,72 @@ fun PaymentMethodCreditCodeScreen(
         AppState.topBarComposable.update { { TopBarAppContentBack() } }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
+    Box(Modifier.imePadding()) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 36.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(
-                modifier = Modifier
-                    .align(End)
-                    .padding(vertical = 32.dp),
-                onClick = { }
-            ) {
-                Icon(
-                    modifier = Modifier.size(36.dp),
-                    imageVector = Icons.Default.QrCode,
-                    contentDescription = "QR code",
-                    tint = Color.Black,
+            Column(modifier = Modifier.fillMaxWidth()) {
+                IconButton(
+                    modifier = Modifier
+                        .align(End)
+                        .padding(vertical = 32.dp),
+                    onClick = { }
+                ) {
+                    Icon(
+                        modifier = Modifier.size(36.dp),
+                        imageVector = Icons.Default.QrCode,
+                        contentDescription = "QR code",
+                        tint = Color.Black,
+                    )
+                }
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = formState.code,
+                    onValueChange = { value -> paymentMethodCreditCodeViewModel.uiState.update { it.copy(code = value, error = null) } },
+                    label = { Text(text = "Code") },
+                    supportingText = {
+                        if (formState.error == PaymentMethodCreditCodeFormState.ErrorCode.NOT_FOUND) {
+                            Text(text = "Invalid code", color = MaterialTheme.colorScheme.error)
+                        } else {
+                            Text(text = "Paste your code or scan QR code")
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { paymentMethodCreditCodeViewModel.redeemCoupon() }),
+                    isError = formState.error == PaymentMethodCreditCodeFormState.ErrorCode.NOT_FOUND,
+                    singleLine = true
+                )
+                Text(
+                    modifier = Modifier.padding(top = 100.dp),
+                    text = "Add credits to your account by QR code or coupon code"
                 )
             }
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = formState.code,
-                onValueChange = { value -> paymentMethodCreditCodeViewModel.uiState.update { it.copy(code = value, error = null) } },
-                label = { Text(text = "Code") },
-                supportingText = {
-                    if (formState.error == PaymentMethodCreditCodeFormState.ErrorCode.NOT_FOUND) {
-                        Text(text = "Invalid code", color = MaterialTheme.colorScheme.error)
-                    } else {
-                        Text(text = "Paste your code or scan QR code")
-                    }
-                },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { paymentMethodCreditCodeViewModel.redeemCoupon() }),
-                isError = formState.error == PaymentMethodCreditCodeFormState.ErrorCode.NOT_FOUND,
-                singleLine = true
-            )
-            Text(
-                modifier = Modifier.padding(top = 100.dp),
-                text = "Add credits to your account by QR code or coupon code"
-            )
-        }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp, start = 24.dp, end = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            TextButton(
-                modifier = Modifier.padding(end = 16.dp),
-                onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.ADD_CREDIT_METHOD) },
-                contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    Icons.Filled.ChevronLeft,
-                    contentDescription = "Localized description",
-                    modifier = Modifier.size(ButtonDefaults.IconSize)
-                )
-                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(text = stringResource(R.string.common_back))
-            }
-            ButtonLoading(
-                onClick = { paymentMethodCreditCodeViewModel.redeemCoupon() },
-                loading = formState.loading,
-                enabled = formState.code.isNotEmpty() && !formState.loading
-            ) {
-                Text(text = "Validate your code")
+                TextButton(
+                    modifier = Modifier.padding(end = 16.dp),
+                    onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.ADD_CREDIT_METHOD) },
+                    contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+                ) {
+                    Icon(
+                        Icons.Filled.ChevronLeft,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(text = stringResource(R.string.common_back))
+                }
+                ButtonLoading(
+                    onClick = { paymentMethodCreditCodeViewModel.redeemCoupon() },
+                    loading = formState.loading,
+                    enabled = formState.code.isNotEmpty() && !formState.loading
+                ) {
+                    Text(text = "Validate your code")
+                }
             }
         }
     }

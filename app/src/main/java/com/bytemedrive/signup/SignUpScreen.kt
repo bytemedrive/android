@@ -1,9 +1,11 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
@@ -73,85 +75,87 @@ fun SignUpScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Image(modifier = Modifier.size(100.dp), imageVector = ImageVector.vectorResource(id = R.drawable.byteme_logo_symbol_color), contentDescription = "Logo")
-        Text(
-            text = "ByteMe Drive",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp),
-            fontSize = 28.sp,
-            fontWeight = FontWeight(500)
-        )
-        Text(
-            text = "Sign up",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp),
-            fontSize = 22.sp,
-            fontWeight = FontWeight(500)
-        )
-        OutlinedTextField(
-            value = username,
-            onValueChange = { value -> signUpViewModel.username.update { value } },
-            label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.Email
-            ),
-            singleLine = true
-        )
-        FieldPassword(
-            value = password,
-            onValueChange = { value -> signUpViewModel.password.update { value } },
-            label = "Password",
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = { focusRequester.requestFocus() })
-        )
-        FieldPassword(
-            value = passwordConfirm,
-            onValueChange = { value -> signUpViewModel.passwordConfirm.update { value } },
-            label = "Password confirm",
-            modifier = Modifier.fillMaxWidth(),
-            showEye = false,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.clearFocus()
-                signUpHandler()
-            }),
-            focusRequester = focusRequester
-        )
-        FieldCheckbox(
-            modifier = Modifier.padding(vertical = 12.dp),
-            key = "termsAndConditions",
-            checked = termsAndConditions,
-            onChangeValue = { _, checked -> signUpViewModel.termsAndConditions.update { checked } }
+    Box(Modifier.imePadding()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Agree to our")
-                TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.TERMS_AND_CONDITIONS) }) {
-                    Text(text = "Term & Conditions")
+            Image(modifier = Modifier.size(100.dp), imageVector = ImageVector.vectorResource(id = R.drawable.byteme_logo_symbol_color), contentDescription = "Logo")
+            Text(
+                text = "ByteMe Drive",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+                fontSize = 28.sp,
+                fontWeight = FontWeight(500)
+            )
+            Text(
+                text = "Sign up",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+                fontSize = 22.sp,
+                fontWeight = FontWeight(500)
+            )
+            OutlinedTextField(
+                value = username,
+                onValueChange = { value -> signUpViewModel.username.update { value } },
+                label = { Text("Username") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Email
+                ),
+                singleLine = true
+            )
+            FieldPassword(
+                value = password,
+                onValueChange = { value -> signUpViewModel.password.update { value } },
+                label = "Password",
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusRequester.requestFocus() })
+            )
+            FieldPassword(
+                value = passwordConfirm,
+                onValueChange = { value -> signUpViewModel.passwordConfirm.update { value } },
+                label = "Password confirm",
+                modifier = Modifier.fillMaxWidth(),
+                showEye = false,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                    signUpHandler()
+                }),
+                focusRequester = focusRequester
+            )
+            FieldCheckbox(
+                modifier = Modifier.padding(vertical = 12.dp),
+                key = "termsAndConditions",
+                checked = termsAndConditions,
+                onChangeValue = { _, checked -> signUpViewModel.termsAndConditions.update { checked } }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Agree to our")
+                    TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.TERMS_AND_CONDITIONS) }) {
+                        Text(text = "Term & Conditions")
+                    }
                 }
             }
-        }
-        ButtonLoading(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            loading = loading,
-            enabled = !loading,
-            onClick = { signUpHandler() },
-        ) {
-            Text(text = "Sign up")
-        }
-        TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.SIGN_IN) }) {
-            Text(text = "Sign in")
+            ButtonLoading(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                loading = loading,
+                enabled = !loading,
+                onClick = { signUpHandler() },
+            ) {
+                Text(text = "Sign up")
+            }
+            TextButton(onClick = { appNavigator.navigateTo(AppNavigator.NavTarget.SIGN_IN) }) {
+                Text(text = "Sign in")
+            }
         }
     }
 }

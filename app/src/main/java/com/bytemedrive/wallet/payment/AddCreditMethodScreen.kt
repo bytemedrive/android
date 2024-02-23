@@ -41,22 +41,18 @@ fun AddCreditMethodScreen(
     val method by addCreditMethodViewModel.method.collectAsState()
 
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(scrollState),
+        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(scrollState),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         FieldRadioGroup(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 12.dp, end = 40.dp),
+            modifier = Modifier.fillMaxWidth(),
             items = AddCreditMethodViewModel.methodOptions,
             value = method,
             onChangeValue = { value ->  addCreditMethodViewModel.method.update { value } }
         )
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp, end = 24.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
             Button(
