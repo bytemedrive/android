@@ -23,6 +23,19 @@ data class DataFileEntity(
     constructor(id: UUID, name: String, sizeBytes: Long, uploadStatus: UploadStatus) :
         this(id, emptyList(), name, sizeBytes, null, null, emptyList(), null, uploadStatus, null)
 
+    constructor(dataFile: DataFile): this(
+        dataFile.id,
+        dataFile.chunks,
+        dataFile.name,
+        dataFile.sizeBytes,
+        dataFile.contentType,
+        dataFile.secretKeyBase64,
+        dataFile.thumbnails,
+        dataFile.checksum,
+        dataFile.uploadStatus,
+        dataFile.exifOrientation
+    )
+
     fun ofUploadStatus(uploadStatus: UploadStatus): DataFileEntity {
         return DataFileEntity(id, chunks, name, sizeBytes, contentType, secretKeyBase64, thumbnails, checksum, uploadStatus, exifOrientation)
     }

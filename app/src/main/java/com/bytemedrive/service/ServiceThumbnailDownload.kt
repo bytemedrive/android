@@ -67,7 +67,9 @@ class ServiceThumbnailDownload : Service() {
                                             val sizeOfChunks = thumbnail.chunks.sumOf(UploadChunk::sizeBytes)
 
                                             if (sizeOfChunks != encryptedFile.length()) {
-                                                Log.e(TAG, "Encrypted thumbnail size ${encryptedFile.length()} is not same as encrypted thumbnail chunks size $sizeOfChunks")
+                                                Log.e(TAG, "Removing thumbnail due to encrypted thumbnail size ${encryptedFile.length()} is not same as encrypted thumbnail chunks size $sizeOfChunks")
+                                                val thumbnailRemoved = dataFile.copy(thumbnails = dataFile.thumbnails.filterNot { it.resolution == thumbnail.resolution })
+                                                dataFileRepository.updateDataFile(thumbnailRemoved)
                                             } else {
                                                 val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), AesService.secretKey(thumbnail.secretKeyBase64))
 
