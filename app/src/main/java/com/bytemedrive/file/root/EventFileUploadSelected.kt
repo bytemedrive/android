@@ -9,21 +9,17 @@ import com.bytemedrive.store.Convertable
 import java.time.ZonedDateTime
 import java.util.UUID
 
-data class EventFileUploadQueued(
+data class EventFileUploadSelected(
     val dataFileId: UUID,
     val name: String,
-    val sizeBytes: Long,
-    val queuedAt: ZonedDateTime,
-    val filePath: String,
+    val dataFileLinkId: UUID,
     val folderId: UUID?,
 ) : Convertable {
 
     override suspend fun convert(database: ByteMeDatabase) {
         val dao = database.dataFileDao()
 
-        val dataFileEntity = DataFileEntity(dataFileId, name, sizeBytes, UploadStatus.QUEUED)
-        dao.add(dataFileEntity)
-
-        database.fileUploadDao().add(FileUploadEntity(dataFileId, name, filePath, folderId, queuedAt))
+        val dataFileLinkEntity = DataFileLinkEntity(dataFileLinkId, dataFileId, name, folderId, UploadStatus.QUEUED, false)
+        dao.add(dataFileLinkEntity)
     }
 }

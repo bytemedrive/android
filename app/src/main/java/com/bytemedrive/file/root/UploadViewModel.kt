@@ -12,6 +12,7 @@ import com.bytemedrive.folder.Folder
 import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.privacy.ShaService
 import com.bytemedrive.store.EventPublisher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +23,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class UploadViewModel(
+    private val ioDispatcher: CoroutineDispatcher,
     private val externalScope: CoroutineScope,
     private val eventPublisher: EventPublisher,
     private val folderRepository: FolderRepository,
@@ -38,7 +40,12 @@ class UploadViewModel(
 
     fun uploadFile(inputStream: InputStream, documentFile: DocumentFile, cacheDir: File, folderId: UUID?) = externalScope.launch {
         val dataFileId = UUID.randomUUID()
-        val tmpOriginalFile = withContext(Dispatchers.IO) {
+        val dataFileLinkId = UUID.randomUUID()
+        val name =  documentFile.name.orEmpty()
+
+        eventPublisher.publishEvent(EventFileUploadSelected(dataFileId, name, dataFileLinkId, folderId))
+
+        val tmpOriginalFile = withContext(ioDispatcher) {
             val tmpOriginalFile = File.createTempFile(dataFileId.toString(), ".${documentFile.name?.split(".")?.last() ?: "bin"}", cacheDir)
 
             tmpOriginalFile.outputStream().use { outputStream ->
@@ -51,19 +58,9 @@ class UploadViewModel(
         val sameDataFile = dataFileRepository.getDataFileByChecksum(checksum)
 
         if (sameDataFile == null) {
-            eventPublisher.publishEvent(
-                EventFileUploadQueued(
-                    dataFileId,
-                    documentFile.name.orEmpty(),
-                    documentFile.length(),
-                    UUID.randomUUID(),
-                    ZonedDateTime.now(),
-                    tmpOriginalFile.absolutePath,
-                    folderId
-                )
-            )
+            eventPublisher.publishEvent(EventFileUploadQueued(dataFileId, name, documentFile.length(), ZonedDateTime.now(), tmpOriginalFile.absolutePath, folderId))
         } else {
-            eventPublisher.publishEvent(EventFileCopied(sameDataFile.id, UUID.randomUUID(), folderId, "Copy of ${sameDataFile.name}"))
+            eventPublisher.publishEvent(EventFileCopied(sameDataFile.id, dataFileLinkId, folderId, "Copy of ${sameDataFile.name}"))
         }
     }
 }

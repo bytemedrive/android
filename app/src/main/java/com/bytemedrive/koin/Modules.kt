@@ -66,7 +66,7 @@ val viewModelsModule = module {
     viewModel { FilePreviewViewModel(get()) }
     viewModel { FileSelectionViewModel(get(), get(), get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
-    viewModel { UploadViewModel(get(named(ExternalScope)), get(), get(), get()) }
+    viewModel { UploadViewModel(get(named(IODispatcher)), get(named(ExternalScope)), get(), get(), get()) }
     viewModel { CreateFolderViewModel(get(named(ExternalScope)), get()) }
     viewModel { AddCreditMethodViewModel() }
     viewModel { PaymentMethodCreditCardViewModel(get(), get(), get()) }
