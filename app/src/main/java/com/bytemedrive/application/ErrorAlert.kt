@@ -25,6 +25,14 @@ fun RequestFailed() {
 }
 
 @Composable
+fun NotEnoughCredit() {
+    val title = "Not enough credit"
+    val text = "Your GBM balance is too low to upload new files."
+
+    Alert(title = title, text = text)
+}
+
+@Composable
 private fun Alert(title: String, text: String) =
     AlertDialog(
         onDismissRequest = { GlobalExceptionHandler.clear() },

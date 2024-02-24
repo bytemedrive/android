@@ -1,20 +1,19 @@
 package com.bytemedrive.application
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import java.lang.Thread.UncaughtExceptionHandler
 
 object GlobalExceptionHandler : UncaughtExceptionHandler {
 
-    private val _throwable = MutableStateFlow<Throwable?>(null)
-    val throwable: StateFlow<Throwable?> = _throwable
+    var throwable by mutableStateOf<Throwable?>(null)
 
     override fun uncaughtException(t: Thread, e: Throwable) {
-        _throwable.update { e }
+        throwable = e
     }
 
     fun clear() {
-        _throwable.update { null }
+        throwable = null
     }
 }
