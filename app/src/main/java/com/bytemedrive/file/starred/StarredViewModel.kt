@@ -2,12 +2,14 @@ package com.bytemedrive.file.starred
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MimeTypes
 import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.datafile.control.DataFileRepository
-import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.file.root.EventFileDeleted
 import com.bytemedrive.file.root.FileRepository
 import com.bytemedrive.file.shared.FileManager
@@ -21,11 +23,9 @@ import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.UUID
 
 class StarredViewModel(
@@ -40,22 +40,27 @@ class StarredViewModel(
     private val fileListItemRepository: FileListItemRepository
 ) : ViewModel() {
 
-    var fileListItems = fileListItemRepository.getAllStaredPaged()
+    var fileListItems = fileListItemRepository.getAllStarredPaged(starred = true)
 
-    var starred = MutableStateFlow(listOf<FileListItem>())
+    var thumbnails by mutableStateOf(mapOf<UUID, File?>())
 
-    val itemsSelected = MutableStateFlow(emptyList<FileListItem>())
+    var starred by mutableStateOf(listOf<FileListItem>())
 
-    val dataFilePreview = MutableStateFlow<FilePreview?>(null)
+    var itemsSelected by mutableStateOf(emptyList<FileListItem>())
+
+    var dataFilePreview by mutableStateOf<FilePreview?>(null)
 
     private var watchJob: Job? = null
 
-    fun init() {
+    private var watchThumbnails: Job? = null
+
+    fun initialize(context: Context) {
         watchItems()
+        watchThumbnails(context)
     }
 
     fun clickFileAndFolder(item: FileListItem) {
-        val anyFileSelected = itemsSelected.value.isNotEmpty()
+        val anyFileSelected = itemsSelected.isNotEmpty()
 
         if (anyFileSelected) {
             longClickFileAndFolder(item)
@@ -66,12 +71,13 @@ class StarredViewModel(
                 ItemType.FILE -> {
                     viewModelScope.launch {
                         dataFileRepository.getDataFileLinkById(item.id)?.let { dataFileLink ->
-                            val dataFile = dataFileRepository.getDataFileById(dataFileLink.dataFileId)
-                            val dataFileIdsStarred = dataFileRepository.getDataFileLinksStarred(starred = true).map { it.dataFileId }
+                            val dataFileLinks = dataFileRepository.getDataFileLinksStarred(true)
+                            val dataFiles = dataFileRepository.getDataFilesByIds(dataFileLinks.map { it.dataFileId })
+                            val dataFileLinkPreviews = dataFileLinks
+                                .filter { dataFiles.find { dataFile -> dataFile.id == it.dataFileId }?.contentType == MimeTypes.IMAGE_JPEG }
+                                .map { it.id }
 
-                            if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
-                                dataFilePreview.update { FilePreview(dataFile, dataFileIdsStarred) }
-                            }
+                            dataFilePreview = FilePreview(dataFileLink, dataFileLinkPreviews)
                         }
                     }
                 }
@@ -79,16 +85,17 @@ class StarredViewModel(
         }
     }
 
-    fun longClickFileAndFolder(item: FileListItem) =
-        itemsSelected.update {
-            if (it.contains(item)) {
-                itemsSelected.value - item
-            } else {
-                itemsSelected.value + item
-            }
+    fun longClickFileAndFolder(item: FileListItem) {
+        itemsSelected = if (itemsSelected.contains(item)) {
+            itemsSelected - item
+        } else {
+            itemsSelected + item
         }
+    }
 
-    fun clearSelectedItems() = itemsSelected.update { emptyList() }
+    fun clearSelectedItems() {
+        itemsSelected = emptyList()
+    }
 
     // TODO: do refactor - https://github.com/bytemedrive/android/issues/212
     fun removeItems(ids: List<UUID>) = viewModelScope.launch {
@@ -128,27 +135,35 @@ class StarredViewModel(
     }
 
     fun toggleAllItems(context: Context) {
-        if (itemsSelected.value.size == starred.value.size) {
-            itemsSelected.update { emptyList() }
+        if (itemsSelected.size == starred.size) {
+            itemsSelected = emptyList()
         } else {
-            itemsSelected.update { starred.value }
-            Toast.makeText(context, "${starred.value.size} items selected", Toast.LENGTH_SHORT).show()
+            itemsSelected = starred
+            Toast.makeText(context, "${starred.size} items selected", Toast.LENGTH_SHORT).show()
         }
     }
 
     fun cancelJobs() {
         watchJob?.cancel()
+        watchThumbnails?.cancel()
     }
+
+    private fun watchThumbnails(context: Context) {
+        watchThumbnails = viewModelScope.launch {
+            dataFileRepository.getAllDataFileFlow().collectLatest { dataFiles ->
+                thumbnails =
+                    dataFileRepository.getAllDataFileLinks()
+                        .mapNotNull { dataFileLink -> fileManager.findThumbnailForDataFileLink(dataFileLink, dataFiles, context)?.let { thumbnail -> dataFileLink.id to thumbnail } }
+                        .toMap()
+            }
+        }
+    }
+
 
     private fun watchItems() {
         watchJob = viewModelScope.launch {
-            combine(folderRepository.getAllFoldersFlow(starred = true), dataFileRepository.getDataFileLinksStarredFlow(starred = true)) { folders, dataFileLinks ->
-                val tempFolders = folders.map { FileListItem(it.id, it.name, ItemType.FOLDER, it.starred, UploadStatus.COMPLETED) }
-                val tempFileLinks = dataFileLinks.map { FileListItem(it.id, it.name, ItemType.FILE, it.starred, it.uploadStatus) }
-
-                tempFolders + tempFileLinks
-            }.collectLatest { items ->
-                starred.update { items }
+            fileListItemRepository.getAllStarredFlow(starred = true).collect { items ->
+                starred = items
             }
         }
     }

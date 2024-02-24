@@ -56,7 +56,7 @@ class FileViewModel(
 
     var selectedFolder by mutableStateOf<Folder?>(null)
 
-    var thumbnails = MutableStateFlow(mapOf<UUID, File?>())
+    var thumbnails by mutableStateOf(mapOf<UUID, File?>())
 
     var items by mutableStateOf(emptyList<FileListItem>())
 
@@ -110,12 +110,13 @@ class FileViewModel(
                 ItemType.FILE -> {
                     viewModelScope.launch {
                         dataFileRepository.getDataFileLinkById(item.id)?.let { dataFileLink ->
-                            val dataFile = dataFileRepository.getDataFileById(dataFileLink.dataFileId)
-                            val dataFileIds = dataFileRepository.getDataFileLinksByFolderId(dataFileLink.folderId).map { it.dataFileId }
-
-                            if (dataFile?.contentType == MimeTypes.IMAGE_JPEG) {
-                                dataFilePreview.update { FilePreview(dataFile, dataFileIds) }
-                            }
+                            val dataFileLinks = dataFileRepository.getDataFileLinksByFolderId(dataFileLink.folderId)
+                            val dataFiles = dataFileRepository.getDataFilesByIds(dataFileLinks.map { it.dataFileId })
+                            val dataFileLinkPreviews = dataFileLinks
+                                .filter { dataFiles.find { dataFile -> dataFile.id == it.dataFileId }?.contentType == MimeTypes.IMAGE_JPEG }
+                                .map { it.id }
+// TODO: Download thumbnail in case if it was not found when user tap to detail of thumbnail
+                            dataFilePreview.update { FilePreview(dataFileLink, dataFileLinkPreviews) }
                         }
                     }
                 }
@@ -266,27 +267,13 @@ class FileViewModel(
     private fun watchThumbnails(context: Context) {
         watchThumbnails = viewModelScope.launch {
             dataFileRepository.getAllDataFileFlow().collectLatest { dataFiles ->
-                thumbnails.update {
+                thumbnails =
                     dataFileRepository.getAllDataFileLinks()
-                        .mapNotNull { dataFileLink -> findThumbnailForDataFileLink(dataFileLink, dataFiles, context)?.let { thumbnail -> dataFileLink.id to thumbnail } }
+                        .mapNotNull { dataFileLink -> fileManager.findThumbnailForDataFileLink(dataFileLink, dataFiles, context)?.let { thumbnail -> dataFileLink.id to thumbnail } }
                         .toMap()
-                }
             }
         }
     }
-
-    private fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, dataFiles: List<DataFile>, context: Context): File? =
-        dataFiles
-            .find { it.id == dataFileLink.dataFileId }
-            ?.thumbnails
-            ?.find { it.resolution == Resolution.P360 }
-            ?.let {
-                val thumbnailName = FileManager.getThumbnailName(dataFileLink.dataFileId, it.resolution)
-                val filePath = "${context.filesDir}/$thumbnailName"
-                val file = File(filePath)
-
-                if (file.exists()) file else null
-            }
 
     data class Action(val ids: List<UUID>, val type: Type, val folderId: UUID?) {
         enum class Type(type: String) {

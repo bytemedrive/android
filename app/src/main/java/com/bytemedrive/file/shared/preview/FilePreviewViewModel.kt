@@ -1,59 +1,59 @@
 package com.bytemedrive.file.shared.preview
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MimeTypes
 import com.bytemedrive.datafile.control.DataFileRepository
-import com.bytemedrive.datafile.entity.DataFile
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.shared.FileManager
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.UUID
 
 class FilePreviewViewModel(
     private val dataFileRepository: DataFileRepository
 ) : ViewModel() {
 
-    val loading = MutableStateFlow(true)
+    var loading by mutableStateOf(true)
 
-    val thumbnails = MutableStateFlow<List<Thumbnail>>(emptyList())
+    var thumbnails by mutableStateOf<List<Thumbnail>>(emptyList())
 
-    val thumbnailIndex = MutableStateFlow<Int?>(null)
+    var thumbnailIndex by mutableStateOf(0)
 
     fun initialize(filePreview: FilePreview, context: Context) = viewModelScope.launch {
-        loading.update { true }
+        loading = true
 
-        val dataFiles = dataFileRepository.getDataFilesByIds(filePreview.dataFileIds)
+        val dataFileLinks = dataFileRepository.getDataFileLinksByIds(filePreview.dataFileLinkIds)
+        val dataFiles = dataFileRepository.getDataFilesByIds(dataFileLinks.map { it.dataFileId })
 
-        thumbnails.update {
-            dataFiles
-                .filter { dataFile -> dataFile.contentType == MimeTypes.IMAGE_JPEG }
-                .mapIndexed { index, dataFile_ ->
-                    val thumbnailDataFile = dataFile_.thumbnails.find { thumbnail -> thumbnail.resolution == Resolution.P1280 }
+        thumbnails = dataFileLinks
+            .sortedBy { filePreview.dataFileLinkIds.indexOf(it.id) }
+            .mapIndexed { index, dataFileLink ->
+                dataFiles
+                    .find { it.id == dataFileLink.dataFileId }
+                    ?.let { dataFile ->
+                        val thumbnailDataFile = dataFile.thumbnails.find { thumbnail -> thumbnail.resolution == Resolution.P1280 }
 
-                    if (dataFile_.id == filePreview.initialDataFile.id) {
-                        thumbnailIndex.update { index }
+                        if (dataFileLink.id == filePreview.initialDataFileLink.id) {
+                            thumbnailIndex = index
+                        }
+
+                        thumbnailDataFile?.let {
+                            val thumbnailName = FileManager.getThumbnailName(dataFile.id, thumbnailDataFile.resolution)
+                            val filePath = "${context.filesDir}/$thumbnailName"
+                            val file = File(filePath)
+
+                            if (file.exists()) Thumbnail(file, dataFileLink.name, dataFile.contentType) else null
+                        }
                     }
+            }
+            .filterNotNull()
 
-                    thumbnailDataFile?.let {
-                        val thumbnailName = FileManager.getThumbnailName(dataFile_.id, thumbnailDataFile.resolution)
-                        val filePath = "${context.filesDir}/$thumbnailName"
-                        val file = File(filePath)
 
-                        if (file.exists()) Thumbnail(BitmapFactory.decodeFile("${context.filesDir}/$thumbnailName"), dataFile_) else null
-                    }
-                }
-                .filterNotNull()
-        }
-
-        loading.update { false }
+        loading = false
     }
 
-    class Thumbnail(val bitmap: Bitmap, val dataFile: DataFile)
+    class Thumbnail(val file: File, val name: String, val contentType: String?)
 }

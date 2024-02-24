@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.folder.Folder
-import com.bytemedrive.folder.FolderDao
 import com.bytemedrive.folder.FolderRepository
 import kotlinx.coroutines.launch
 import java.util.UUID

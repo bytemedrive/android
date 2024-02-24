@@ -10,8 +10,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -26,15 +24,14 @@ fun TopBarStarred(
     starredViewModel: StarredViewModel = koinInject(),
 ) {
     val context = LocalContext.current
-    val itemsSelected by starredViewModel.itemsSelected.collectAsState()
 
-    if (itemsSelected.isEmpty()) {
+    if (starredViewModel.itemsSelected.isEmpty()) {
         TopBarAppContent(toggleNav)
     } else {
         TopAppBar(
             title = {
                 Text(
-                    pluralStringResource(id = R.plurals.top_bar_file_items, itemsSelected.size, itemsSelected.size),
+                    pluralStringResource(id = R.plurals.top_bar_file_items, starredViewModel.itemsSelected.size, starredViewModel.itemsSelected.size),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -49,7 +46,7 @@ fun TopBarStarred(
             },
             actions = {
                 IconButton(onClick = {
-                    starredViewModel.removeItems(itemsSelected.map { it.id })
+                    starredViewModel.removeItems(starredViewModel.itemsSelected.map { it.id })
                     starredViewModel.clearSelectedItems()
                 }) {
                     Icon(

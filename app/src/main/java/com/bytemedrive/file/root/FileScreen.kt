@@ -2,25 +2,19 @@ package com.bytemedrive.file.root
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,8 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,9 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import coil.size.Size
 import com.bytemedrive.R
 import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.file.shared.entity.FileListItem
@@ -53,11 +42,11 @@ import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
 import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.file.shared.selection.FileSelectionDialog
+import com.bytemedrive.file.shared.ui.ItemImage
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import kotlinx.coroutines.flow.update
 import org.koin.compose.koinInject
-import java.io.File
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -70,7 +59,6 @@ fun FileScreen(
     val context = LocalContext.current
     val fileListItems = fileViewModel.fileListItems.collectAsLazyPagingItems()
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
-    val thumbnails by fileViewModel.thumbnails.collectAsState()
     val dataFilePreview by fileViewModel.dataFilePreview.collectAsState()
     val fileSelectionDialogOpened by fileViewModel.fileSelectionDialogOpened.collectAsState()
 
@@ -138,29 +126,8 @@ fun FileScreen(
                                     ),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                FileImage(itemSelected, item, thumbnails[item.id])
-                                Column(
-                                    modifier = Modifier
-                                        .padding(start = 18.dp)
-                                        .weight(1f)
-                                ) {
-                                    Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight(500))
-                                    Row {
-                                        when {
-                                            item.uploadStatus == UploadStatus.STARTED -> Text(text = "Uploading")
-                                            item.uploadStatus == UploadStatus.FAILED -> Text(text = "Failed")
-
-                                            item.starred -> {
-                                                Icon(
-                                                    modifier = Modifier.size(16.dp),
-                                                    imageVector = Icons.Rounded.Star,
-                                                    contentDescription = "Starred",
-                                                    tint = Color.Black
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                                ItemImage(itemSelected, item, fileViewModel.thumbnails[item.id])
+                                ItemStatus(item)
                                 IconButton(onClick = {
                                     when (item.type) {
                                         ItemType.FILE -> appNavigator.navigateTo(
@@ -188,55 +155,26 @@ fun FileScreen(
 }
 
 @Composable
-private fun FileImage(itemSelected: Boolean, item: FileListItem, file: File?) {
-    Box(
-        modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center
+private fun RowScope.ItemStatus(item: FileListItem) {
+    Column(
+        modifier = Modifier
+            .padding(start = 18.dp)
+            .weight(1f)
     ) {
-        when {
-            itemSelected -> {
-                Icon(
-                    imageVector = Icons.Outlined.CheckCircle,
-                    contentDescription = "Checked",
-                    tint = Color.Black,
-                )
-            }
+        Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight(500))
+        Row {
+            when {
+                item.uploadStatus == UploadStatus.STARTED -> Text(text = "Uploading")
+                item.uploadStatus == UploadStatus.FAILED -> Text(text = "Failed")
 
-            listOf(UploadStatus.STARTED, UploadStatus.QUEUED).contains(item.uploadStatus) -> CircularProgressIndicator()
-
-            item.uploadStatus == UploadStatus.FAILED -> {
-                Icon(
-                    imageVector = Icons.Outlined.ErrorOutline,
-                    contentDescription = "Checked",
-                    tint = Color.Red,
-                )
-            }
-
-            item.type == ItemType.FILE -> {
-                file?.let {
-                    Image(
-                        painter = rememberAsyncImagePainter(ImageRequest
-                            .Builder(LocalContext.current)
-                            .data(File(it.path))
-                            .size(Size.ORIGINAL)
-                            .crossfade(true)
-                            .build()
-                        ),
-                        contentDescription = "Thumbnail ${item.name}",
-                        contentScale = ContentScale.Crop
+                item.starred -> {
+                    Icon(
+                        modifier = Modifier.size(16.dp),
+                        imageVector = Icons.Rounded.Star,
+                        contentDescription = "Starred",
+                        tint = Color.Black
                     )
-                } ?: Icon(
-                    imageVector = Icons.Outlined.Description,
-                    contentDescription = "File",
-                    tint = Color.Black,
-                )
-            }
-
-            else -> {
-                Icon(
-                    imageVector = Icons.Default.Folder,
-                    contentDescription = "Folder",
-                    tint = Color.Black,
-                )
+                }
             }
         }
     }
