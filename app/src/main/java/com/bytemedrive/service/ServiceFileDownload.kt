@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.bytemedrive.MainActivity
 import com.bytemedrive.R
+import com.bytemedrive.application.GlobalExceptionHandler
 import com.bytemedrive.file.root.QueueFileDownloadRepository
 import com.bytemedrive.file.shared.FileManager
 import kotlinx.coroutines.CoroutineScope
@@ -42,22 +43,26 @@ class ServiceFileDownload : Service() {
 
         serviceScope.launch {
             while (true) {
-                withContext(Dispatchers.IO) {
-                    Log.i(TAG, "Checking whether there are any files to download")
-                    val filesToDownload = queueFileDownloadRepository.getFiles()
+                try {
+                    withContext(Dispatchers.IO) {
+                        Log.d(TAG, "Checking whether there are any files to download")
+                        val filesToDownload = queueFileDownloadRepository.getFiles()
 
-                    if (filesToDownload.isNotEmpty()) {
-                        startForeground(NOTIFICATION_ID, notification.build())
+                        if (filesToDownload.isNotEmpty()) {
+                            startForeground(NOTIFICATION_ID, notification.build())
 
-                        filesToDownload.forEachIndexed { index, file ->
-                            downloadFile(file)
-                            updateNotification(notification, "${index + 1} / ${filesToDownload.size} is being downloaded")
+                            filesToDownload.forEachIndexed { index, file ->
+                                downloadFile(file)
+                                updateNotification(notification, "${index + 1} / ${filesToDownload.size} is being downloaded")
+                            }
+
+                            stopForeground(STOP_FOREGROUND_DETACH)
                         }
 
-                        stopForeground(STOP_FOREGROUND_DETACH)
+                        TimeUnit.SECONDS.sleep(10)
                     }
-
-                    TimeUnit.SECONDS.sleep(10)
+                } catch (e: Exception) {
+                    GlobalExceptionHandler.throwable = e
                 }
             }
         }

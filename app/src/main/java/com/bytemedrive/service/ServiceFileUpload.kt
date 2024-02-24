@@ -11,8 +11,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.bytemedrive.MainActivity
 import com.bytemedrive.R
+import com.bytemedrive.application.GlobalExceptionHandler
 import com.bytemedrive.database.FileUpload
-import com.bytemedrive.datafile.entity.UploadStatus
 import com.bytemedrive.file.root.EventFileUploadFailed
 import com.bytemedrive.file.root.QueueFileUploadRepository
 import com.bytemedrive.file.shared.FileManager
@@ -49,21 +49,27 @@ class ServiceFileUpload : Service() {
         serviceScope.launch {
             // TODO: Temporary solution - should be improved
             while (true) {
-                withContext(Dispatchers.IO) {
-                    val filesToUpload = queueFileUploadRepository.getFiles()
+                try {
+                    withContext(Dispatchers.IO) {
+                        Log.d(TAG, "Checking whether there are any files to upload")
 
-                    if (filesToUpload.isNotEmpty()) {
-                        startForeground(NOTIFICATION_ID, notification.build())
+                        val filesToUpload = queueFileUploadRepository.getFiles()
 
-                        filesToUpload.forEachIndexed { index, fileUpload ->
-                            uploadFile(fileUpload)
-                            updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
+                        if (filesToUpload.isNotEmpty()) {
+                            startForeground(NOTIFICATION_ID, notification.build())
+
+                            filesToUpload.forEachIndexed { index, fileUpload ->
+                                uploadFile(fileUpload)
+                                updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
+                            }
+
+                            stopForeground(STOP_FOREGROUND_DETACH)
                         }
 
-                        stopForeground(STOP_FOREGROUND_DETACH)
+                        TimeUnit.SECONDS.sleep(10)
                     }
-
-                    TimeUnit.SECONDS.sleep(10)
+                } catch (e: Exception) {
+                    GlobalExceptionHandler.throwable = e
                 }
             }
         }

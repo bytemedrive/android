@@ -7,16 +7,17 @@ import android.graphics.BitmapFactory
 import android.os.IBinder
 import android.util.Log
 import androidx.media3.common.MimeTypes
+import com.bytemedrive.application.GlobalExceptionHandler
 import com.bytemedrive.datafile.control.DataFileRepository
 import com.bytemedrive.file.root.Resolution
 import com.bytemedrive.file.root.UploadChunk
 import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.image.ImageManager
 import com.bytemedrive.privacy.AesService
-import com.bytemedrive.store.AppState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
@@ -38,36 +39,41 @@ class ServiceThumbnailCreate : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         serviceScope.launch {
             while (true) {
-                withContext(Dispatchers.IO) {
-                    dataFileRepository.getAllDataFiles().forEach {dataFile ->
-                        val chunkViewIds = dataFile.chunks.map(UploadChunk::viewId)
+                try {
+                    withContext(Dispatchers.IO) {
+                        Log.d(TAG, "Checking whether there are any thumbnails to create")
+                        dataFileRepository.getAllDataFiles().forEach { dataFile ->
+                            val chunkViewIds = dataFile.chunks.map(UploadChunk::viewId)
 
-                        resolutions.forEach { resolution ->
-                            if (dataFile.contentType == MimeTypes.IMAGE_JPEG && dataFile.thumbnails.find { it.resolution == resolution } == null) {
-                                Log.i(TAG, "Missing thumbnail with resolution $resolution for file chunk view ids=$chunkViewIds.")
-                                val encryptedFile = fileManager.rebuildFile(chunkViewIds, "${dataFile.id}-encrypted", dataFile.contentType, applicationContext.cacheDir)
+                            resolutions.forEach { resolution ->
+                                if (dataFile.contentType == MimeTypes.IMAGE_JPEG && dataFile.thumbnails.find { it.resolution == resolution } == null) {
+                                    Log.i(TAG, "Missing thumbnail with resolution $resolution for file chunk view ids=$chunkViewIds.")
+                                    val encryptedFile = fileManager.rebuildFile(chunkViewIds, "${dataFile.id}-encrypted", dataFile.contentType, applicationContext.cacheDir)
 
-                                val sizeOfChunks = dataFile.chunks.sumOf(UploadChunk::sizeBytes)
+                                    val sizeOfChunks = dataFile.chunks.sumOf(UploadChunk::sizeBytes)
 
-                                if (sizeOfChunks != encryptedFile.length()) {
-                                    Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
-                                } else {
-                                    val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), AesService.secretKey(dataFile.secretKeyBase64!!))
-                                    var thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
+                                    if (sizeOfChunks != encryptedFile.length()) {
+                                        Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
+                                    } else {
+                                        val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), AesService.secretKey(dataFile.secretKeyBase64!!))
+                                        var thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
 
-                                    dataFile.exifOrientation?.let { thumbnail = ImageManager.rotateBitmap(thumbnail, it) }
+                                        dataFile.exifOrientation?.let { thumbnail = ImageManager.rotateBitmap(thumbnail, it) }
 
-                                    val stream = ByteArrayOutputStream()
-                                    thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                                        val stream = ByteArrayOutputStream()
+                                        thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, stream)
 
-                                    Log.i(TAG, "Uploading thumbnail with resolution $resolution for file id=${dataFile.id}.")
-                                    fileManager.uploadThumbnail(stream.toByteArray(), applicationContext.cacheDir, dataFile.id, dataFile.contentType, resolution)
+                                        Log.i(TAG, "Uploading thumbnail with resolution $resolution for file id=${dataFile.id}.")
+                                        fileManager.uploadThumbnail(stream.toByteArray(), applicationContext.cacheDir, dataFile.id, dataFile.contentType, resolution)
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    TimeUnit.SECONDS.sleep(10)
+                        TimeUnit.SECONDS.sleep(10)
+                    }
+                } catch (e: Exception) {
+                    GlobalExceptionHandler.throwable = e
                 }
             }
         }
