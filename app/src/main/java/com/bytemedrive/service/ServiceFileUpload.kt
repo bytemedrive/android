@@ -79,6 +79,10 @@ class ServiceFileUpload : Service() {
         if (file.exists()) {
             try {
                 fileManager.uploadFile(fileUpload, applicationContext.cacheDir, file)
+            } catch (error: OutOfMemoryError) {
+                Log.e(TAG, "File upload failed! File path=${file.path}.", error)
+                queueFileUploadRepository.deleteFile(fileUpload.id)
+                eventPublisher.publishEvent(EventFileUploadFailed(fileUpload.id, ZonedDateTime.now()))
             } catch (exception: Exception) {
                 Log.e(TAG, "File upload failed! File path=${file.path}.", exception)
                 queueFileUploadRepository.deleteFile(fileUpload.id)
