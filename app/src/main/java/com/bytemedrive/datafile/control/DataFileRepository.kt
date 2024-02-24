@@ -1,6 +1,7 @@
 package com.bytemedrive.datafile.control
 
 import com.bytemedrive.datafile.entity.DataFile
+import com.bytemedrive.datafile.entity.DataFileEntity
 import com.bytemedrive.datafile.entity.DataFileLink
 import com.bytemedrive.datafile.entity.UploadStatus
 import kotlinx.coroutines.flow.map
@@ -46,6 +47,8 @@ class DataFileRepository(
     suspend fun getAllDataFiles() = dataFileDao.getAllDataFiles().map(::DataFile)
 
     suspend fun getAllDataFileLinks() = dataFileDao.getAllDataFileLinks().map(::DataFileLink)
+
+    suspend fun updateDataFile(dataFile: DataFile) = dataFileDao.update(DataFileEntity(dataFile))
 
     fun getAllDataFileFlow()  = dataFileDao.getAllDataFileFlow().map { it.map(::DataFile) }
 
