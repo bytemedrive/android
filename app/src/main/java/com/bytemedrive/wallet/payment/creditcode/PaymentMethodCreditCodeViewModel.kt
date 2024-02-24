@@ -33,7 +33,7 @@ class PaymentMethodCreditCodeViewModel(
                     eventPublisher.publishEvent(EventCouponRedeemed(walletId, code))
                     appNavigator.navigateTo(AppNavigator.NavTarget.FILE)
                 } catch (exception: RequestFailedException) {
-                    if (exception.response.status == HttpStatusCode.NotFound) {
+                    if (exception.status == HttpStatusCode.NotFound) {
                         uiState.update { it.copy(error = PaymentMethodCreditCodeFormState.ErrorCode.NOT_FOUND) }
                     } else {
                         throw exception

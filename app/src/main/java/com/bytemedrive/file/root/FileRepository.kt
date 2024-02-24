@@ -51,7 +51,7 @@ class FileRepository(
         try {
             httpClient.get("files/$id") { header("Accept", "application/octet-stream") }
         } catch (e: RequestFailedException) {
-            if (e.response.status == HttpStatusCode.NotFound) {
+            if (e.status == HttpStatusCode.NotFound) {
                 Log.w(TAG, "File with id=$id not found")
 
                 null

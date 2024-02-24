@@ -5,6 +5,7 @@ import com.bytemedrive.application.networkStatus
 import com.bytemedrive.application.sharedPreferences
 import com.bytemedrive.network.JsonConfig.mapper
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
@@ -15,7 +16,6 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.plugin
-import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -52,9 +52,11 @@ class HttpClient {
             HttpResponseValidator {
                 validateResponse { response ->
                     if (!response.status.isSuccess()) {
-                        Log.e(TAG, "Request failed. Url=${response.request.url}. Status=${response.status}. Response=${response.bodyAsText()}")
+                        val exception = RequestFailedException(response.status, response.request.url.toString(), response.body())
 
-                        throw RequestFailedException(response)
+                        Log.e(TAG, exception.message.orEmpty())
+
+                        throw exception
                     }
                 }
             }
