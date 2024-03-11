@@ -152,6 +152,7 @@ object AesService {
             outputStream.use {
                 BufferedInputStream(inputStream).use { bis ->
                     BufferedOutputStream(CipherOutputStream(outputStream, cipher)).use { cos ->
+                        cos.write(iv)
                         val buffer = ByteArray(4096) // Adjust buffer size as needed
                         var bytesRead: Int
                         while (bis.read(buffer).also { bytesRead = it } != -1) {
