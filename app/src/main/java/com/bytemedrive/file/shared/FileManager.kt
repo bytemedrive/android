@@ -81,8 +81,7 @@ class FileManager(
         val checksum = ShaService.checksum(tmpOriginalFile.inputStream())
         val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
 
-        val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey, tmpOriginalFile.length())
+        val secretKey = AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream())
 
         val chunks = getChunks(tmpEncryptedFile, tmpFolder)
         val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
@@ -150,8 +149,7 @@ class FileManager(
         val thumbnailDataFileId = UUID.randomUUID()
         val tmpEncryptedFile = File.createTempFile("$thumbnailDataFileId-encrypted", ".${MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType)}", directory)
 
-        val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey, bytes.size.toLong())
+        val secretKey = AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream())
 
         val chunks = getChunks(tmpEncryptedFile, directory)
 
