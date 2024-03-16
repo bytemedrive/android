@@ -82,8 +82,7 @@ class FileManager(
         val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
 
         val secretKey = AesService.generateNewFileSecretKey()
-
-       AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey, tmpOriginalFile.length())
+        AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey, tmpOriginalFile.length())
 
         val chunks = getChunks(tmpEncryptedFile, tmpFolder)
         val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
