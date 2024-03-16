@@ -1,11 +1,6 @@
 package com.bytemedrive.privacy
 
 import com.bytemedrive.file.shared.FileManager
-import com.google.crypto.tink.InsecureSecretKeyAccess
-import com.google.crypto.tink.KeysetHandle
-import com.google.crypto.tink.StreamingAead
-import com.google.crypto.tink.TinkJsonProtoKeysetFormat
-import com.google.crypto.tink.streamingaead.StreamingAeadKeyTemplates
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -69,33 +64,37 @@ object AesService {
         return file
     }
 
-    fun encryptWithKey(inputStream: InputStream, outputStream: FileOutputStream): SecretKey {
+    fun encryptWithKey(inputStream: InputStream, outputStream: FileOutputStream, key: SecretKey, fileSizeBytes: Long) {
+        val chunkSize = 1024 * 1024 // 1MB
+        var chunkIndex = 0
+        val buffer = ByteArray(chunkSize)
+        var bytesRead: Int
+        val secureRandom = SecureRandom()
 
-        val keysetHandle = KeysetHandle.generateNew(StreamingAeadKeyTemplates.AES256_GCM_HKDF_4KB)
-        //val handle = TinkJsonProtoKeysetFormat.parseKeyset(String(Files.readAllBytes(keyFile), UTF_8), InsecureSecretKeyAccess.get())
-        val streamingAead = keysetHandle.getPrimitive(StreamingAead::class.java)
+        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+            // Generate a unique IV for each chunk
+            val iv = ByteArray(IV_LENGTH_BYTE)
+            secureRandom.nextBytes(iv)
+
+            // Construct associated data: Concatenate fileSizeBytes and chunkIndex
+            val associatedData = "$fileSizeBytes${chunkIndex}".toByteArray()
+
+            // Encrypt the chunk
+            val encryptedChunk = encryptChunk(buffer.copyOf(bytesRead), key, associatedData, iv)
+
+            // Write the IV followed by the encrypted chunk to the output stream
+            outputStream.write(iv)
+            outputStream.write(encryptedChunk)
+
+            chunkIndex++
+        }
         inputStream.use {
             outputStream.use {
-                val cipherStream = streamingAead.newEncryptingStream(outputStream, ByteArray(0)) // Use an empty AAD
-                inputStream.copyTo(cipherStream)
+                val iv = getRandomBytes(IV_LENGTH_BYTE)
+                outputStream.write(iv)
+                val cipher = Cipher.getInstance(ENCRYPT_ALGO)
             }
         }
-        val keyBytes = keysetHandle.keysetInfo.getKeyInfo(0).toByteArray()
-        val secretKey: SecretKey = SecretKeySpec(keyBytes, "AES")
-        return secretKey
-
-        /*val aead = keysetHandle.getPrimitive(Aead::class.java)
-        inputStream.use {
-            outputStream.use {
-                val buffer = ByteArray(4096) // Adjust buffer size as needed
-                var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    // Encrypt each chunk. Note: This is not how AEAD is typically used, see below for more details.
-                    val encryptedChunk = aead.encrypt(buffer.copyOf(bytesRead), ByteArray(0))
-                    outputStream.write(encryptedChunk)
-                }
-        }}*/
-
         /*inputStream.use {
             outputStream.use {
                 val iv = getRandomBytes(IV_LENGTH_BYTE)
@@ -146,6 +145,16 @@ object AesService {
          }*/
     }
 
+    private fun encryptChunk(chunkData: ByteArray, key: SecretKey, associatedData: ByteArray, iv: ByteArray): ByteArray {
+        val cipher = Cipher.getInstance(ENCRYPT_ALGO)
+        val gcmParameterSpec = GCMParameterSpec(128, iv) // Use a 128-bit authentication tag length
+
+        cipher.init(Cipher.ENCRYPT_MODE, key, gcmParameterSpec)
+        cipher.updateAAD(associatedData) // Set AAD
+
+        return cipher.doFinal(chunkData)
+    }
+
     fun decryptWithKey(bytes: ByteArray, key: SecretKey): ByteArray {
         val bb = ByteBuffer.wrap(bytes)
         val iv = ByteArray(IV_LENGTH_BYTE)
@@ -163,6 +172,32 @@ object AesService {
     }
 
     fun decryptWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey, fileSizeBytes: Long) {
+        val cipher = Cipher.getInstance(ENCRYPT_ALGO)
+        var chunkIndex = 0
+        while (true) {
+            val iv = ByteArray(IV_LENGTH_BYTE)
+            if (inputStream.read(iv) != IV_LENGTH_BYTE) break // End of file reached
+            // Assuming the encrypted chunk follows the IV directly and we don't know its exact size,
+            // we use a larger buffer and then read the actual encrypted data length.
+            // This might need adjustment based on how data was written during encryption.
+            val encryptedChunkBuffer = ByteArray(1024 * 1024 + cipher.blockSize)
+            val bytesRead = inputStream.read(encryptedChunkBuffer)
+
+            if (bytesRead == -1) break // End of encrypted data
+
+            val associatedData = "$fileSizeBytes${chunkIndex}".toByteArray()
+            val gcmParameterSpec = GCMParameterSpec(128, iv)
+
+            cipher.init(Cipher.DECRYPT_MODE, key, gcmParameterSpec)
+            cipher.updateAAD(associatedData)
+
+            // Decrypt only the bytes that were read
+            val decryptedChunk = cipher.doFinal(encryptedChunkBuffer, 0, bytesRead)
+
+            outputStream.write(decryptedChunk)
+            chunkIndex++
+        }
+
         inputStream.use {
             outputStream.use {
                 val iv = ByteArray(IV_LENGTH_BYTE)

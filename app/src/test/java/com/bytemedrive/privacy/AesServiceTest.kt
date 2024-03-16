@@ -1,9 +1,5 @@
 package com.bytemedrive.privacy
 
-import com.google.crypto.tink.StreamingAead
-import com.google.crypto.tink.aead.AeadConfig
-import com.google.crypto.tink.config.TinkConfig
-import com.google.crypto.tink.streamingaead.StreamingAeadConfig
 import org.junit.Test
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -15,9 +11,12 @@ class AesServiceTest {
     fun testEncryption(){
         val fileUrl = this.javaClass.classLoader.getResource("img.png")
         val fileEncrypted = Files.createTempFile("junit", ".encrypted")
-        StreamingAeadConfig.register()
-        val key = AesService.encryptWithKey(FileInputStream(fileUrl.file), FileOutputStream(fileEncrypted.toFile()))
+        val secretKey = AesService.generateNewFileSecretKey()
+        AesService.encryptWithKey(FileInputStream(fileUrl.file), FileOutputStream(fileEncrypted.toFile()), secretKey, fileUrl.file.length.toLong())
         println(fileEncrypted)
+
+        val fileDecrypted = Files.createTempFile("junit", ".decrypted")
+        AesService.decryptWithKey(FileInputStream(fileEncrypted.toFile()), FileOutputStream(fileDecrypted.toFile()), secretKey, fileUrl.file.length.toLong())
     }
 
 }
