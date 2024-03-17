@@ -1,7 +1,5 @@
 package com.bytemedrive.privacy
 
-import com.bytemedrive.file.shared.FileManager
-import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -18,9 +16,11 @@ import javax.crypto.spec.SecretKeySpec
 
 object AesService {
 
-    private const val ENCRYPT_ALGO = "AES/GCM/NoPadding"
+    private const val ENCRYPT_ALGORITHM = "AES/GCM/NoPadding"
     private const val TAG_LENGTH_BIT = 128 // must be one of {128, 120, 112, 104, 96}
     private const val IV_LENGTH_BYTE = 12
+    private const val ENCRYPT_CHUNK_BYTES = 1024 * 1024 // 1MB
+    private const val AUTH_TAG_LENGTH_BYTE = 16
 
     private val secureRandom: SecureRandom = SecureRandom()
 
@@ -43,7 +43,7 @@ object AesService {
     fun encryptWithKey(bytes: ByteArray, key: SecretKey): ByteArray {
         // GCM recommended 12 bytes iv?
         val iv = getRandomBytes(IV_LENGTH_BYTE)
-        val cipher = Cipher.getInstance(ENCRYPT_ALGO)
+        val cipher = Cipher.getInstance(ENCRYPT_ALGORITHM)
 
         // ASE-GCM needs GCMParameterSpec
         cipher.init(
@@ -58,16 +58,9 @@ object AesService {
             .array()
     }
 
-    private fun writeBytesToTmpFile(bytes: ByteArray): File {
-        var file = File.createTempFile("part-", "")
-        file.writeBytes(bytes)
-        return file
-    }
-
     fun encryptWithKey(inputStream: InputStream, outputStream: FileOutputStream, key: SecretKey, fileSizeBytes: Long) {
-        val chunkSize = 1024 * 1024 // 1MB
         var chunkIndex = 0
-        val buffer = ByteArray(chunkSize)
+        val buffer = ByteArray(ENCRYPT_CHUNK_BYTES)
         var bytesRead: Int
         val secureRandom = SecureRandom()
 
@@ -88,65 +81,10 @@ object AesService {
 
             chunkIndex++
         }
-        inputStream.use {
-            outputStream.use {
-                val iv = getRandomBytes(IV_LENGTH_BYTE)
-                outputStream.write(iv)
-                val cipher = Cipher.getInstance(ENCRYPT_ALGO)
-            }
-        }
-        /*inputStream.use {
-            outputStream.use {
-                val iv = getRandomBytes(IV_LENGTH_BYTE)
-                outputStream.write(iv)
-                val cipher = Cipher.getInstance(ENCRYPT_ALGO)
-                cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-                CipherOutputStream(outputStream, cipher).use { cipherOutputStream ->
-                    inputStream.copyTo(cipherOutputStream)
-                }
-            }
-        }*/
-        /*val buffer = ByteArray(FileManager.computeBufferSize(fileSizeBytes))
-            var parts = ArrayList<File>()
-            inputStream.use {
-                while (inputStream.read(buffer) != -1) {
-                    parts.add(writeBytesToTmpFile(buffer))
-                }
-            }
-            val iv = getRandomBytes(IV_LENGTH_BYTE)
-            outputStream.write(iv)
-            val cipher = Cipher.getInstance(ENCRYPT_ALGO)
-
-            cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-            var i = 0
-            for (part in parts){
-                cipher.updateAAD(part.readBytes()).let { outputStream.write(it) }
-                Log.i("AES","Encrypting part ${++i}")
-            }
-            Log.i("AES","Encrypting doFinal START")
-            cipher.doFinal().let { outputStream.write(it) }
-            Log.i("AES","Encrypting doFinal END")*/
-
-        /* inputStream.use {
-             outputStream.use {
-                 val iv = getRandomBytes(IV_LENGTH_BYTE)
-                 outputStream.write(iv)
-                 val cipher = Cipher.getInstance(ENCRYPT_ALGO)
-
-                 cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-                 val buffer = ByteArray(FileManager.computeBufferSize(fileSizeBytes))
-                 var bytesRead: Int
-                 while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                     cipher.update(buffer, 0, bytesRead).let { outputStream.write(it) }
-                 }
-
-                 cipher.doFinal().let { outputStream.write(it) }
-             }
-         }*/
     }
 
     private fun encryptChunk(chunkData: ByteArray, key: SecretKey, associatedData: ByteArray, iv: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(ENCRYPT_ALGO)
+        val cipher = Cipher.getInstance(ENCRYPT_ALGORITHM)
         val gcmParameterSpec = GCMParameterSpec(128, iv) // Use a 128-bit authentication tag length
 
         cipher.init(Cipher.ENCRYPT_MODE, key, gcmParameterSpec)
@@ -161,7 +99,7 @@ object AesService {
         bb[iv]
         val cipherText = ByteArray(bb.remaining())
         bb[cipherText]
-        val cipher = Cipher.getInstance(ENCRYPT_ALGO)
+        val cipher = Cipher.getInstance(ENCRYPT_ALGORITHM)
         cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
         return cipher.doFinal(cipherText)
     }
@@ -172,15 +110,12 @@ object AesService {
     }
 
     fun decryptWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey, fileSizeBytes: Long) {
-        val cipher = Cipher.getInstance(ENCRYPT_ALGO)
+        val cipher = Cipher.getInstance(ENCRYPT_ALGORITHM)
         var chunkIndex = 0
         while (true) {
             val iv = ByteArray(IV_LENGTH_BYTE)
             if (inputStream.read(iv) != IV_LENGTH_BYTE) break // End of file reached
-            // Assuming the encrypted chunk follows the IV directly and we don't know its exact size,
-            // we use a larger buffer and then read the actual encrypted data length.
-            // This might need adjustment based on how data was written during encryption.
-            val encryptedChunkBuffer = ByteArray(1024 * 1024 + cipher.blockSize)
+            val encryptedChunkBuffer = ByteArray(ENCRYPT_CHUNK_BYTES + AUTH_TAG_LENGTH_BYTE)
             val bytesRead = inputStream.read(encryptedChunkBuffer)
 
             if (bytesRead == -1) break // End of encrypted data
@@ -196,23 +131,6 @@ object AesService {
 
             outputStream.write(decryptedChunk)
             chunkIndex++
-        }
-
-        inputStream.use {
-            outputStream.use {
-                val iv = ByteArray(IV_LENGTH_BYTE)
-                inputStream.read(iv)
-                val cipher = Cipher.getInstance(ENCRYPT_ALGO)
-
-                cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_LENGTH_BIT, iv))
-                val buffer = ByteArray(FileManager.computeBufferSize(fileSizeBytes))
-                var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    cipher.update(buffer, 0, bytesRead).let { outputStream.write(it) }
-                }
-
-                cipher.doFinal().let { outputStream.write(it) }
-            }
         }
     }
 
