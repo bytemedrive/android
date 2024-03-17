@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -16,12 +17,9 @@ import com.bytemedrive.file.root.QueueFileDownloadRepository
 import com.bytemedrive.file.shared.FileManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.util.UUID
-import java.util.concurrent.TimeUnit
 
 class ServiceFileDownload : Service() {
 
@@ -31,43 +29,62 @@ class ServiceFileDownload : Service() {
     private val fileManager: FileManager by inject()
     private val serviceScope = CoroutineScope(Dispatchers.Default)
 
+    private lateinit var handler: Handler
+    private lateinit var fileDownloader: Runnable
+    
     private val notificationManager: NotificationManager by lazy {
         getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onCreate() {
+        super.onCreate()
+
         createChannel()
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
         val notification = notificationBuilder(pendingIntent)
 
-        serviceScope.launch {
-            while (true) {
-                try {
-                    withContext(Dispatchers.IO) {
-                        Log.d(TAG, "Checking whether there are any files to download")
-                        val filesToDownload = queueFileDownloadRepository.getFiles()
-
-                        if (filesToDownload.isNotEmpty()) {
-                            startForeground(NOTIFICATION_ID, notification.build())
-
-                            filesToDownload.forEachIndexed { index, file ->
-                                downloadFile(file)
-                                updateNotification(notification, "${index + 1} / ${filesToDownload.size} is being downloaded")
-                            }
-
-                            stopForeground(STOP_FOREGROUND_DETACH)
-                        }
-
-                        TimeUnit.SECONDS.sleep(10)
-                    }
-                } catch (e: Exception) {
-                    GlobalExceptionHandler.throwable = e
-                }
+        handler = Handler()
+        fileDownloader = Runnable {
+            serviceScope.launch(Dispatchers.IO) {
+                fileDownload(notification)
             }
         }
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        handler.post(fileDownloader)
         return START_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(fileDownloader)
+    }
+
+    private suspend fun fileDownload(notification: NotificationCompat.Builder) {
+        try {
+            Log.d(TAG, "Checking whether there are any files to download")
+            val filesToDownload = queueFileDownloadRepository.getFiles()
+
+            if (filesToDownload.isNotEmpty()) {
+                startForeground(NOTIFICATION_ID, notification.build())
+
+                filesToDownload.forEachIndexed { index, file ->
+                    downloadFile(file)
+                    updateNotification(notification, "${index + 1} / ${filesToDownload.size} is being downloaded")
+                }
+
+                stopForeground(STOP_FOREGROUND_DETACH)
+            }
+
+            handler.postDelayed(fileDownloader, 10_000)
+        } catch (e: Exception) {
+            GlobalExceptionHandler.throwable = e
+        }
     }
 
     private suspend fun downloadFile(dataFileLinkId: UUID) {
@@ -96,16 +113,6 @@ class ServiceFileDownload : Service() {
         .setCategory(NotificationCompat.CATEGORY_PROGRESS)
         .setContentIntent(pendingIntent)
         .setSilent(true)
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        serviceScope.cancel()
-    }
 
     companion object {
 
