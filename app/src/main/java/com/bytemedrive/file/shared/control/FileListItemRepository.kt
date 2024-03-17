@@ -16,8 +16,12 @@ class FileListItemRepository(
         pagingSourceFactory = { itemDao.getAllPaged(folderId) }
     ).flow.map { it.map { item -> FileListItem(item) } }
 
-    fun getAllStaredPaged(folderId: UUID? = null) = Pager(
+    suspend fun getAll(folderId: UUID? = null) = itemDao.getAll(folderId = folderId).map(::FileListItem)
+
+    fun getAllStarredPaged( starred: Boolean = false) = Pager(
         config = PagingConfig(pageSize = 20),
-        pagingSourceFactory = { itemDao.getAllStarredPaged(folderId = folderId) }
+        pagingSourceFactory = { itemDao.getAllStarredPaged(starred) }
     ).flow.map { it.map { item -> FileListItem(item) } }
+
+    fun getAllStarredFlow(starred: Boolean = false) = itemDao.getAllStarredFlow(starred).map { it.map(::FileListItem) }
 }

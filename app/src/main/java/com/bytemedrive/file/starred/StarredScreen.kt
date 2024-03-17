@@ -9,14 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,21 +20,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.file.shared.entity.ItemType
 import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCreate
 import com.bytemedrive.file.shared.preview.FilePreviewDialog
+import com.bytemedrive.file.shared.ui.ItemImage
+import com.bytemedrive.file.shared.ui.ItemStatus
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
 import kotlinx.coroutines.flow.update
@@ -51,15 +45,14 @@ fun StarredScreen(
     starredViewModel: StarredViewModel = koinInject(),
     appNavigator: AppNavigator = koinInject()
 ) {
+    val context = LocalContext.current
     val fileListItems = starredViewModel.fileListItems.collectAsLazyPagingItems()
-    val dataFilePreview by starredViewModel.dataFilePreview.collectAsState()
-    val fileAndFolderSelected by starredViewModel.itemsSelected.collectAsState()
 
     LaunchedEffect(Unit) {
         AppState.title.update { "Starred files" }
         AppState.topBarComposable.update { { toggleNav -> TopBarStarred(toggleNav) } }
 
-        starredViewModel.init()
+        starredViewModel.initialize(context)
     }
 
     DisposableEffect(Unit) {
@@ -73,8 +66,8 @@ fun StarredScreen(
         appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
     }
 
-    dataFilePreview?.let { dataFilePreview_ ->
-        FilePreviewDialog(dataFilePreview_, { starredViewModel.dataFilePreview.update { null } })
+    starredViewModel.dataFilePreview?.let { dataFilePreview_ ->
+        FilePreviewDialog(dataFilePreview_, { starredViewModel.dataFilePreview = null })
     }
 
     Scaffold(
@@ -99,7 +92,7 @@ fun StarredScreen(
                 ) {
                     items(items = fileListItems) {
                         it?.let { item ->
-                            val itemSelected = fileAndFolderSelected.contains(item)
+                            val itemSelected = starredViewModel.itemsSelected.contains(item)
 
                             Row(
                                 modifier = Modifier
@@ -111,36 +104,8 @@ fun StarredScreen(
                                     ),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                if (itemSelected) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.CheckCircle,
-                                        contentDescription = "Checked",
-                                        tint = Color.Black,
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = if (item.type == ItemType.FILE) Icons.Outlined.Description else Icons.Default.Folder,
-                                        contentDescription = "Folder",
-                                        tint = Color.Black,
-                                    )
-                                }
-                                Column(
-                                    modifier = Modifier
-                                        .padding(start = 18.dp)
-                                        .weight(1f)
-                                ) {
-                                    Text(text = item.name, fontSize = 16.sp, fontWeight = FontWeight(500))
-                                    Row() {
-                                        if (item.starred) {
-                                            Icon(
-                                                modifier = Modifier.size(16.dp),
-                                                imageVector = Icons.Rounded.Star,
-                                                contentDescription = "Starred",
-                                                tint = Color.Black,
-                                            )
-                                        }
-                                    }
-                                }
+                                ItemImage(itemSelected, item, starredViewModel.thumbnails[item.id])
+                                ItemStatus(item)
                                 IconButton(onClick = {
                                     when (item.type) {
                                         ItemType.FILE -> appNavigator.navigateTo(

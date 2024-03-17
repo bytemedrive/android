@@ -9,9 +9,11 @@ import android.provider.MediaStore
 import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.exifinterface.media.ExifInterface
+import androidx.lifecycle.viewModelScope
 import com.bytemedrive.customer.control.CustomerRepository
 import com.bytemedrive.database.FileUpload
 import com.bytemedrive.datafile.control.DataFileRepository
+import com.bytemedrive.datafile.entity.DataFile
 import com.bytemedrive.datafile.entity.DataFileLink
 import com.bytemedrive.file.root.Chunk
 import com.bytemedrive.file.root.EventFileUploadCompleted
@@ -27,6 +29,8 @@ import com.bytemedrive.store.EventPublisher
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.ZonedDateTime
@@ -174,6 +178,19 @@ class FileManager(
 
         return ThumbnailUtils.extractThumbnail(original, (original.width * ratio).roundToInt(), (original.height * ratio).roundToInt())
     }
+
+    fun findThumbnailForDataFileLink(dataFileLink: DataFileLink, dataFiles: List<DataFile>, context: Context): File? =
+        dataFiles
+            .find { it.id == dataFileLink.dataFileId }
+            ?.thumbnails
+            ?.find { it.resolution == Resolution.P360 }
+            ?.let {
+                val thumbnailName = getThumbnailName(dataFileLink.dataFileId, it.resolution)
+                val filePath = "${context.filesDir}/$thumbnailName"
+                val file = File(filePath)
+
+                if (file.exists()) file else null
+            }
 
     private fun splitSmallFile(original: JavaFile, chunksFolder: JavaFile): List<Chunk> {
         val sizeBytes = original.length()
