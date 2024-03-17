@@ -28,10 +28,10 @@ class AesServiceTest {
         val fileSourceUrl = this.javaClass.classLoader.getResource(fileName)
         val fileEncrypted = Files.createTempFile("junit", ".encrypted")
         val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(FileInputStream(fileSourceUrl.file), FileOutputStream(fileEncrypted.toFile()), secretKey, fileSourceUrl.file.length.toLong())
+        AesService.encryptFileWithKey(FileInputStream(fileSourceUrl.file), FileOutputStream(fileEncrypted.toFile()), secretKey, fileSourceUrl.file.length.toLong())
 
         val fileDecrypted = Files.createTempFile("junit", ".decrypted")
-        AesService.decryptWithKey(FileInputStream(fileEncrypted.toFile()), FileOutputStream(fileDecrypted.toFile()), secretKey, fileSourceUrl.file.length.toLong())
+        AesService.decryptFileWithKey(FileInputStream(fileEncrypted.toFile()), FileOutputStream(fileDecrypted.toFile()), secretKey, fileSourceUrl.file.length.toLong())
 
         val identical = inputStreamsAreEqual(FileInputStream(fileSourceUrl.file), FileInputStream(fileDecrypted.toFile()))
         Files.deleteIfExists(fileDecrypted)

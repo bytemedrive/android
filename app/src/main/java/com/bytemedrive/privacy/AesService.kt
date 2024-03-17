@@ -1,6 +1,5 @@
 package com.bytemedrive.privacy
 
-import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
@@ -36,11 +35,11 @@ object AesService {
         return keyGenerator.generateKey()
     }
 
-    fun encryptWithPassword(bytes: ByteArray, password: CharArray, salt: ByteArray): ByteArray {
-        return encryptWithKey(bytes, getAESKeyFromPassword(password, salt))
+    fun encryptBytesWithPassword(bytes: ByteArray, password: CharArray, salt: ByteArray): ByteArray {
+        return encryptBytesWithKey(bytes, getAESKeyFromPassword(password, salt))
     }
 
-    fun encryptWithKey(bytes: ByteArray, key: SecretKey): ByteArray {
+    fun encryptBytesWithKey(bytes: ByteArray, key: SecretKey): ByteArray {
         // GCM recommended 12 bytes iv?
         val iv = getRandomBytes(IV_LENGTH_BYTE)
         val cipher = Cipher.getInstance(ENCRYPT_ALGORITHM)
@@ -58,7 +57,8 @@ object AesService {
             .array()
     }
 
-    fun encryptWithKey(inputStream: InputStream, outputStream: FileOutputStream, key: SecretKey, fileSizeBytes: Long) {
+    fun encryptFileWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey, fileSizeBytes: Long) {
+        val cipher = Cipher.getInstance(ENCRYPT_ALGORITHM)
         var chunkIndex = 0
         val buffer = ByteArray(ENCRYPT_CHUNK_BYTES)
         var bytesRead: Int
@@ -71,9 +71,12 @@ object AesService {
 
             // Construct associated data: Concatenate fileSizeBytes and chunkIndex
             val associatedData = "$fileSizeBytes${chunkIndex}".toByteArray()
+            val gcmParameterSpec = GCMParameterSpec(128, iv) // Use a 128-bit authentication tag length
+            cipher.init(Cipher.ENCRYPT_MODE, key, gcmParameterSpec)
+            cipher.updateAAD(associatedData) // Set AAD
 
             // Encrypt the chunk
-            val encryptedChunk = encryptChunk(buffer.copyOf(bytesRead), key, associatedData, iv)
+            val encryptedChunk = cipher.doFinal(buffer, 0, bytesRead)
 
             // Write the IV followed by the encrypted chunk to the output stream
             outputStream.write(iv)
@@ -83,17 +86,7 @@ object AesService {
         }
     }
 
-    private fun encryptChunk(chunkData: ByteArray, key: SecretKey, associatedData: ByteArray, iv: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(ENCRYPT_ALGORITHM)
-        val gcmParameterSpec = GCMParameterSpec(128, iv) // Use a 128-bit authentication tag length
-
-        cipher.init(Cipher.ENCRYPT_MODE, key, gcmParameterSpec)
-        cipher.updateAAD(associatedData) // Set AAD
-
-        return cipher.doFinal(chunkData)
-    }
-
-    fun decryptWithKey(bytes: ByteArray, key: SecretKey): ByteArray {
+    fun decryptBytesWithKey(bytes: ByteArray, key: SecretKey): ByteArray {
         val bb = ByteBuffer.wrap(bytes)
         val iv = ByteArray(IV_LENGTH_BYTE)
         bb[iv]
@@ -109,7 +102,7 @@ object AesService {
         return SecretKeySpec(keyBytes, 0, keyBytes.size, "AES")
     }
 
-    fun decryptWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey, fileSizeBytes: Long) {
+    fun decryptFileWithKey(inputStream: InputStream, outputStream: OutputStream, key: SecretKey, fileSizeBytes: Long) {
         val cipher = Cipher.getInstance(ENCRYPT_ALGORITHM)
         var chunkIndex = 0
         while (true) {
@@ -134,8 +127,8 @@ object AesService {
         }
     }
 
-    fun decryptWithPassword(bytes: ByteArray, password: CharArray, salt: ByteArray): ByteArray {
-        return decryptWithKey(bytes, getAESKeyFromPassword(password, salt))
+    fun decryptBytesWithPassword(bytes: ByteArray, password: CharArray, salt: ByteArray): ByteArray {
+        return decryptBytesWithKey(bytes, getAESKeyFromPassword(password, salt))
     }
 
     private fun getAESKeyFromPassword(password: CharArray, salt: ByteArray): SecretKey {

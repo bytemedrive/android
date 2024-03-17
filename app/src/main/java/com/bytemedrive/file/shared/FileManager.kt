@@ -69,7 +69,7 @@ class FileManager(
                     Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
                 } else {
                     val secretKey = AesService.secretKey(dataFile.secretKeyBase64!!)
-                    AesService.decryptWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, secretKey, encryptedFile.length())
+                    AesService.decryptFileWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, secretKey, encryptedFile.length())
                 }
             }
         }
@@ -82,7 +82,7 @@ class FileManager(
         val tmpEncryptedFile = File.createTempFile("$dataFileId-encrypted", ".${file.extension}", tmpFolder)
 
         val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey, tmpOriginalFile.length())
+        AesService.encryptFileWithKey(tmpOriginalFile.inputStream(), tmpEncryptedFile.outputStream(), secretKey, tmpOriginalFile.length())
 
         val chunks = getChunks(tmpEncryptedFile, tmpFolder)
         val contentType = getContentTypeFromFile(file) ?: UNKNOWN_MIME_TYPE
@@ -151,7 +151,7 @@ class FileManager(
         val tmpEncryptedFile = File.createTempFile("$thumbnailDataFileId-encrypted", ".${MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType)}", directory)
 
         val secretKey = AesService.generateNewFileSecretKey()
-        AesService.encryptWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey, bytes.size.toLong())
+        AesService.encryptFileWithKey(bytes.inputStream(), tmpEncryptedFile.outputStream(), secretKey, bytes.size.toLong())
 
         val chunks = getChunks(tmpEncryptedFile, directory)
 
@@ -266,20 +266,6 @@ class FileManager(
         const val CHUNK_SIZE_BYTES = 16 * 1024 * 1024
         const val BUFFER_SIZE_DEFAULT = 1024
         const val UNKNOWN_MIME_TYPE = "unknown"
-
-        fun computeBufferSize(fileSize: Long): Int {
-            if (fileSize < BUFFER_SIZE_DEFAULT) {
-                return BUFFER_SIZE_DEFAULT
-            }
-
-            var newSize = BUFFER_SIZE_DEFAULT
-
-            while ((fileSize % newSize) < (newSize / 2.0)) {
-                newSize += 1
-            }
-
-            return newSize
-        }
 
         fun getThumbnailName(fileId: UUID, resolution: Resolution): String {
             return "${fileId}_${resolution.value}"

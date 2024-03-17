@@ -30,7 +30,7 @@ class EventSyncService(private val storeRepository: StoreRepository, private val
                 .map {
                     // TODO in the future there will be possible more keys than one
                     val secretKey = encryptedSharedPreferences.getEventsSecretKey(it.keys[0])!!
-                    val eventBytes = AesService.decryptWithKey(Base64.getDecoder().decode(it.eventDataBase64), secretKey.getSecretKey())
+                    val eventBytes = AesService.decryptBytesWithKey(Base64.getDecoder().decode(it.eventDataBase64), secretKey.getSecretKey())
                     val eventMapWrapper = mapper.readValue(eventBytes, EventMapWrapper::class.java)
                     eventMapWrapper.toEventObjectWrapper()
                 }.toList().toTypedArray()

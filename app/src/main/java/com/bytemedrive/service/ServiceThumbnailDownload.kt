@@ -18,11 +18,10 @@ import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
-import java.lang.IllegalStateException
+import java.io.FileInputStream
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
@@ -67,13 +66,19 @@ class ServiceThumbnailDownload : Service() {
                                             val sizeOfChunks = thumbnail.chunks.sumOf(UploadChunk::sizeBytes)
 
                                             if (sizeOfChunks != encryptedFile.length()) {
-                                                Log.e(TAG, "Removing thumbnail due to encrypted thumbnail size ${encryptedFile.length()} is not same as encrypted thumbnail chunks size $sizeOfChunks")
+                                                Log.e(
+                                                    TAG,
+                                                    "Removing thumbnail due to encrypted thumbnail size ${encryptedFile.length()} is not same as encrypted thumbnail chunks size $sizeOfChunks"
+                                                )
                                                 val thumbnailRemoved = dataFile.copy(thumbnails = dataFile.thumbnails.filterNot { it.resolution == thumbnail.resolution })
                                                 dataFileRepository.updateDataFile(thumbnailRemoved)
                                             } else {
-                                                val fileDecrypted = AesService.decryptWithKey(encryptedFile.readBytes(), AesService.secretKey(thumbnail.secretKeyBase64))
-
-                                                applicationContext.openFileOutput(thumbnailName, Context.MODE_PRIVATE).use { it.write(fileDecrypted) }
+                                                AesService.decryptFileWithKey(
+                                                    FileInputStream(encryptedFile),
+                                                    applicationContext.openFileOutput(thumbnailName, Context.MODE_PRIVATE),
+                                                    AesService.secretKey(thumbnail.secretKeyBase64),
+                                                    dataFile.sizeBytes
+                                                )
 
                                                 eventPublisher.publishEvent(EventThumbnailCompleted(dataFile.id, resolution, ZonedDateTime.now()))
                                             }

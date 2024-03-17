@@ -53,7 +53,7 @@ class SignUpViewModel(
         try {
             val credentialsSha3 = ShaService.hashSha3("${username}:${password.concatToString()}")
             val eventsSecretKey = AesService.generateNewEventsSecretKey()
-            val encryptedEventsSecretKey = AesService.encryptWithPassword(eventsSecretKey.encoded, password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
+            val encryptedEventsSecretKey = AesService.encryptBytesWithPassword(eventsSecretKey.encoded, password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
             val aesKey = EncryptedSecretKey(UUID.randomUUID(), EncryptionAlgorithm.AES256, String(Base64.getEncoder().encode(encryptedEventsSecretKey), StandardCharsets.UTF_8))
             val customerSignUp = CustomerSignUp(credentialsSha3, aesKey)
             val walletId = UUID.randomUUID()
