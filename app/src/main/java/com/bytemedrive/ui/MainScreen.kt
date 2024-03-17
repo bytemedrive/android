@@ -1,5 +1,7 @@
 package com.bytemedrive.ui
 
+import android.os.Environment
+import android.os.StatFs
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -12,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,6 +33,7 @@ import com.bytemedrive.network.RequestFailedException
 import com.bytemedrive.store.AppState
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
+import java.io.File
 import java.net.SocketException
 import java.net.UnknownHostException
 
@@ -61,6 +65,19 @@ fun MainScreen() {
     if (!connected) {
         TopBarConnectionStatus()
     }
+
+    val stat = StatFs(Environment.getExternalStorageDirectory().getPath())
+    var bytesAvailable: Long;
+    bytesAvailable = stat.getBlockSizeLong() * stat.getAvailableBlocksLong();
+    val megAvailable = bytesAvailable / (1024 * 1024);
+    Log.i("","--------------------------------------------------------------- Available MB : "+megAvailable)
+
+    val freeBytesInternal: Long = File(LocalContext.current.getFilesDir().getAbsoluteFile().toString()).getFreeSpace()
+    val freeBytesExternal: Long = File(LocalContext.current.getExternalFilesDir(null).toString()).getFreeSpace()
+
+    Log.i("","--------------------------------------------------------------- ${freeBytesInternal / (1024 * 1024)}  ${freeBytesExternal / (1024 * 1024)}")
+
+
 
     if (authorized.value) {
         AppNavigation(navHostController, bottomSheetNavigator)
