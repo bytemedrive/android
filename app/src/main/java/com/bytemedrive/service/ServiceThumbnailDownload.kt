@@ -77,7 +77,7 @@ class ServiceThumbnailDownload : Service() {
                                                     FileInputStream(encryptedFile),
                                                     applicationContext.openFileOutput(thumbnailName, Context.MODE_PRIVATE),
                                                     AesService.secretKey(thumbnail.secretKeyBase64),
-                                                    dataFile.sizeBytes
+                                                    thumbnail.sizeBytes
                                                 )
 
                                                 eventPublisher.publishEvent(EventThumbnailCompleted(dataFile.id, resolution, ZonedDateTime.now()))
