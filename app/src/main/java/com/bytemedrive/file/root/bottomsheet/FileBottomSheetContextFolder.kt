@@ -45,22 +45,22 @@ fun FileBottomSheetContextFolder(
     }
 
     fileBottomSheetContextFolderViewModel.folder?.let { folder ->
-        var alertDialogDeleteOpened by remember { mutableStateOf(false) }
+        var alertDialogRemoveOpened by remember { mutableStateOf(false) }
 
         val toggleStarred = {
             fileViewModel.toggleStarredFolder(folder.id, folder.starred)
             appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
         }
 
-        if (alertDialogDeleteOpened) {
+        if (alertDialogRemoveOpened) {
             AlertDialogRemove(
-                "Delete folder?",
-                "Are you sure you want to permanently delete folder \"${folder.name}\"?",
+                "Remove folder?",
+                "Are you sure you want to permanently remove folder \"${folder.name}\"?",
                 {
                     fileViewModel.removeFolder(folder.id)
-                    alertDialogDeleteOpened = false
+                    alertDialogRemoveOpened = false
                     appNavigator.navigateTo(AppNavigator.NavTarget.BACK)
-                }) { alertDialogDeleteOpened = false }
+                }) { alertDialogRemoveOpened = false }
         }
 
         Column(
@@ -122,7 +122,7 @@ fun FileBottomSheetContextFolder(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { alertDialogDeleteOpened = true }),
+                    .clickable(onClick = { alertDialogRemoveOpened = true }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.Delete,

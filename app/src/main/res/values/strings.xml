@@ -25,6 +25,7 @@
 
     <!--  Top bar-->
     <string name="top_bar_no_internet_connection">No internet connection…</string>
+    <string name="top_bar_remove_items">Are you sure you want to permanently remove %1$s?</string>
 
     <string name="payment_method_credit_card_alert_permission_text">You must allow access to location. To reduce fraud risks associated with payments, and to minimize disputes, Stripe needs to know where payments occur. If the SDK can’t determine the location of the Android device, payments are disabled until location access is restored.</string>
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -18,9 +19,10 @@ fun ButtonLoading(
     enabled: Boolean = true,
     loading: Boolean = false,
     onClick: () -> Unit,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
     content: @Composable () -> Unit,
 ) {
-    Button(modifier = modifier, enabled = enabled, onClick = onClick) {
+    Button(modifier = modifier, enabled = enabled, onClick = onClick, colors = colors) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)

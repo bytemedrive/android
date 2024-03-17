@@ -1,5 +1,8 @@
 package com.bytemedrive.settings.terminateaccount
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bytemedrive.customer.control.CustomerRepository
@@ -20,30 +23,36 @@ class TerminateAccountViewModel(
     private val dataFileRepository: DataFileRepository
 ) : ViewModel() {
 
-    val username = MutableStateFlow("")
+    var username by mutableStateOf("")
 
-    val password = MutableStateFlow("".toCharArray())
+    var password by mutableStateOf("".toCharArray())
 
-    val alertDialogAccountTerminated = MutableStateFlow(false)
+    var alertDialogAccountTerminated by mutableStateOf(false)
+
+    var loading by mutableStateOf(false)
 
     fun terminateAccount(onInvalidCredentials: () -> Unit) = viewModelScope.launch {
+        loading = true
+
         customerRepository.getCustomer()?.let { customer ->
             customer.walletId?.let { walletId ->
                 val dataFiles = dataFileRepository.getAllDataFiles()
-                val usernameSha3 = ShaService.hashSha3(username.value)
-                val credentialsSha3 = ShaService.hashSha3("${username.value}:${password.value.concatToString()}")
-                val thumbnailChunkIds = dataFiles.flatMap { dataFile -> dataFile.thumbnails.flatMap { thumbnail -> thumbnail.chunks.map{ it.id.toString() } } }
+                val usernameSha3 = ShaService.hashSha3(username)
+                val credentialsSha3 = ShaService.hashSha3("${username}:${password.concatToString()}")
+                val thumbnailChunkIds = dataFiles.flatMap { dataFile -> dataFile.thumbnails.flatMap { thumbnail -> thumbnail.chunks.map { it.id.toString() } } }
                 val dataFileChunkIds = dataFiles.flatMap { dataFile -> dataFile.chunks.map { it.id.toString() } }
                 val allChunkIds = thumbnailChunkIds + dataFileChunkIds
 
                 try {
                     storeRepository.deleteCustomer(usernameSha3, credentialsSha3)
                     walletRepository.deleteFiles(walletId, allChunkIds)
-                    alertDialogAccountTerminated.update { true }
+                    alertDialogAccountTerminated = true
                 } catch (e: Exception) {
                     onInvalidCredentials()
                 }
             }
         }
+
+        loading = false
     }
 }
