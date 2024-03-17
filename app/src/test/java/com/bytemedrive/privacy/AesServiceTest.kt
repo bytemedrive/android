@@ -24,6 +24,11 @@ class AesServiceTest {
         Assert.assertTrue("Two small files are not identical", tryEncryption("small.txt"))
     }
 
+    @Test
+    fun testZeroEncryption() {
+        Assert.assertTrue("Two zero files are not identical", tryEncryption("zero.txt"))
+    }
+
     private fun tryEncryption(fileName: String): Boolean {
         val fileSourceUrl = this.javaClass.classLoader.getResource(fileName)
         val fileEncrypted = Files.createTempFile("junit", ".encrypted")
