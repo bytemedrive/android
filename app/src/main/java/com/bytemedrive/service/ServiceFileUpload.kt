@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -19,13 +20,10 @@ import com.bytemedrive.file.shared.FileManager
 import com.bytemedrive.store.EventPublisher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.io.File
 import java.time.ZonedDateTime
-import java.util.concurrent.TimeUnit
 
 class ServiceFileUpload : Service() {
 
@@ -36,45 +34,64 @@ class ServiceFileUpload : Service() {
     private val eventPublisher: EventPublisher by inject()
     private val serviceScope = CoroutineScope(Dispatchers.Default)
 
+    private lateinit var handler: Handler
+    private lateinit var fileUploader: Runnable
+    
     private val notificationManager: NotificationManager by lazy {
         getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+
         createChannel()
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
         val notification = notificationBuilder(pendingIntent)
 
-        serviceScope.launch {
-            // TODO: Temporary solution - should be improved
-            while (true) {
-                try {
-                    withContext(Dispatchers.IO) {
-                        Log.d(TAG, "Checking whether there are any files to upload")
-
-                        val filesToUpload = queueFileUploadRepository.getFiles()
-
-                        if (filesToUpload.isNotEmpty()) {
-                            startForeground(NOTIFICATION_ID, notification.build())
-
-                            filesToUpload.forEachIndexed { index, fileUpload ->
-                                uploadFile(fileUpload)
-                                updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
-                            }
-
-                            stopForeground(STOP_FOREGROUND_DETACH)
-                        }
-
-                        TimeUnit.SECONDS.sleep(10)
-                    }
-                } catch (e: Exception) {
-                    GlobalExceptionHandler.throwable = e
-                }
+        handler = Handler()
+        fileUploader = Runnable {
+            serviceScope.launch(Dispatchers.IO) {
+                fileUpload(notification)
             }
         }
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        handler.post(fileUploader)
         return START_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(fileUploader)
+    }
+
+    private suspend fun fileUpload(notification: NotificationCompat.Builder) {
+        try {
+            Log.d(TAG, "Checking whether there are any files to upload")
+
+            val filesToUpload = queueFileUploadRepository.getFiles()
+
+            if (filesToUpload.isNotEmpty()) {
+                startForeground(NOTIFICATION_ID, notification.build())
+
+                filesToUpload.forEachIndexed { index, fileUpload ->
+                    uploadFile(fileUpload)
+                    updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
+                }
+
+                stopForeground(STOP_FOREGROUND_DETACH)
+            }
+
+            handler.postDelayed(fileUploader, 10_000)
+        } catch (e: Exception) {
+            GlobalExceptionHandler.throwable = e
+        }
     }
 
     private suspend fun uploadFile(fileUpload: FileUpload) {
@@ -121,16 +138,6 @@ class ServiceFileUpload : Service() {
         .setCategory(NotificationCompat.CATEGORY_PROGRESS)
         .setContentIntent(pendingIntent)
         .setSilent(true)
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        serviceScope.cancel()
-    }
 
     companion object {
 
