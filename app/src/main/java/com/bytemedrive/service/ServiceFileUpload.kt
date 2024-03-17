@@ -110,6 +110,8 @@ class ServiceFileUpload : Service() {
                 Log.e(TAG, "File upload failed! File path=${file.path}.", exception)
                 queueFileUploadRepository.deleteFile(fileUpload.id)
                 eventPublisher.publishEvent(EventFileUploadFailed(fileUpload.id, ZonedDateTime.now()))
+                
+                throw exception
             }
         } else {
             Log.w(TAG, "File upload canceled. File ${file.path} could not be found.")
