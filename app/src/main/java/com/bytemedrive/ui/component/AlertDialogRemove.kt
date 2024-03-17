@@ -11,7 +11,7 @@ fun AlertDialogRemove(title: String, text: String, onConfirm: () -> Unit, onDism
         title = { Text(text = title) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Delete")
+                Text("Remove")
             }
         },
         dismissButton = {

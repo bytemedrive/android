@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.bytemedrive.navigation.TopBarAppContentBack
 import com.bytemedrive.signin.SignInManager
 import com.bytemedrive.store.AppState
+import com.bytemedrive.ui.component.ButtonLoading
 import com.bytemedrive.ui.component.FieldPassword
 import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
@@ -55,10 +56,6 @@ fun TerminateAccountScreen(
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
 
-    val username by terminateAccountViewModel.username.collectAsState()
-    val password by terminateAccountViewModel.password.collectAsState()
-    val terminated by terminateAccountViewModel.alertDialogAccountTerminated.collectAsState()
-
     LaunchedEffect(Unit) {
         AppState.title.update {   "Terminate account"}
         AppState.topBarComposable.update { { TopBarAppContentBack() } }
@@ -66,10 +63,10 @@ fun TerminateAccountScreen(
 
     val showToastInvalidCredentials = { Toast.makeText(context, "Invalid credentials", Toast.LENGTH_LONG).show() }
 
-    if (terminated) {
+    if (terminateAccountViewModel.alertDialogAccountTerminated) {
         val onConfirmation = {
             signInManager.signOut(context)
-            terminateAccountViewModel.alertDialogAccountTerminated.update { false }
+            terminateAccountViewModel.alertDialogAccountTerminated = false
         }
         AlertDialogAccountTerminated(onConfirmation = onConfirmation)
     }
@@ -85,8 +82,8 @@ fun TerminateAccountScreen(
         ) {
             Text("Please enter your credentials again to confirm that you are terminating your ByteMe Drive account.", style = MaterialTheme.typography.bodyMedium)
             OutlinedTextField(
-                value = username,
-                onValueChange = { value -> terminateAccountViewModel.username.update { value } },
+                value = terminateAccountViewModel.username,
+                onValueChange = { terminateAccountViewModel.username = it },
                 label = { Text("Username") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
@@ -96,8 +93,8 @@ fun TerminateAccountScreen(
                 singleLine = true
             )
             FieldPassword(
-                value = password,
-                onValueChange = { value -> terminateAccountViewModel.password.update { value } },
+                value = terminateAccountViewModel.password,
+                onValueChange = { terminateAccountViewModel.password = it },
                 label = "Password",
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -111,9 +108,11 @@ fun TerminateAccountScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
-            Button(
+            ButtonLoading(
                 onClick = { terminateAccountViewModel.terminateAccount(showToastInvalidCredentials) },
-                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)
+                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error),
+                loading = terminateAccountViewModel.loading,
+                enabled = !terminateAccountViewModel.loading,
             ) {
                 Text(text = "Terminate account", color = Color.White)
             }

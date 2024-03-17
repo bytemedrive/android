@@ -51,7 +51,7 @@ fun StarredBottomSheetContextFile(
     starredBottomSheetContextFileViewModel.dataFileLink?.let { dataFileLink ->
         val context = LocalContext.current
 
-        var alertDialogDeleteOpened by remember { mutableStateOf(false) }
+        var alertDialogRemoveOpened by remember { mutableStateOf(false) }
 
         val navigateBack = { appNavigator.navigateTo(AppNavigator.NavTarget.STARRED) }
 
@@ -60,15 +60,15 @@ fun StarredBottomSheetContextFile(
             navigateBack()
         }
 
-        if (alertDialogDeleteOpened) {
+        if (alertDialogRemoveOpened) {
             AlertDialogRemove(
-                "Delete file?",
-                "Are you sure you want to permanently delete file \"${dataFileLink.name}\"?",
+                "Remove file?",
+                "Are you sure you want to permanently remove file \"${dataFileLink.name}\"?",
                 {
                     fileViewModel.removeFile(dataFileLink.id)
-                    alertDialogDeleteOpened = false
+                    alertDialogRemoveOpened = false
                     navigateBack()
-                }) { alertDialogDeleteOpened = false }
+                }) { alertDialogRemoveOpened = false }
         }
 
         val downloadFile = {
@@ -123,7 +123,7 @@ fun StarredBottomSheetContextFile(
 
             ListItem(
                 modifier = Modifier
-                    .clickable(onClick = { alertDialogDeleteOpened = true }),
+                    .clickable(onClick = { alertDialogRemoveOpened = true }),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Rounded.Delete,

@@ -64,7 +64,7 @@ val viewModelsModule = module {
     viewModel { StarredBottomSheetContextFolderViewModel(get()) }
     viewModel { StarredBottomSheetContextFileViewModel(get()) }
     viewModel { FilePreviewViewModel(get()) }
-    viewModel { FileSelectionViewModel(get(), get(), get(), get(), get()) }
+    viewModel { FileSelectionViewModel(get(named(ExternalScope)), get(), get(), get(), get(), get()) }
     viewModel { SignInViewModel(get()) }
     viewModel { UploadViewModel(get(named(IODispatcher)), get(named(ExternalScope)), get(), get(), get()) }
     viewModel { CreateFolderViewModel(get(named(ExternalScope)), get()) }

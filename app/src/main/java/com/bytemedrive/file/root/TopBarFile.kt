@@ -16,13 +16,19 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.bytemedrive.R
 import com.bytemedrive.file.shared.entity.ItemType
+import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.navigation.TopBarAppContent
 import com.bytemedrive.navigation.TopBarAppContentBack
+import com.bytemedrive.ui.component.AlertDialogRemove
 import org.koin.compose.koinInject
 import java.util.UUID
 
@@ -35,7 +41,7 @@ fun TopBarFile(
 ) {
     val context = LocalContext.current
     val itemsSelected by fileViewModel.itemsSelected.collectAsState()
-
+    var alertDialogRemoveOpened by remember { mutableStateOf(false) }
     val selectedItemsAreOnlyFiles = itemsSelected.all { it.type == ItemType.FILE }
 
     val downloadFile = {
@@ -43,6 +49,17 @@ fun TopBarFile(
         fileViewModel.clearSelectedItems()
 
         Toast.makeText(context, "${itemsSelected.size} items will be downloaded. See notification for details", Toast.LENGTH_SHORT).show()
+    }
+
+    if (alertDialogRemoveOpened) {
+        AlertDialogRemove(
+            "Remove items?",
+            stringResource(id = R.string.top_bar_remove_items, pluralStringResource(id = R.plurals.top_bar_file_items, itemsSelected.size, itemsSelected.size)),
+            {
+                fileViewModel.removeItems(itemsSelected.map { it.id })
+                fileViewModel.clearSelectedItems()
+                alertDialogRemoveOpened = false
+            }) { alertDialogRemoveOpened = false }
     }
 
     when {
@@ -82,13 +99,10 @@ fun TopBarFile(
                             contentDescription = "Item move"
                         )
                     }
-                    IconButton(onClick = {
-                        fileViewModel.removeItems(itemsSelected.map { it.id })
-                        fileViewModel.clearSelectedItems()
-                    }) {
+                    IconButton(onClick = { alertDialogRemoveOpened = true }) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = "Item delete"
+                            contentDescription = "Item remove"
                         )
                     }
                     if (selectedItemsAreOnlyFiles) {
@@ -108,8 +122,8 @@ fun TopBarFile(
                 }
             )
         }
+
         folderId != null -> TopBarAppContentBack()
         else -> TopBarAppContent(toggleNav)
     }
-
 }

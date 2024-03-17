@@ -117,8 +117,9 @@ fun FileSelectionDialog(
                     when (action?.type) {
                         FileViewModel.Action.Type.COPY_ITEMS -> {
                             Button(onClick = {
-                                action?.let { action_ ->
-                                    fileSelectionViewModel.copyItem(action_, selectedFolder?.id, closeDialog)
+                                action?.let { action ->
+                                    fileSelectionViewModel.copyItem(action, selectedFolder?.id)
+                                    closeDialog()
                                 }
                             }) { Text(text = "Copy here") }
                         }
@@ -127,8 +128,9 @@ fun FileSelectionDialog(
                             val moveToDifferentFolder = selectedFolder?.id != action?.folderId
 
                             Button(onClick = {
-                                action?.let { action_ ->
-                                    fileSelectionViewModel.moveItems(action_, selectedFolder?.id, closeDialog)
+                                action?.let { action ->
+                                    fileSelectionViewModel.moveItems(action, selectedFolder?.id)
+                                    closeDialog()
                                 }
                             }, enabled = moveToDifferentFolder) { Text(text = "Move here") }
                         }

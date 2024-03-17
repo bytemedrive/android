@@ -16,6 +16,7 @@ import com.bytemedrive.folder.Folder
 import com.bytemedrive.folder.FolderManager
 import com.bytemedrive.folder.FolderRepository
 import com.bytemedrive.store.EventPublisher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,6 +24,7 @@ import java.util.UUID
 import kotlin.math.max
 
 class FileSelectionViewModel(
+    private val externalScope: CoroutineScope,
     private val eventPublisher: EventPublisher,
     private val folderManager: FolderManager,
     private val folderRepository: FolderRepository,
@@ -59,7 +61,7 @@ class FileSelectionViewModel(
     }
 
     // TODO: Rework with use of recursive function to have single iteration
-    fun copyItem(action: FileViewModel.Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
+    fun copyItem(action: FileViewModel.Action, folderId: UUID?) = externalScope.launch {
         val folders = folderRepository.getFoldersByIds(action.ids)
 
         folders.forEach { folder ->
@@ -86,10 +88,9 @@ class FileSelectionViewModel(
         }
 
         clearFileSelection()
-        closeDialog()
     }
 
-    fun moveItems(action: FileViewModel.Action, folderId: UUID?, closeDialog: () -> Unit) = viewModelScope.launch {
+    fun moveItems(action: FileViewModel.Action, folderId: UUID?) = externalScope.launch {
         val selectedFolders = folderRepository.getFoldersByIds(action.ids)
         val selectedFileLinks = dataFileRepository.getDataFileLinksByIds(action.ids)
 
@@ -97,7 +98,6 @@ class FileSelectionViewModel(
         selectedFileLinks.forEach { eventPublisher.publishEvent(EventFileMoved(it.id, folderId)) }
 
         clearFileSelection()
-        closeDialog()
     }
 
     private fun refreshFileListItems(selectedFolder: Folder?) = viewModelScope.launch {
