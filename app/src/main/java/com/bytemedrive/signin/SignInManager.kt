@@ -66,7 +66,7 @@ class SignInManager(
                 // TODO expecting one key but in future there might be more keys
                 val eventsSecretKey = privateKeys[0]
                 val secretKeyAsBytes =
-                    AesService.decryptWithPassword(Base64.getDecoder().decode(eventsSecretKey.keyBase64), password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
+                    AesService.decryptBytesWithPassword(Base64.getDecoder().decode(eventsSecretKey.keyBase64), password, usernameSha3.toByteArray(StandardCharsets.UTF_8))
                 signInSuccess(
                     username,
                     credentialsSha3,

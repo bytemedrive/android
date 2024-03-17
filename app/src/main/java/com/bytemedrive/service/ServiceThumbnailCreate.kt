@@ -17,11 +17,13 @@ import com.bytemedrive.privacy.AesService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 
 class ServiceThumbnailCreate : Service() {
@@ -55,8 +57,14 @@ class ServiceThumbnailCreate : Service() {
                                     if (sizeOfChunks != encryptedFile.length()) {
                                         Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
                                     } else {
-                                        val decryptedBytes = AesService.decryptWithKey(encryptedFile.readBytes(), AesService.secretKey(dataFile.secretKeyBase64!!))
-                                        var thumbnail = fileManager.getThumbnail(BitmapFactory.decodeByteArray(decryptedBytes, 0, decryptedBytes.size), resolution)
+                                        val fileDecrypted = Files.createTempFile("${dataFile.id}", ".decrypted")
+                                        AesService.decryptFileWithKey(
+                                            FileInputStream(encryptedFile),
+                                            FileOutputStream(fileDecrypted.toFile()),
+                                            AesService.secretKey(dataFile.secretKeyBase64!!),
+                                            dataFile.sizeBytes
+                                        )
+                                        var thumbnail = fileManager.getThumbnail(BitmapFactory.decodeFile(fileDecrypted.toFile().absolutePath), resolution)
 
                                         dataFile.exifOrientation?.let { thumbnail = ImageManager.rotateBitmap(thumbnail, it) }
 

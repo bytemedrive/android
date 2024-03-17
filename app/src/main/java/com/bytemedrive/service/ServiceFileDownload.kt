@@ -90,7 +90,7 @@ class ServiceFileDownload : Service() {
     }
 
     private fun notificationBuilder(pendingIntent: PendingIntent) = NotificationCompat.Builder(this, CHANNEL_ID)
-        .setContentTitle("File downloading progress")
+        .setContentTitle("File download in progress")
         .setSmallIcon(R.drawable.baseline_file_download_24)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setCategory(NotificationCompat.CATEGORY_PROGRESS)

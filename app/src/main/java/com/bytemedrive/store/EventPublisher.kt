@@ -24,7 +24,7 @@ class EventPublisher(private val storeRepository: StoreRepository, private val e
             val eventWrapper = EventObjectWrapper(UUID.randomUUID(), eventType, ZonedDateTime.now(), event)
             Log.i(TAG, "Publishing event ${eventWrapper.eventType} with id: ${eventWrapper.id}")
             val jsonWrapperData = mapper.writeValueAsBytes(eventWrapper)
-            val jsonWrapperEncrypted = AesService.encryptWithKey(jsonWrapperData, eventsSecretKey.getSecretKey())
+            val jsonWrapperEncrypted = AesService.encryptBytesWithKey(jsonWrapperData, eventsSecretKey.getSecretKey())
             val jsonWrapperEncryptedBase64 = Base64.getEncoder().encodeToString(jsonWrapperEncrypted)
             val encryptedEvent = EncryptedEvent(eventWrapper.id, immutableListOf(eventsSecretKey.id), jsonWrapperEncryptedBase64, ZonedDateTime.now())
             storeRepository.storeEncryptedEvent(usernameSha3, credentialsSha3, encryptedEvent)
