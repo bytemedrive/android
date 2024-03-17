@@ -42,11 +42,7 @@ fun AppNavHost(
         appNavigator.sharedFlow.onEach {
             when (it) {
                 AppNavigator.NavTarget.BACK.label -> navHostController.popBackStack()
-                AppNavigator.NavTarget.CLEAR.label -> navHostController.navigate(AppNavigator.NavTarget.FILE.label) {
-                    popUpTo(navHostController.graph.id) {
-                        inclusive = true
-                    }
-                }
+                AppNavigator.NavTarget.CLEAR.label -> navHostController.popBackStack(AppNavigator.NavTarget.FILE.label, true)
                 else -> navHostController.navigate(it)
             }
         }.launchIn(this)

@@ -25,7 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.bytemedrive.R
@@ -34,8 +37,11 @@ import com.bytemedrive.file.shared.floatingactionbutton.FloatingActionButtonCrea
 import com.bytemedrive.file.shared.preview.FilePreviewDialog
 import com.bytemedrive.file.shared.ui.ItemImage
 import com.bytemedrive.file.shared.ui.ItemStatus
+import com.bytemedrive.file.shared.ui.loadState
 import com.bytemedrive.navigation.AppNavigator
 import com.bytemedrive.store.AppState
+import com.bytemedrive.ui.component.Loader
+import com.bytemedrive.ui.component.LoadingNextPageItem
 import kotlinx.coroutines.flow.update
 import org.koin.compose.koinInject
 
@@ -73,60 +79,54 @@ fun StarredScreen(
     Scaffold(
         floatingActionButton = { FloatingActionButtonCreate() },
     ) { paddingValues ->
-
-        if (fileListItems.itemCount == 0) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Text(text = stringResource(id = R.string.common_no_data))
-            }
-        } else {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp, vertical = 32.dp)
             ) {
+                items(items = fileListItems) {
+                    it?.let { item ->
+                        val itemSelected = starredViewModel.itemsSelected.contains(item)
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 32.dp)
-                ) {
-                    items(items = fileListItems) {
-                        it?.let { item ->
-                            val itemSelected = starredViewModel.itemsSelected.contains(item)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp, vertical = 12.dp)
+                                .combinedClickable(
+                                    onClick = { starredViewModel.clickFileAndFolder(item) },
+                                    onLongClick = { starredViewModel.longClickFileAndFolder(item) }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            ItemImage(itemSelected, item, starredViewModel.thumbnails[item.id])
+                            ItemStatus(item)
+                            IconButton(onClick = {
+                                when (item.type) {
+                                    ItemType.FILE -> appNavigator.navigateTo(
+                                        AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FILE, mapOf("id" to item.id.toString())
+                                    )
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp, vertical = 12.dp)
-                                    .combinedClickable(
-                                        onClick = { starredViewModel.clickFileAndFolder(item) },
-                                        onLongClick = { starredViewModel.longClickFileAndFolder(item) }
-                                    ),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                ItemImage(itemSelected, item, starredViewModel.thumbnails[item.id])
-                                ItemStatus(item)
-                                IconButton(onClick = {
-                                    when (item.type) {
-                                        ItemType.FILE -> appNavigator.navigateTo(
-                                            AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FILE, mapOf("id" to item.id.toString())
-                                        )
-
-                                        ItemType.FOLDER -> appNavigator.navigateTo(
-                                            AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FOLDER, mapOf("id" to item.id.toString())
-                                        )
-                                    }
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.MoreVert,
-                                        contentDescription = "Context menu",
-                                        tint = Color.Black,
+                                    ItemType.FOLDER -> appNavigator.navigateTo(
+                                        AppNavigator.NavTarget.STARRED_BOTTOM_SHEET_CONTEXT_FOLDER, mapOf("id" to item.id.toString())
                                     )
                                 }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.MoreVert,
+                                    contentDescription = "Context menu",
+                                    tint = Color.Black,
+                                )
                             }
                         }
                     }
                 }
+
+                loadState(fileListItems = fileListItems)
             }
         }
     }

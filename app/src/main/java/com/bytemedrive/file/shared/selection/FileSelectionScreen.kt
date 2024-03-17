@@ -44,6 +44,7 @@ import androidx.paging.compose.items
 import com.bytemedrive.R
 import com.bytemedrive.file.root.FileViewModel
 import com.bytemedrive.file.shared.entity.ItemType
+import com.bytemedrive.file.shared.ui.loadState
 import com.bytemedrive.navigation.AppNavigator
 import kotlinx.coroutines.flow.update
 import org.koin.androidx.compose.koinViewModel
@@ -121,6 +122,7 @@ fun FileSelectionDialog(
                                 }
                             }) { Text(text = "Copy here") }
                         }
+
                         FileViewModel.Action.Type.MOVE_ITEMS -> {
                             val moveToDifferentFolder = selectedFolder?.id != action?.folderId
 
@@ -130,6 +132,7 @@ fun FileSelectionDialog(
                                 }
                             }, enabled = moveToDifferentFolder) { Text(text = "Move here") }
                         }
+
                         else -> {
                             Log.w("FileSelectionDialog", "Action type ${action?.type} should be implemented")
                         }
@@ -186,6 +189,8 @@ fun FileSelectionDialog(
                                     }
                                 }
                             }
+
+                            loadState(fileListItems = fileListItems)
                         }
                     }
                 }

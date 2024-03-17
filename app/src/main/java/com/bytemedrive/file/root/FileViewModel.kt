@@ -68,7 +68,7 @@ class FileViewModel(
 
     val action = MutableStateFlow<Action?>(null)
 
-    val dataFilePreview = MutableStateFlow<FilePreview?>(null)
+    var dataFilePreview by mutableStateOf<FilePreview?>(null)
 
     private var watchItems: Job? = null
 
@@ -115,8 +115,8 @@ class FileViewModel(
                             val dataFileLinkPreviews = dataFileLinks
                                 .filter { dataFiles.find { dataFile -> dataFile.id == it.dataFileId }?.contentType == MimeTypes.IMAGE_JPEG }
                                 .map { it.id }
-// TODO: Download thumbnail in case if it was not found when user tap to detail of thumbnail
-                            dataFilePreview.update { FilePreview(dataFileLink, dataFileLinkPreviews) }
+
+                            dataFilePreview = FilePreview(dataFileLink, dataFileLinkPreviews)
                         }
                     }
                 }
