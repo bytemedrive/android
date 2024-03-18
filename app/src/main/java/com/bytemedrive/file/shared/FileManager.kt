@@ -69,7 +69,7 @@ class FileManager(
                     Log.e(TAG, "Encrypted file size ${encryptedFile.length()} is not same as encrypted file chunks size $sizeOfChunks")
                 } else {
                     val secretKey = AesService.secretKey(dataFile.secretKeyBase64!!)
-                    AesService.decryptFileWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, secretKey, encryptedFile.length())
+                    AesService.decryptFileWithKey(encryptedFile.inputStream(), contentResolver.openOutputStream(uri!!)!!, secretKey, dataFile.sizeBytes)
                 }
             }
         }
