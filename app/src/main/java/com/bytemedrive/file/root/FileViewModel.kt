@@ -60,7 +60,7 @@ class FileViewModel(
 
     var items by mutableStateOf(emptyList<FileListItem>())
 
-    var fileListItems = itemRepository.getAllPaged()
+    var fileListItems by mutableStateOf(emptyList<FileListItem>())
 
     val itemsSelected = MutableStateFlow(emptyList<FileListItem>())
 
@@ -74,8 +74,8 @@ class FileViewModel(
 
     private var watchThumbnails: Job? = null
 
-    fun initialize(context: Context, folderId: UUID?) {
-        fileListItems = itemRepository.getAllPaged(folderId)
+    suspend fun initialize(context: Context, folderId: UUID?) {
+        fileListItems = itemRepository.getAll(folderId)
 
         watchItems = viewModelScope.launch {
             combine(

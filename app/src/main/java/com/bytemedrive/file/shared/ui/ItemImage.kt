@@ -2,7 +2,9 @@ package com.bytemedrive.file.shared.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -17,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
@@ -51,15 +54,17 @@ fun ItemImage(itemSelected: Boolean, item: FileListItem, file: File?) {
 
             item.type == ItemType.FILE -> {
                 file?.let {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            ImageRequest
-                            .Builder(LocalContext.current)
-                            .data(File(it.path))
-                            .size(Size.ORIGINAL)
-                            .crossfade(true)
-                            .build()
-                        ),
+                    AsyncImage(
+                        model = it,
+                        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+//                        painter = rememberAsyncImagePainter(
+//                            ImageRequest
+//                            .Builder(LocalContext.current)
+//                            .data(File(it.path))
+//                            .size(Size.ORIGINAL)
+//                            .crossfade(true)
+//                            .build()
+//                        ),
                         contentDescription = "Thumbnail ${item.name}",
                         contentScale = ContentScale.Crop
                     )
