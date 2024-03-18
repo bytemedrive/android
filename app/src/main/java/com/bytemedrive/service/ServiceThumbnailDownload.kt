@@ -69,8 +69,9 @@ class ServiceThumbnailDownload : Service() {
             Log.d(TAG, "Checking whether there are any thumbnails to download")
             val fileList = applicationContext.fileList()
 
-            dataFileRepository.getDataFilesByUploadStatus(UploadStatus.COMPLETED).forEach { dataFile ->
-                resolutions.forEach { resolution ->
+            val dataFiles = dataFileRepository.getDataFilesByUploadStatus(UploadStatus.COMPLETED)
+            for (dataFile in dataFiles) {
+                for (resolution in resolutions) {
                     val thumbnailName = FileManager.getThumbnailName(dataFile.id, resolution)
 
                     if (dataFile.contentType == MimeTypes.IMAGE_JPEG && !fileList.contains(thumbnailName)) {
@@ -78,7 +79,7 @@ class ServiceThumbnailDownload : Service() {
                             .find { it.resolution == resolution }
                             ?.let { thumbnail ->
                                 Log.i(TAG, "Downloading thumbnail ${resolution.value} for ${dataFile.name}")
-                                
+
                                 val encryptedFile = fileManager.rebuildFile(
                                     thumbnail.chunks.map(UploadChunk::viewId),
                                     FileManager.getThumbnailName(dataFile.id, resolution),
@@ -102,7 +103,7 @@ class ServiceThumbnailDownload : Service() {
                                         AesService.secretKey(thumbnail.secretKeyBase64),
                                         thumbnail.sizeBytes
                                     )
-                                    
+
                                     eventPublisher.publishEvent(EventThumbnailCompleted(dataFile.id, resolution, ZonedDateTime.now()))
                                 }
                             }

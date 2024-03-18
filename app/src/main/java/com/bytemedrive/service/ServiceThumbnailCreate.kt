@@ -38,7 +38,7 @@ class ServiceThumbnailCreate : Service() {
 
     private lateinit var handler: Handler
     private lateinit var thumbnailCreator: Runnable
-    
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -67,10 +67,10 @@ class ServiceThumbnailCreate : Service() {
     private suspend fun createThumbnails() {
         try {
             Log.d(TAG, "Checking whether there are any thumbnails to create")
-            dataFileRepository.getAllDataFiles().forEach { dataFile ->
+            for (dataFile in dataFileRepository.getAllDataFiles()) {
                 val chunkViewIds = dataFile.chunks.map(UploadChunk::viewId)
 
-                resolutions.forEach { resolution ->
+                for (resolution in resolutions) {
                     if (dataFile.contentType == MimeTypes.IMAGE_JPEG && dataFile.thumbnails.find { it.resolution == resolution } == null) {
                         Log.i(TAG, "Missing thumbnail with resolution $resolution for file chunk view ids=$chunkViewIds.")
                         val encryptedFile = fileManager.rebuildFile(chunkViewIds, "${dataFile.id}-encrypted", dataFile.contentType, applicationContext.cacheDir)
@@ -101,7 +101,7 @@ class ServiceThumbnailCreate : Service() {
                 }
             }
 
-            handler.postDelayed(thumbnailCreator, 10_000)            
+            handler.postDelayed(thumbnailCreator, 10_000)
         } catch (e: Exception) {
             GlobalExceptionHandler.throwable = e
         }

@@ -36,7 +36,7 @@ class ServiceFileUpload : Service() {
 
     private lateinit var handler: Handler
     private lateinit var fileUploader: Runnable
-    
+
     private val notificationManager: NotificationManager by lazy {
         getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
@@ -79,11 +79,12 @@ class ServiceFileUpload : Service() {
 
             if (filesToUpload.isNotEmpty()) {
                 startForeground(NOTIFICATION_ID, notification.build())
-
-                filesToUpload.forEachIndexed { index, fileUpload ->
-                    uploadFile(fileUpload)
+                updateNotification(notification, "Upload of ${filesToUpload.size} files has started")
+                for (index in filesToUpload.indices) {
                     updateNotification(notification, "${index + 1} / ${filesToUpload.size} is being uploaded")
+                    uploadFile(filesToUpload[index])
                 }
+                updateNotification(notification, "Upload of ${filesToUpload.size} files is complete")
 
                 stopForeground(STOP_FOREGROUND_DETACH)
             }
@@ -110,7 +111,7 @@ class ServiceFileUpload : Service() {
                 Log.e(TAG, "File upload failed! File path=${file.path}.", exception)
                 queueFileUploadRepository.deleteFile(fileUpload.id)
                 eventPublisher.publishEvent(EventFileUploadFailed(fileUpload.id, ZonedDateTime.now()))
-                
+
                 throw exception
             }
         } else {
