@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.bytemedrive.application.encryptedSharedPreferences
 import com.bytemedrive.customer.control.CustomerDao
 import com.bytemedrive.customer.entity.CustomerEntity
 import com.bytemedrive.datafile.control.DataFileDao
@@ -19,6 +20,7 @@ import com.bytemedrive.folder.FolderDao
 import com.bytemedrive.folder.FolderEntity
 import com.bytemedrive.store.EventDao
 import com.bytemedrive.store.EventEntity
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 @Database(
     version = 1,
@@ -56,7 +58,7 @@ abstract class ByteMeDatabase : RoomDatabase() {
 
         private fun buildDatabase(context: Context): ByteMeDatabase =
             Room.databaseBuilder(context, ByteMeDatabase::class.java, DATABASE_NAME)
-//                .openHelperFactory(SupportOpenHelperFactory(encryptedSharedPreferences.getDbPassword()))
+                .openHelperFactory(SupportOpenHelperFactory(encryptedSharedPreferences.getDbPassword()))
                 .build()
     }
 }
